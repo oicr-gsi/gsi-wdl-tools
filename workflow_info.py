@@ -68,20 +68,21 @@ class WorkflowInfo:
     def get_inputs(doc):
         param_descriptions = doc.workflow.parameter_meta
         for task in doc.tasks:
-            param_descriptions.update(task.parameter_meta)
-
+            param_descriptions.update({task.name + "." + k: v for k, v in task.parameter_meta.items()})
         required_params = []
         optional_params = []
         task_params = []
         for param in doc.workflow.available_inputs:
             name = param.name
             wdl_type = param.value.type
-            optional = param.value.type.optional
-            default = param.value.expr or ''
+            default = str(param.value.expr) or ''
+            if param.value.expr is not None or param.value.type.optional:
+                optional = True
+            else:
+                optional = False
             description = param_descriptions.get(name, '')
             input_param = Input(name=name, wdl_type=wdl_type, optional=optional, default=default,
                                 description=description)
-
             if '.' not in input_param.name:
                 if input_param.optional:
                     optional_params.append(input_param)

@@ -39,7 +39,7 @@ print("#### Required workflow parameters:")
 print("Parameter|Value|Description")
 print("---|---|---")
 for param in info.required_inputs:
-    print(f"{param.name}|{param.wdl_type}|{param.description}")
+    print(f"`{param.name}`|{param.wdl_type}|{param.description}")
 print('\n')
 
 # optional
@@ -47,7 +47,7 @@ print("#### Optional workflow parameters:")
 print("Parameter|Value|Default|Description")
 print("---|---|---|---")
 for param in info.optional_inputs:
-    print(f"{param.name}|{param.wdl_type}|{param.default}|{param.description}")
+    print(f"`{param.name}`|{param.wdl_type}|{param.default}|{param.description}")
 print('\n')
 
 # task optional
@@ -55,7 +55,7 @@ print("#### Optional task parameters:")
 print("Parameter|Value|Default|Description")
 print("---|---|---|---")
 for param in info.task_inputs:
-    print(f"{param.name}|{param.wdl_type}|{param.default}|{param.description}")
+    print(f"`{param.name}`|{param.wdl_type}|{param.default}|{param.description}")
 print('\n')
 
 # outputs

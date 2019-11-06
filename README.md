@@ -16,10 +16,10 @@ pipenv install
 ## Usage
 ```
 pipenv shell
-python3 generate_markdown_readme.py [workflow.wdl]
+python3 generate_markdown_readme.py --input-wdl-path [workflow.wdl]
 ```
 
 ```
-pipenv run generate_markdown_readme.py [workflow.wdl]
+pipenv run generate_markdown_readme.py --input-wdl-path [workflow.wdl]
 ```
 

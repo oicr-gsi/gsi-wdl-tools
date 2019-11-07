@@ -1,24 +1,23 @@
 import os
+from dataclasses import dataclass
 
 import WDL
 
 
+@dataclass
 class Output:
-
-    def __init__(self, name, wdl_type, description):
-        self.name = name
-        self.wdl_type = wdl_type
-        self.description = description
+    name: str
+    wdl_type: str
+    description: str
 
 
+@dataclass
 class Input:
-
-    def __init__(self, name, wdl_type, optional, default, description):
-        self.name = name
-        self.wdl_type = wdl_type
-        self.optional = optional
-        self.default = default
-        self.description = description
+    name: str
+    wdl_type: str
+    optional: bool
+    default: str
+    description: str
 
 
 class WorkflowInfo:
@@ -49,7 +48,7 @@ class WorkflowInfo:
         for output in self.doc.workflow.effective_outputs:
 
             name = output.name
-            wdl_type = output.value
+            wdl_type = str(output.value)
             if isinstance(output, str):
                 description = output_descriptions.get(output)
             elif isinstance(output, WDL.Env.Binding):
@@ -57,7 +56,7 @@ class WorkflowInfo:
                 if val is not None:
                     description = val
                 else:
-                    output_file_name = output.info.expr.expr.name
+                    output_file_name = str(output.info.expr)
                     description = output_descriptions.get(output_file_name)
             else:
                 raise Exception('Unsupported input type')
@@ -74,7 +73,7 @@ class WorkflowInfo:
         task_params = []
         for param in doc.workflow.available_inputs:
             name = param.name
-            wdl_type = param.value.type
+            wdl_type = str(param.value.type)
             default = str(param.value.expr) or ''
             if param.value.expr is not None or param.value.type.optional:
                 optional = True

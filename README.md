@@ -13,6 +13,11 @@ pip install --user pipenv
 pipenv install
 ```
 
+1. Run tests
+```
+pipenv run python3 -m pytest
+```
+
 ## Usage
 ```
 pipenv shell

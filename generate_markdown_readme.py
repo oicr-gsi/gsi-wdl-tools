@@ -77,16 +77,16 @@ mvn clean install
 
 * Testing
 ```
-mvn clean verify \
--Djava_opts="-Xmx1g -XX:+UseG1GC -XX:+UseStringDeduplication" \
--DrunTestThreads=2 \
--DskipITs=false \
--DskipRunITs=false \
--DworkingDirectory=/path/to/tmp/ \
--DschedulingHost=niassa_oozie_host \
--DwebserviceUrl=http://niassa-url:8080 \
--DwebserviceUser=niassa_user \
--DwebservicePassword=niassa_user_password \
+mvn clean verify \\
+-Djava_opts="-Xmx1g -XX:+UseG1GC -XX:+UseStringDeduplication" \\
+-DrunTestThreads=2 \\
+-DskipITs=false \\
+-DskipRunITs=false \\
+-DworkingDirectory=/path/to/tmp/ \\
+-DschedulingHost=niassa_oozie_host \\
+-DwebserviceUrl=http://niassa-url:8080 \\
+-DwebserviceUser=niassa_user \\
+-DwebservicePassword=niassa_user_password \\
 -Dcromwell-host=http://cromwell-url:8000
 ```
 

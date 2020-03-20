@@ -24,7 +24,7 @@ pipenv shell
 python3 generate_markdown_readme.py --input-wdl-path [workflow.wdl]
 ```
 
+or without using `pipenv shell`:
 ```
-pipenv run generate_markdown_readme.py --input-wdl-path [workflow.wdl]
+pipenv run python3 ./generate_markdown_readme.py --input-wdl-path [workflow.wdl]
 ```
-

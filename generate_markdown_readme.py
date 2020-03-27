@@ -40,6 +40,9 @@ print("Parameter|Value|Description")
 print("---|---|---")
 for param in info.required_inputs:
     print(f"`{param.name}`|{param.wdl_type}|{param.description}")
+for param in info.task_inputs:
+    if param.optional == False and param.default == "None":
+        print(f"`{param.name}`|{param.wdl_type}|{param.description}")
 print('\n')
 
 # optional
@@ -55,7 +58,8 @@ print("#### Optional task parameters:")
 print("Parameter|Value|Default|Description")
 print("---|---|---|---")
 for param in info.task_inputs:
-    print(f"`{param.name}`|{param.wdl_type}|{param.default}|{param.description}")
+    if param.optional == True or param.default != 'None':
+        print(f"`{param.name}`|{param.wdl_type}|{param.default}|{param.description}")
 print('\n')
 
 # outputs

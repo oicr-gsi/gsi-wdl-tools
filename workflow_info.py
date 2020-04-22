@@ -64,8 +64,26 @@ class WorkflowInfo:
         return outputs
 
     @staticmethod
+    def calls(element):
+        for ch in element.children:
+            if isinstance(ch, WDL.Call):
+                yield ch
+            elif isinstance(ch, WDL.WorkflowSection):
+                yield from WorkflowInfo.calls(ch)
+
+    @staticmethod
     def get_inputs(doc):
-        param_descriptions = doc.workflow.parameter_meta
+
+        # create a map of call names to task names
+        # this is used for mapping an aliased call to its task
+        call_to_task = {}
+        for call in WorkflowInfo.calls(doc.workflow):
+            if isinstance(call, WDL.Call):
+                call_to_task[call.name] = call.callee.name
+            elif isinstance(call, WDL.WorkflowSection):
+                print(call.name)
+
+        param_descriptions = doc.workflow.parameter_meta.copy()
         for task in doc.tasks:
             param_descriptions.update({task.name + "." + k: v for k, v in task.parameter_meta.items()})
         required_params = []
@@ -80,6 +98,12 @@ class WorkflowInfo:
             else:
                 optional = False
             description = param_descriptions.get(name, '')
+            if not description and len(name.split('.')) == 2:
+                # this is an aliased call parameter, map call name to task name and get the task's description
+                (call_name, param_name) = name.split('.')
+                description = param_descriptions.get(f"{call_to_task.get(call_name,'missing')}.{param_name}",'')
+            if not description:
+                raise Exception(f"parameter_meta description is missing for {name}")
             input_param = Input(name=name, wdl_type=wdl_type, optional=optional, default=default,
                                 description=description)
             if '.' not in input_param.name:

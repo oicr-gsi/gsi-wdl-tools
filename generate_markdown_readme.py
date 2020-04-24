@@ -99,4 +99,4 @@ mvn clean verify \\
 For support, please file an issue on the [Github project](https://github.com/oicr-gsi) or send an email to gsi@oicr.on.ca .
 """)
 
-print(f"_Generated with wdl_doc_gen (https://github.com/oicr-gsi/wdl_doc_gen/)_")
+print(f"_Generated with generate-markdown-readme (https://github.com/oicr-gsi/gsi-wdl-tools/)_")

@@ -11,13 +11,13 @@ gsi-wdl-tools requires Python 3.7
 pip install --user pipenv
 ```
 
-1. Install dependencies
+2. Install dependencies
 ```
 cd gsi-wdl-tools
 pipenv install
 ```
 
-1. Run tests
+3. Run tests
 ```
 pipenv run python3 -m pytest
 ```

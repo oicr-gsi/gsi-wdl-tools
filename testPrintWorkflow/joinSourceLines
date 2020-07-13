@@ -7,4 +7,4 @@ for input in w.workflow.inputs:
         w.source_lines[input.pos.line - 1] = newInput
 # write out to new wdl file
 print(w.source_lines[0])
-print("".join(w.source_lines))
+print("\n".join(w.source_lines))

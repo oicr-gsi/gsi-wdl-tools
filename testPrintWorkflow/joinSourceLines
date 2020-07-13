@@ -3,9 +3,9 @@ w = WDL.load('/home/ubuntu/repos/starfusion/starFusion.wdl')
 # find all params that need to be replaced, for example:
 print(w.workflow.inputs[0])
 for input in w.workflow.inputs:
-    if str(input).find("String genomeDir") > -1:
+    if str(input).find("File? chimeric") > -1:
         print("found at " + input)
-        newInput = 'String genomeDir = "/some/run/dir/"'
+        newInput = 'File? chimeric = "/some/run/file/"'
         w.source_lines[input.pos.line - 1] = newInput
         print(w.source_lines[input.pos.line - 1])
 # write out to new wdl file

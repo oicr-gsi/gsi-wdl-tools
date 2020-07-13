@@ -2,7 +2,7 @@ import WDL
 w = WDL.load('/home/ubuntu/repos/starfusion/starFusion.wdl')
 # find all params that need to be replaced, for example:
 for input in w.workflow.inputs:
-    if str(input) == "String genomeDir":
+    if str(input).contains("String genomeDir"):
         newInput = 'String genomeDir = "/some/run/dir/"'
         w.source_lines[input.pos.line - 1] = newInput
 # write out to new wdl file

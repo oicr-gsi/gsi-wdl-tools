@@ -10,7 +10,7 @@ args = parser.parse_args()
 # find all params that need to be replaced, for example:
 w = WDL.load(args.input_wdl_path)   # '/home/ubuntu/repos/starfusion/starFusion.wdl'
 for input in w.workflow.inputs:     # for each line in the workflow inputs
-    index = str(input).find("File? chimeric")
+    index = w.source_lines[input.pos.line - 1].find("File? chimeric")
     if index > -1:      # if that line is found
         print(index)
         newInput = ' ' * index + 'File? chimeric = "/some/run/file/"'   # change it and add spaces in front

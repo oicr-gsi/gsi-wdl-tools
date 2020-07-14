@@ -9,6 +9,11 @@ args = parser.parse_args()
 
 doc = WDL.load(args.input_wdl_path)         # loads the entire document
 
+# converts all tabs to spaces for compatibility
+def tabs_to_spaces():
+    for line in doc.source_lines:
+        line.replace("\t", "    ")
+
 # add docker to every task and workflow explicitly
 def docker_runtime():
     for task in doc.tasks:
@@ -46,6 +51,7 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
+tabs_to_spaces()
 # test()
 source_modules()
 write_out()     # successfully creates / overwrites to the right destination

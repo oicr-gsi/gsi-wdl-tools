@@ -20,11 +20,11 @@ def test():
 
 # final outputs to stdout or a file with modified name
 def write_out():
-    # print("\n".join(w.source_lines))      # prints the entire workflow to stdout
+    # print("\n".join(doc.source_lines))      # prints the entire workflow to stdout
 
     name_index = args.input_wdl_path.rfind('/')
     output_path = args.input_wdl_path[:name_index + 1] + "dockstore_" + args.input_wdl_path[name_index + 1:]
     with open(output_path, "w") as output_file:
-        output_file.write("\n".join(w.source_lines))
+        output_file.write("\n".join(doc.source_lines))
 test()
 write_out()

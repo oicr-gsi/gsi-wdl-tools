@@ -28,7 +28,10 @@ def source_modules():
 # find all params that need to be replaced, for example:
 def test():
     for task in doc.tasks:
-        print(str(task.command.parts))
+        print(type(task))
+        print(type(task.command))
+        print(type(task.command.parts))
+        print(type(task.command.parts[0]))
 
 # final outputs to stdout or a file with modified name
 def write_out():

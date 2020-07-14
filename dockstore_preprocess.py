@@ -23,7 +23,9 @@ def source_modules():
         for input in task.inputs:
             index = doc.source_lines[input.pos.line - 1].find("String modules")
             if index > -1:  # if the task does use modules
-                doc.source_lines[task.command.pos.line - 1] = prepend + task.command.parts
+                task.command.parts[0] = task.command.parts[0] + prepend
+                print(task.command.parts)
+                #doc.source_lines[task.command.pos.line - 1] = prepend + task.command
 
 # find all params that need to be replaced, for example:
 def test():
@@ -44,6 +46,6 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-test()
+# test()
 # write_out()     # successfully creates / overwrites to the right destination
-# source_modules()
+source_modules()

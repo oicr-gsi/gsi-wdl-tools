@@ -11,7 +11,7 @@ doc = WDL.load(args.input_wdl_path)         # loads the entire document
 
 # converts all tabs to spaces for compatibility
 def tabs_to_spaces():
-    for index in len(doc.source_lines):
+    for index in range(len(doc.source_lines)):
         doc.source_lines[index].replace('\t', "        ")
 
 # add docker to every task and workflow explicitly

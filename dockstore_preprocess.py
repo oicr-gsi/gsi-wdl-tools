@@ -25,9 +25,7 @@ def source_modules():
                 position = task.command.pos.line
                 num_spaces = doc.source_lines[position].rfind("  ") + 2
                 append = '\n' + ' ' * num_spaces + 'source /root/.bashrc \n' + ' ' * num_spaces + '${"module load " + modules + " || exit 1; "} \n' + ' ' * num_spaces
-                print(append + doc.source_lines[position][num_spaces:])
                 doc.source_lines[position] = append + doc.source_lines[position][num_spaces:]  # replace old command with the new
-                print(doc.source_lines[position])
 
 # find all params that need to be replaced, for example:
 def test():
@@ -49,5 +47,5 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 # test()
-# write_out()     # successfully creates / overwrites to the right destination
 source_modules()
+write_out()     # successfully creates / overwrites to the right destination

@@ -18,14 +18,14 @@ def docker_runtime():
 
 # source .bashrc and load required modules for each task
 def source_modules():
-    append = 'source /root/.bashrc \n ${"module load " + modules + " || exit 1; "} \n'
     for task in doc.tasks:
         for input in task.inputs:
             index = doc.source_lines[input.pos.line - 1].find("String modules")
             if index > -1:  # if the task does use modules
                 position = task.command.pos.line
                 num_spaces = doc.source_lines[position].rfind("  ") + 2
-                print(" " * num_spaces + append + doc.source_lines[position][num_spaces:])
+                append = '\n' + ' ' * num_spaces + 'source /root/.bashrc \n' + ' ' * num_spaces + '${"module load " + modules + " || exit 1; "} \n'
+                print(append + doc.source_lines[position][num_spaces:])
                 doc.source_lines[position] = " " * num_spaces + append + doc.source_lines[position][num_spaces:]  # replace old command with the new
 
 # find all params that need to be replaced, for example:

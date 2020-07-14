@@ -6,6 +6,7 @@ import WDL
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--input-wdl-path", required=True)
+parser.add_argument("--docker-image", required=False)
 args = parser.parse_args()
 
 doc = WDL.load(args.input_wdl_path)         # loads the entire document
@@ -19,6 +20,21 @@ def tabs_to_spaces(num_spaces):     # what about multiple tabs, or tab is in a s
 
 # add docker to every task and workflow explicitly
 def docker_runtime():
+    # exit if use doesn't want to add a docker image
+    if not args.docker_image:
+        return
+
+    # add image to each workflow inputs
+    for workflow in doc.workflow:
+        if "docker" not in workflow.inputs:
+            # append args.docker_image with docker: "~{docker}"
+        else:
+            # replace old docker with docker: "~{docker}"
+
+    # add image to all calls "docker = docker"
+        # think about whether add comma
+
+    # add image to all tasks
     for task in doc.tasks:
         if("docker" not in task.runtime):   # need to add docker to runtime, inputs, and call
             # @@@@@@@@@@@@@@@
@@ -59,8 +75,8 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 tabs_to_spaces(8)
-# docker_runtime()
+docker_runtime()
 # pull_to_root()
-# source_modules()
+source_modules()
 # test()
 write_out()     # successfully creates / overwrites to the right destination

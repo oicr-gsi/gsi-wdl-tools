@@ -17,6 +17,7 @@ def tabs_to_spaces(num_spaces):     # what about multiple tabs, or tab is in a s
         while re.search(r'(?<=\n)( *)\t', line):
             line = re.sub(r'(?<=\n)( *)\t', '\g<1>        ', line)
             doc.source_lines[index] = line
+            print(line)
             print('\t' in line)
 
 # add docker to every task and workflow explicitly

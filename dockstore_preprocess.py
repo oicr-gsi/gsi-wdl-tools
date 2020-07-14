@@ -12,7 +12,8 @@ doc = WDL.load(args.input_wdl_path)     # loads the entire document
 # source .bashrc and load required modules for each task
 def load_modules():
     for task in doc.tasks:
-        print(task.name)
+        print(task.name + ": ")
+        print(", ".join(task.runtime))
 
 # find all params that need to be replaced, for example:
 def replace():

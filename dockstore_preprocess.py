@@ -3,14 +3,6 @@
 import argparse
 import WDL
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("--input-wdl-path", required=True)
-args = parser.parse_args()
-
-doc = WDL.load(args.input_wdl_path)     # loads the entire document
-#test()
-write_out()
-
 # find all params that need to be replaced, for example:
 def test():
     for input in doc.workflow.inputs:     # for each line in the workflow inputs
@@ -29,3 +21,11 @@ def write_out():
     output_path = args.input_wdl_path[:name_index + 1] + "dockstore_" + args.input_wdl_path[name_index + 1:]
     print(output_path)
     # with open()
+
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument("--input-wdl-path", required=True)
+args = parser.parse_args()
+
+doc = WDL.load(args.input_wdl_path)     # loads the entire document
+#test()
+write_out()

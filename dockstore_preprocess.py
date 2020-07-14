@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import re
 import WDL
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -10,11 +11,10 @@ args = parser.parse_args()
 doc = WDL.load(args.input_wdl_path)         # loads the entire document
 
 # converts all tabs to spaces for compatibility
-def tabs_to_spaces():
-    for index in range(len(doc.source_lines)):
-        doc.source_lines[index].replace('\t', "        ")
-        if '\t' in doc.source_lines[index]:
-            print("Still there")
+def tabs_to_spaces(num_spaces):     # what about multiple tabs, or tab is in a string?
+    for line in doc.source_lines:
+        while re.search(r'(?<=\n)( *)\t', line):
+        line = re.sub(r'(?<=\n)( *)\t', '\g<1>        ', line)
 
 # add docker to every task and workflow explicitly
 def docker_runtime():
@@ -57,7 +57,7 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-tabs_to_spaces()
+tabs_to_spaces(8)
 # docker_runtime()
 # pull_to_root()
 # source_modules()

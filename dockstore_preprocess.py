@@ -14,7 +14,7 @@ doc = WDL.load(args.input_wdl_path)         # loads the entire document
 def tabs_to_spaces(num_spaces):     # what about multiple tabs, or tab is in a string?
     for index in range(len(doc.source_lines)):
         line = doc.source_lines[index]
-        print(str(index) + " " + re.search(r'(?<=\n)( *)\t', line))
+        print(str(index) + " " + str(re.search(r'(?<=\n)( *)\t', line)))
         while re.search(r'(?<=\n)( *)\t', line):
             print("initial" + line)
             line = re.sub(r'(?<=\n)( *)\t', '\g<1>        ', line)

@@ -14,8 +14,7 @@ def test():
     for input in doc.workflow.inputs:       # for each line in the workflow inputs
         index = doc.source_lines[input.pos.line - 1].find("File? chimeric")   # now it detects the number of spaces in front
         if index > -1:      # if that line is found
-            print(index)
-            newInput = ' ' * index + 'File? chimeric = "/some/run/file/"'   # change it and add spaces in front
+            newInput = ' ' * index + 'File? chimeric = "/replace/file/path"'   # change it and add spaces in front
             doc.source_lines[input.pos.line - 1] = newInput   # replace the original with the new line
 
 # final outputs to stdout or a file with modified name

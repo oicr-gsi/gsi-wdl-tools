@@ -24,6 +24,8 @@ def source_modules():
             index = doc.source_lines[input.pos.line - 1].find("String modules")
             if index > -1:  # if the task does use modules
                 #task.command.parts[0] = task.command.parts[0] + append  # add source and load to the first line
+                print(doc.source_lines[task.command.pos.line])
+                print(type(doc.source_lines[task.command.pos.line]))
                 print(doc.source_lines[task.command.pos.line] + append)
                 doc.source_lines[task.command.pos.line] = doc.source_lines[task.command.pos.line] + append  # replace old command with the new
 

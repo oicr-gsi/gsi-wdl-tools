@@ -32,6 +32,8 @@ def test():
         print(type(task.command))
         print(type(task.command.parts))
         print(type(task.command.parts[0]))
+        print(type(doc.tasks[0].inputs[0]))
+        print(type(doc.tasks[0].inputs[0].pos))
 
 # final outputs to stdout or a file with modified name
 def write_out():

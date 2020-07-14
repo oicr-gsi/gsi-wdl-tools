@@ -7,23 +7,28 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument("--input-wdl-path", required=True)
 args = parser.parse_args()
 
-doc = WDL.load(args.input_wdl_path)     # loads the entire document
+doc = WDL.load(args.input_wdl_path)         # loads the entire document
+
+# add docker to every task and workflow explicitly
+def docker_runtime():
+    for task in doc.tasks:
+        if("docker" not in task.runtime):   # need to add docker to runtime, inputs, and call
+            # @@@@@@@@@@@@@@@
 
 # source .bashrc and load required modules for each task
-def load_modules():
+def source_modules():
+    prepend = 'source /root/.bashrc \n ${"module load " + modules + " || exit 1; "} \n\n'
     for task in doc.tasks:
-        print(task.name + ": ")
-        print(", ".join(task.runtime))
-        if("docker" not in task.runtime):
-            print("no docker")
+        for input in task.inputs:
+            index = doc.source_lines[input.pos.line - 1].find("String modules")
+            if index > -1:  # if the task does use modules
+                # task.command.prepend(source, module load modules)
+                doc.source_lines[input.pos.line - 1] = newInput
 
 # find all params that need to be replaced, for example:
-def replace():
-    for input in doc.workflow.inputs:       # for each line in the workflow inputs
-        index = doc.source_lines[input.pos.line - 1].find("File? chimeric")   # now it detects the number of spaces in front
-        if index > -1:      # if that line is found
-            newInput = ' ' * index + 'File? chimeric = "/replace/file/path"'   # change it and add spaces in front
-            doc.source_lines[input.pos.line - 1] = newInput   # replace the original with the new line
+def test():
+    for task in doc.tasks:
+        print(task.command)
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -34,6 +39,6 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-#replace()       # successfully replaces line
-#write_out()     # successfully creates / overwrites to the right destination
-load_modules()
+test()
+# write_out()     # successfully creates / overwrites to the right destination
+# source_modules()

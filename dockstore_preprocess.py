@@ -13,6 +13,7 @@ doc = WDL.load(args.input_wdl_path)         # loads the entire document
 def tabs_to_spaces():
     for line in doc.source_lines:
         line.replace('\t', "        ")
+        print(line)
 
 # add docker to every task and workflow explicitly
 def docker_runtime():
@@ -20,6 +21,10 @@ def docker_runtime():
         if("docker" not in task.runtime):   # need to add docker to runtime, inputs, and call
             # @@@@@@@@@@@@@@@
             print("placeholder")
+
+# pull all task variables to the workflow that calls them
+def pull_to_root():
+    print("placeholder")
 
 # source .bashrc and load required modules for each task
 def source_modules():
@@ -52,6 +57,8 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 tabs_to_spaces()
+# docker_runtime()
+# pull_to_root()
+# source_modules()
 # test()
-source_modules()
 write_out()     # successfully creates / overwrites to the right destination

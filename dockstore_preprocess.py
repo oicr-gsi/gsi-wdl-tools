@@ -23,7 +23,7 @@ def source_modules():
         for input in task.inputs:
             index = doc.source_lines[input.pos.line - 1].find("String modules")
             if index > -1:  # if the task does use modules
-                position = task.command.pos.line - 1
+                position = task.command.pos.line
                 num_spaces = doc.source_lines[position].rfind("  ") + 2
                 print(" " * num_spaces + append + doc.source_lines[position][num_spaces:])
                 doc.source_lines[position] = " " * num_spaces + append + doc.source_lines[position][num_spaces:]  # replace old command with the new

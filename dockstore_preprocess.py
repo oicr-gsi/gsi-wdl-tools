@@ -14,6 +14,8 @@ def load_modules():
     for task in doc.tasks:
         print(task.name + ": ")
         print(", ".join(task.runtime))
+        if("docker" not in task.runtime):
+            print("no docker")
 
 # find all params that need to be replaced, for example:
 def replace():

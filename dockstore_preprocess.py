@@ -14,6 +14,7 @@ def docker_runtime():
     for task in doc.tasks:
         if("docker" not in task.runtime):   # need to add docker to runtime, inputs, and call
             # @@@@@@@@@@@@@@@
+            print("placeholder")
 
 # source .bashrc and load required modules for each task
 def source_modules():

@@ -23,14 +23,16 @@ def docker_runtime():
 
 # source .bashrc and load required modules for each task
 def source_modules():
-    for task in doc.tasks:
-        for input in task.inputs:
-            index = doc.source_lines[input.pos.line - 1].find("String modules")
-            if index > -1:  # if the task does use modules
-                position = task.command.pos.line
-                num_spaces = doc.source_lines[position].rfind("  ") + 2
-                append = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 1; "} \n\n' + ' ' * num_spaces
-                doc.source_lines[position] = append + doc.source_lines[position][num_spaces:]  # replace old command with the new
+    if doc.tasks:
+        for task in doc.tasks:
+            if task.inputs:
+                for input in task.inputs:
+                    index = doc.source_lines[input.pos.line - 1].find("String modules")
+                    if index > -1:  # if the task does use modules
+                        position = task.command.pos.line
+                        num_spaces = doc.source_lines[position].rfind("  ") + 2
+                        append = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 1; "} \n\n' + ' ' * num_spaces
+                        doc.source_lines[position] = append + doc.source_lines[position][num_spaces:]  # replace old command with the new
 
 # find all params that need to be replaced, for example:
 def test():
@@ -44,8 +46,6 @@ def test():
 
 # final outputs to stdout or a file with modified name
 def write_out():
-    # print("\n".join(doc.source_lines))      # prints the entire workflow to stdout
-
     name_index = args.input_wdl_path.rfind('/')
     output_path = args.input_wdl_path[:name_index + 1] + "dockstore_" + args.input_wdl_path[name_index + 1:]
     with open(output_path, "w") as output_file:

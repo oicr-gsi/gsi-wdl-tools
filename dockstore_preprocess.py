@@ -24,7 +24,7 @@ def source_modules():
             if index > -1:  # if the task does use modules
                 position = task.command.pos.line
                 num_spaces = doc.source_lines[position].rfind("  ") + 2
-                append = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '${"module load " + modules + " || exit 1; "} \n\n' + ' ' * num_spaces
+                append = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 1; "} \n\n' + ' ' * num_spaces
                 doc.source_lines[position] = append + doc.source_lines[position][num_spaces:]  # replace old command with the new
 
 # find all params that need to be replaced, for example:

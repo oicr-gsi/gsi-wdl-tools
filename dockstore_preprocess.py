@@ -13,14 +13,9 @@ doc = WDL.load(args.input_wdl_path)         # loads the entire document
 # converts all tabs to spaces for compatibility
 def tabs_to_spaces(num_spaces):     # what about multiple tabs, or tab is in a string?
     for index in range(len(doc.source_lines)):
-        line = doc.source_lines[index]
-        print(str(index) + " " + str(len(line) - len(line.lstrip('\t'))))
-        while re.search(r'(?<=\n)( *)\t', line):
-            print("initial" + line)
-            line = re.sub(r'(?<=\n)( *)\t', '\g<1>        ', line)
-            doc.source_lines[index] = line
-            print("final" + line)
-            print('\t' in line)
+        line = doc.source_lines[index].lstrip('\t')     # strips leading tabs
+        int num_tabs = len(doc.source_lines[index]) - len(line)     # how many tabs were stripped away
+        doc.source_lines[index] = " " * num_spaces * num_tabs + line
 
 # add docker to every task and workflow explicitly
 def docker_runtime():

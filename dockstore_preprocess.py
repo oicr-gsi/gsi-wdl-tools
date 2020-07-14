@@ -9,8 +9,12 @@ args = parser.parse_args()
 
 doc = WDL.load(args.input_wdl_path)     # loads the entire document
 
+# source .bashrc and load required modules for each task
+def load_modules():
+    print(doc.tasks)
+
 # find all params that need to be replaced, for example:
-def test():
+def replace():
     for input in doc.workflow.inputs:       # for each line in the workflow inputs
         index = doc.source_lines[input.pos.line - 1].find("File? chimeric")   # now it detects the number of spaces in front
         if index > -1:      # if that line is found
@@ -25,5 +29,7 @@ def write_out():
     output_path = args.input_wdl_path[:name_index + 1] + "dockstore_" + args.input_wdl_path[name_index + 1:]
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
-test()
-write_out()
+
+#replace()       # successfully replaces line
+#write_out()     # successfully creates / overwrites to the right destination
+load_modules()

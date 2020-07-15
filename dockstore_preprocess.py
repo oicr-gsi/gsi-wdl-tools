@@ -25,7 +25,7 @@ def docker_runtime_multi(part):
     line_pos = part.pos.line - 1
     if "docker" not in part.inputs.keys():
         print("add comma docker = to the beginning")
-        line_pos += 1   # first line with input vars
+        line_pos += 2 if "input:" in doc.source_lines[line_pos + 1] else 1   # first line with input vars
         line = doc.source_lines[line_pos]
         num_spaces = len(line) - len(line.lstrip(' '))
         prepend = " " * num_spaces + "docker = docker,\n"

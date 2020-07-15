@@ -63,8 +63,8 @@ def source_modules():
 def test():
     for part in doc.workflow.body:
         if isinstance(part, WDL.Tree.Call):
-            print(part.name)
-            print(part.inputs)
+            print("docker" in part.inputs.keys())
+
 
 # final outputs to stdout or a file with modified name
 def write_out():

@@ -67,17 +67,21 @@ def test():
     for part in doc.workflow.body:
         if isinstance(part, WDL.Tree.Call):
             line = doc.source_lines[part.pos.line - 1]  # for now, assume that inputs are all on one line
-            if "docker" in part.inputs.keys():  # else change existing inputs
-                print("placeholder, docker var needs to be replaced")
-            else:
-                print("placeholder, docker var needs to be added")
+            if not part.inputs:                         # if input section empty, add "input: docker"
+                print("add 'inputs: docker'")
                 index = line.rfind('}')
-                index -= (line[index - 1] == ' ')  # move one back if " }"
-                print("." + line[index-1:index+1] + ".")
-                if not part.inputs:
-                    print("empty call, add inputs: docker = docker then exit")
+                index -= (line[index - 1] == ' ')       # move one back if " }"
+                line = line[:index] + "input: docker = docker" + line[index:]
+            else if "docker" not in part.inputs.keys(): # if input not empty but no docker var, add it
+                print("no docker var")
+                index = line.rfind('}')
+                index -= (line[index - 1] == ' ')       # move one back if " }"
+                line = line[:index] + ", docker = docker" + line[index:]
+            else:                                       # if docker var exists, modify it
+                index = line.find("docker")
 
             doc.source_lines[part.pos.line - 1] = line
+            print(doc.source_lines[part.pos.line - 1])
 
 # final outputs to stdout or a file with modified name
 def write_out():

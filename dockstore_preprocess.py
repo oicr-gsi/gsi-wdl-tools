@@ -31,8 +31,10 @@ def docker_runtime():
         else:
             # replace old docker with docker: "~{docker}"
 
-    # add image to all calls "docker = docker"
+        # add image to all calls "docker = docker"
         # think about whether add comma
+        for input in workflow.available_inputs:
+            # all call inputs stored in available_inputs, prefixed with namespace
 
     # add image to all tasks
     for task in doc.tasks:
@@ -59,13 +61,9 @@ def source_modules():
 
 # find all params that need to be replaced, for example:
 def test():
-    for task in doc.tasks:
-        print(type(task))
-        print(type(task.command))
-        print(type(task.command.parts))
-        print(type(task.command.parts[0]))
-        print(type(doc.tasks[0].inputs[0]))
-        print(type(doc.tasks[0].inputs[0].pos))
+    for workflow in doc.workflow:
+        for input in workflow.available_inputs:
+            print(", ".join(input.namespaces))
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -74,9 +72,9 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-tabs_to_spaces(8)
-docker_runtime()
+# tabs_to_spaces(8)
+# docker_runtime()
 # pull_to_root()
-source_modules()
-# test()
+# source_modules()
+test()
 write_out()     # successfully creates / overwrites to the right destination

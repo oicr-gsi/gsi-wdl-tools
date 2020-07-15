@@ -63,7 +63,7 @@ def source_modules():
 def test():
     for part in doc.workflow.body:
         if isinstance(part, WDL.Tree.Call):
-            print(part.name + ": " + part.inputs)
+            print(part.name)
 
 # final outputs to stdout or a file with modified name
 def write_out():

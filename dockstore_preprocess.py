@@ -21,7 +21,6 @@ def tabs_to_spaces(num_spaces):     # what about multiple tabs, or tab is in a s
 # helper function: add "docker = docker" to a call with a multi-line input section
 def docker_runtime_multi(part):
     # either multi-line has docker or hasn't, but will not be empty (single line)
-    print(part.inputs)
     line_pos = part.pos.line - 1
     if "docker" not in part.inputs.keys():
         print("add comma docker = to the beginning")
@@ -40,7 +39,7 @@ def docker_runtime_multi(part):
         index1 = line.find("docker") + len("docker")
         while line[index1] in " =":  # move forward until at start of assignment
             index1 += 1
-
+        index2 = len(line) - 1  # initialize at end of line
         for c in "} ,":         # value ends in ,/ /} whichever is smallest but must > -1
             index_temp = line[index1:].find(c) + index1
             index2 = index_temp if index_temp >  index1 - 1 and index_temp < index2 else index2

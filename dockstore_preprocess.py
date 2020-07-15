@@ -86,12 +86,12 @@ def docker_runtime():
 
     # add image to all calls "docker = docker"
     # think about whether add comma
-    for part in doc.workflow.body:
+    for part in doc.workflow.body:      # tested - able to delegate multi- and single insert
         if isinstance(part, WDL.Tree.Call):
             line = doc.source_lines[part.pos.line - 1]
-            if (not line.find('}') and line.find('{')):     # multi-line input
+            if '{' in line and '}' not in line:  # multi-line input
                 docker_runtime_multi(part)
-            else:                                           # single-line input
+            else:  # single-line input
                 docker_runtime_single(part)
 
     # add image to all tasks
@@ -140,6 +140,6 @@ tabs_to_spaces(8)   # tested - able to convert tabs to spaces
     # docker_runtime_single(part)   # tested - able to add docker to single-line call
 # docker_runtime()
 # pull_to_root()
-# source_modules()  # need testing: add lines if var exists, else don't
+source_modules()  # need testing: add lines if var exists, else don't
 test()
 write_out()     # tested - able to write out

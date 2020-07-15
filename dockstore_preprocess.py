@@ -41,9 +41,9 @@ def docker_runtime_single(part):
         # value ends in ,/ /} whichever is smallest but must > -1
         index2 = len(line) - 1  # initialize at end of line
         for c in "} ,":
-            index_temp = line[index1:].find(c)
+            index_temp = line[index1:].find(c) + index1
             print("index_temp: " + str(index_temp))
-            index2 = index_temp + index1 if index_temp > -1 and index_temp < index2 else index2
+            index2 = index_temp if index_temp >  index1 - 1 and index_temp < index2 else index2
             print("index2: " + str(index2))
         line = line[:index1] + "docker" + line[index2:]
 

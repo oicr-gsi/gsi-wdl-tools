@@ -72,7 +72,7 @@ def test():
                 index = line.rfind('}')
                 index -= (line[index - 1] == ' ')       # move one back if " }"
                 line = line[:index] + "input: docker = docker" + line[index:]
-            else if "docker" not in part.inputs.keys(): # if input not empty but no docker var, add it
+            elif "docker" not in part.inputs.keys(): # if input not empty but no docker var, add it
                 print("no docker var")
                 index = line.rfind('}')
                 index -= (line[index - 1] == ' ')       # move one back if " }"

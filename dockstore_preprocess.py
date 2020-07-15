@@ -29,9 +29,8 @@ def docker_runtime_multi(part):
         num_spaces = len(line) - len(line.lstrip(' '))
         prepend = " " * num_spaces + "docker = docker,\n"
         doc.source_lines[line_pos] = prepend + line
-        print(doc.source_lines[line_pos])
 
-    else:       # tested - able to replace
+    else:
         while "docker" not in doc.source_lines[line_pos]:   # stops when line contains docker
             line_pos += 1
         line = doc.source_lines[line_pos]
@@ -68,7 +67,6 @@ def docker_runtime_single(part):
         line = line[:index1] + "docker" + line[index2:]
 
     doc.source_lines[part.pos.line - 1] = line
-    print(doc.source_lines[part.pos.line - 1])
 
 # add docker to every task and workflow explicitly
 def docker_runtime():
@@ -82,14 +80,13 @@ def docker_runtime():
     else:
         print("replace old docker with docker: '~{docker}'")
 
-    # add image to all calls "docker = docker"
-    # think about whether add comma
+    # add image to all task calls
     for part in doc.workflow.body:      # tested - able to delegate multi- and single insert
         if isinstance(part, WDL.Tree.Call):
             line = doc.source_lines[part.pos.line - 1]
-            if '{' in line and '}' not in line:  # multi-line input
+            if '{' in line and '}' not in line:
                 docker_runtime_multi(part)
-            else:  # single-line input
+            else:
                 docker_runtime_single(part)
 
     # add image to all tasks
@@ -134,8 +131,8 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 tabs_to_spaces(8)   # tested - able to convert tabs to spaces
-    # docker_runtime_multi(part)
-    # docker_runtime_single(part)   # tested - able to add docker to single-line call
+    # docker_runtime_multi(part)    # tested - able to add or convert docker for multi-line call
+    # docker_runtime_single(part)   # tested - able to add or convert docker for single-line call
 # docker_runtime()
 # pull_to_root()
 source_modules()  # need testing: add lines if var exists, else don't

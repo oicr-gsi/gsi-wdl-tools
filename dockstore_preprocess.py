@@ -36,7 +36,7 @@ def docker_runtime_single(part):
 
     else:  # if docker var exists, modify it
         index1 = line.find("docker") + len("docker")
-        while " =".contains(line[index1]):  # move forward until at start of assignment
+        while line[index1] in " =":  # move forward until at start of assignment
             index1 += 1
         # value ends in ,/ /} whichever is smallest but must > -1
         index2 = len(line) - 1  # initialize at end of line

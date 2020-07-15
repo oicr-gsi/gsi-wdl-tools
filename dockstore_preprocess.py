@@ -122,10 +122,10 @@ def test():
     for part in doc.workflow.body:
         if isinstance(part, WDL.Tree.Call):
             line = doc.source_lines[part.pos.line - 1]
-            if (not line.find('}') and line.find('{')):     # multi-line input
+            if '{' in line and '}' not in line:     # multi-line input
                 print("run multi insert")
                 docker_runtime_multi(part)
-            else:                                           # single-line input
+            else:                                   # single-line input
                 print("run single insert")
                 docker_runtime_single(part)
 

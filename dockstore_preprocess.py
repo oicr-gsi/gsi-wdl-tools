@@ -39,7 +39,7 @@ def docker_runtime_single(part):
         while line[index1] == ' ' or line[index1] == '=':
             index1 += 1     # move forward until at start of assignment
         # value ends in ,/ /} whichever is smallest but must > -1
-        index2 = len(line - 1)  # initialize at end of line
+        index2 = len(line) - 1  # initialize at end of line
         index_temp = line[index1:].find(',')
         index2 = index_temp if index_temp > -1 else index2
         index_temp = line[index1:].find(' ')

@@ -42,9 +42,9 @@ def docker_runtime_single(part):
         index2 = len(line) - 1  # initialize at end of line
         for c in "} ,":
             index_temp = line[index1:].find(c)
-            print("index_temp: " + index_temp)
+            print("index_temp: " + str(index_temp))
             index2 = index_temp + index1 if index_temp > -1 and index_temp < index2 else index2
-            print("index2: " + index2)
+            print("index2: " + str(index2))
         line = line[:index1] + "docker" + line[index2:]
 
     doc.source_lines[part.pos.line - 1] = line

@@ -40,12 +40,12 @@ def docker_runtime_single(part):
             index1 += 1
         # value ends in ,/ /} whichever is smallest but must > -1
         index2 = len(line) - 1  # initialize at end of line
-        index_temp + index1 = line[index1:].find('}')    # if single line, line must contain }
-        index2 = index_temp if index_temp > -1 else index2
-        index_temp + index1 = line[index1:].find(' ')
-        index2 = index_temp if index_temp > -1 and index_temp < index2 else index2
-        index_temp + index1 = line[index1:].find(',')
-        index2 = index_temp if index_temp > -1 and index_temp < index2 else index2
+        index_temp = line[index1:].find('}')
+        index2 = index_temp + index1 if index_temp > -1 else index2
+        index_temp = line[index1:].find(' ')
+        index2 = index_temp + index1 if index_temp > -1 and index_temp < index2 else index2
+        index_temp = line[index1:].find(',')
+        index2 = index_temp + index1 if index_temp > -1 and index_temp < index2 else index2
         # @@@@@@ index1 is okay but index2 is somehow wayyy too early
         line = line[:index1] + "docker" + line[index2:]
 

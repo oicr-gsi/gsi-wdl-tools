@@ -24,20 +24,19 @@ def docker_runtime():
     if not args.docker_image:
         return
 
-    # add image to each workflow inputs
-    for workflow in doc.workflow:
-        if "docker" not in workflow.inputs:
-            print("placeholder")
-            # append args.docker_image with docker: "~{docker}"
-        else:
-            print("placeholder")
-            # replace old docker with docker: "~{docker}"
+    # add image to workflow inputs
+    if "docker" not in doc.workflow.inputs:
+        print("placeholder")
+        # append args.docker_image with docker: "~{docker}"
+    else:
+        print("placeholder")
+        # replace old docker with docker: "~{docker}"
 
-        # add image to all calls "docker = docker"
-        # think about whether add comma
-        for input in workflow.available_inputs:
-            print("placeholder")
-            # all call inputs stored in available_inputs, prefixed with namespace
+    # add image to all calls "docker = docker"
+    # think about whether add comma
+    for input in doc.workflow.available_inputs:
+        print("placeholder")
+        # all call inputs stored in available_inputs, prefixed with namespace
 
     # add image to all tasks
     for task in doc.tasks:
@@ -64,8 +63,7 @@ def source_modules():
 
 # find all params that need to be replaced, for example:
 def test():
-    for workflow in doc.workflow:
-        for input in workflow.available_inputs:
+        for input in doc.workflow.available_inputs:
             print(", ".join(input.namespaces))
 
 # final outputs to stdout or a file with modified name

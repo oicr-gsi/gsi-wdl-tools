@@ -27,6 +27,7 @@ def docker_runtime():
     # add image to each workflow inputs
     for workflow in doc.workflow:
         if "docker" not in workflow.inputs:
+            print("placeholder")
             # append args.docker_image with docker: "~{docker}"
         else:
             print("placeholder")

@@ -62,15 +62,21 @@ def source_modules():
                 append = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 20; "} \n\n' + ' ' * num_spaces
                 doc.source_lines[position] = append + doc.source_lines[position][num_spaces:]  # replace old command with the new
 
-# find all params that need to be replaced, for example:
+# find all params that need to be replaced
 def test():
     for part in doc.workflow.body:
         if isinstance(part, WDL.Tree.Call):
-            print(doc.source_lines[part.pos.line - 1])
-            if "docker" in part.inputs.keys():
+            line = doc.source_lines[part.pos.line - 1]  # for now, assume that inputs are all on one line
+            if "docker" in part.inputs.keys():  # else change existing inputs
                 print("placeholder, docker var needs to be replaced")
             else:
                 print("placeholder, docker var needs to be added")
+                index = line.rfind('}') - (line[index - 1] == ' ')  # move one back if " }"
+                print(line[index-1:index+1])
+                if not part.inputs:
+                    print("empty call, add inputs: docker = docker then exit")
+                    
+            doc.source_lines[part.pos.line - 1] = line
 
 # final outputs to stdout or a file with modified name
 def write_out():

@@ -29,6 +29,7 @@ def docker_runtime():
         if "docker" not in workflow.inputs:
             # append args.docker_image with docker: "~{docker}"
         else:
+            print("placeholder")
             # replace old docker with docker: "~{docker}"
 
         # add image to all calls "docker = docker"

@@ -34,9 +34,12 @@ def docker_runtime():
 
     # add image to all calls "docker = docker"
     # think about whether add comma
-    for input in doc.workflow.available_inputs:
-        print("placeholder")
-        # all call inputs stored in available_inputs, prefixed with namespace
+    for part in doc.workflow.body:
+        if isinstance(part, WDL.Tree.Call):
+            if "docker" in part.inputs.keys():
+                print("placeholder, docker var needs to be replaced")
+            else:
+                print("placeholder, docker var needs to be added")
 
     # add image to all tasks
     for task in doc.tasks:
@@ -63,8 +66,11 @@ def source_modules():
 def test():
     for part in doc.workflow.body:
         if isinstance(part, WDL.Tree.Call):
-            print("docker" in part.inputs.keys())
-
+            print(doc.source_lines[part.pos.line - 1])
+            if "docker" in part.inputs.keys():
+                print("placeholder, docker var needs to be replaced")
+            else:
+                print("placeholder, docker var needs to be added")
 
 # final outputs to stdout or a file with modified name
 def write_out():

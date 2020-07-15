@@ -65,7 +65,7 @@ def source_modules():
 def test():
     for part in doc.workflow.body:
         for index in range(len(part)):
-            print(part[index])
+            print(type(part))
 
 # final outputs to stdout or a file with modified name
 def write_out():

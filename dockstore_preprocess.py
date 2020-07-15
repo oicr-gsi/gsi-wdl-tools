@@ -64,8 +64,7 @@ def source_modules():
 # find all params that need to be replaced, for example:
 def test():
     for part in doc.workflow.body:
-        for index in range(len(part)):
-            print(type(part))
+        print(type(part))
 
 # final outputs to stdout or a file with modified name
 def write_out():

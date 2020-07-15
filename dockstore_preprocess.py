@@ -64,7 +64,7 @@ def source_modules():
 # find all params that need to be replaced, for example:
 def test():
         for input in doc.workflow.available_inputs:
-            print(", ".join(input.namespaces))
+            print(type(input))
 
 # final outputs to stdout or a file with modified name
 def write_out():

@@ -31,8 +31,7 @@ def docker_runtime_multi(part):
         doc.source_lines[line_pos] = prepend + line
         print(doc.source_lines[line_pos])
 
-    else:
-        print("find the line that has docker and replace it")
+    else:       # tested - able to replace
         while "docker" not in doc.source_lines[line_pos]:   # stops when line contains docker
             line_pos += 1
         line = doc.source_lines[line_pos]
@@ -45,7 +44,6 @@ def docker_runtime_multi(part):
             index2 = index_temp if index_temp >  index1 - 1 and index_temp < index2 else index2
         line = line[:index1] + "docker" + line[index2:]
         doc.source_lines[line_pos] = line
-        print(doc.source_lines[line_pos])
 
 # helper function: add "docker = docker" to a call with a single line input section
 def docker_runtime_single(part):

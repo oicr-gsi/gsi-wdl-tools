@@ -71,11 +71,12 @@ def test():
                 print("placeholder, docker var needs to be replaced")
             else:
                 print("placeholder, docker var needs to be added")
-                index = line.rfind('}') - (line[index - 1] == ' ')  # move one back if " }"
+                index = line.rfind('}')
+                index -= (line[index - 1] == ' ')  # move one back if " }"
                 print(line[index-1:index+1])
                 if not part.inputs:
                     print("empty call, add inputs: docker = docker then exit")
-                    
+
             doc.source_lines[part.pos.line - 1] = line
 
 # final outputs to stdout or a file with modified name

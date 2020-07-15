@@ -36,6 +36,7 @@ def docker_runtime():
         # add image to all calls "docker = docker"
         # think about whether add comma
         for input in workflow.available_inputs:
+            print("placeholder")
             # all call inputs stored in available_inputs, prefixed with namespace
 
     # add image to all tasks

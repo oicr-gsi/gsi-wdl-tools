@@ -73,7 +73,7 @@ def test():
                 print("placeholder, docker var needs to be added")
                 index = line.rfind('}')
                 index -= (line[index - 1] == ' ')  # move one back if " }"
-                print(line[index-1:index+1])
+                print("." + line[index-1:index+1] + ".")
                 if not part.inputs:
                     print("empty call, add inputs: docker = docker then exit")
 

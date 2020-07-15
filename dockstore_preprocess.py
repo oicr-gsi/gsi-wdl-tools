@@ -62,8 +62,7 @@ def source_modules():
 # find all params that need to be replaced, for example:
 def test():
     for part in doc.workflow.body:
-        if type(part) == <class 'WDL.Tree.Call'>:
-            print("True")
+        print(isinstance(part, WDL.Tree.Call))
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -72,9 +71,9 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-# tabs_to_spaces(8)
+# tabs_to_spaces(8) # tested
 # docker_runtime()
 # pull_to_root()
-# source_modules()
+# source_modules()  # need testing after changes
 test()
-write_out()     # successfully creates / overwrites to the right destination
+write_out()     # tested

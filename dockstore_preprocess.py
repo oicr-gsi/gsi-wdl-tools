@@ -24,8 +24,8 @@ def docker_runtime_multi(part):
 
 # helper function: add "docker = docker" to a call with a single line input section
 def docker_runtime_single(part):
+    line = doc.source_lines[part.pos.line - 1]
     if not part.inputs:     # if input section empty, add "input: docker"
-        print("add 'inputs: docker'")
         index = line.rfind('}')
         if index > -1:              # if call line ends in {}, insert in-between
             line = line[:index] + " input: docker = docker " + line[index:]

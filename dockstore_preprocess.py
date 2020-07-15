@@ -62,7 +62,8 @@ def source_modules():
 # find all params that need to be replaced, for example:
 def test():
     for part in doc.workflow.body:
-        print(isinstance(part, WDL.Tree.Call))
+        if isinstance(part, WDL.Tree.Call):
+            print(part.name + ": " + part.inputs)
 
 # final outputs to stdout or a file with modified name
 def write_out():

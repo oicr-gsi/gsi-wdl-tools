@@ -50,8 +50,8 @@ def pull_to_root():
 
 # source .bashrc and load required modules for each task
 def source_modules():
-    for task in doc.tasks if doc.tasks:
-        for input in task.inputs if task.inputs:
+    for task in doc.tasks or []:
+        for input in task.inputs or []:
             index = doc.source_lines[input.pos.line - 1].find("String modules")
             if index > -1:  # if the task does use modules
                 position = task.command.pos.line

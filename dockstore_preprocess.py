@@ -20,31 +20,54 @@ def tabs_to_spaces(num_spaces):     # what about multiple tabs, or tab is in a s
 
 # helper function: add "docker = docker" to a call with a multi-line input section
 def docker_runtime_multi(part):
-    print("placeholder")
+    # either multi-line has docker or hasn't, but will not be empty (single line)
+    print(part.inputs)
+    line_pos = part.pos.line - 1
+    if "docker" not in part.inputs.keys():
+        print("add comma docker = to the beginning")
+        line_pos += 1   # first line with input vars
+        line = doc.source_lines[line_pos]
+        num_spaces = len(line) - len(line.lstrip(' '))
+        prepend = " " * num_spaces + "docker = docker,\n"
+        doc.source_lines[line_pos] = prepend + line
+        print(doc.source_lines[line_pos])
+
+    else:
+        print("find the line that has docker and replace it")
+        while "docker" not in doc.source_lines[line_pos]:   # stops when line contains docker
+            line_pos += 1
+        line = doc.source_lines[line_pos]
+        index1 = line.find("docker") + len("docker")
+        while line[index1] in " =":  # move forward until at start of assignment
+            index1 += 1
+
+        for c in "} ,":         # value ends in ,/ /} whichever is smallest but must > -1
+            index_temp = line[index1:].find(c) + index1
+            index2 = index_temp if index_temp >  index1 - 1 and index_temp < index2 else index2
+        line = line[:index1] + "docker" + line[index2:]
+        doc.source_lines[line_pos] = line
+        print(doc.source_lines[line_pos])
 
 # helper function: add "docker = docker" to a call with a single line input section
 def docker_runtime_single(part):
     line = doc.source_lines[part.pos.line - 1]
     if not part.inputs:     # if input section empty, add "input: docker"
-        index = len(line) - 1   # works - if call doesn't have {}, set index to end of line
+        index = len(line) - 1                   # if call doesn't have {}, set index to end of line
         line += " { input: docker = docker }"
 
-    elif "docker" not in part.inputs.keys():  # works - if input not empty but no docker var: add it
+    elif "docker" not in part.inputs.keys():    # if input not empty but no docker var: add it
         index = line.rfind('}')
-        index -= (line[index - 1] == ' ')  # move one back if " }"
+        index -= (line[index - 1] == ' ')       # move one back if " }"
         line = line[:index] + ", docker = docker" + line[index:]
 
-    else:  # if docker var exists, modify it
+    else:                                       # if docker var exists, modify it
         index1 = line.find("docker") + len("docker")
         while line[index1] in " =":  # move forward until at start of assignment
             index1 += 1
-        # value ends in ,/ /} whichever is smallest but must > -1
         index2 = len(line) - 1  # initialize at end of line
-        for c in "} ,":
+        for c in "} ,":         # value ends in ,/ /} whichever is smallest but must > -1
             index_temp = line[index1:].find(c) + index1
-            print("index_temp: " + str(index_temp))
             index2 = index_temp if index_temp >  index1 - 1 and index_temp < index2 else index2
-            print("index2: " + str(index2))
         line = line[:index1] + "docker" + line[index2:]
 
     doc.source_lines[part.pos.line - 1] = line
@@ -74,7 +97,9 @@ def docker_runtime():
 
     # add image to all tasks
     for task in doc.tasks:
-        if("docker" not in task.runtime):
+        if "docker" not in task.inputs:
+            print("add docker var to inputs")
+        if "docker" not in task.runtime:
             print("add 'docker: ~{docker}'")
 
 # pull all task variables to the workflow that calls them
@@ -87,10 +112,10 @@ def source_modules():
         for input in task.inputs or []:
             index = doc.source_lines[input.pos.line - 1].find("String modules")
             if index > -1:  # if the task does use modules
-                position = task.command.pos.line
-                num_spaces = doc.source_lines[position].rfind("  ") + 2
-                append = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 20; "} \n\n' + ' ' * num_spaces
-                doc.source_lines[position] = append + doc.source_lines[position][num_spaces:]
+                pos = task.command.pos.line
+                num_spaces = len(doc.source_lines[pos]) - len(doc.source_lines[pos].lstrip(' '))
+                prepend = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 20; "} \n\n' + ' ' * num_spaces
+                doc.source_lines[pos] = prepend + doc.source_lines[pos][num_spaces:]
 
 # find all params that need to be replaced
 def test():
@@ -109,7 +134,9 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-# tabs_to_spaces(8) # tested - able to convert tabs to spaces
+tabs_to_spaces(8)   # tested - able to convert tabs to spaces
+    # docker_runtime_multi(part)
+    # docker_runtime_single(part)   # tested - able to add docker to single-line call
 # docker_runtime()
 # pull_to_root()
 # source_modules()  # need testing: add lines if var exists, else don't

@@ -26,12 +26,8 @@ def docker_runtime_multi(part):
 def docker_runtime_single(part):
     line = doc.source_lines[part.pos.line - 1]
     if not part.inputs:     # if input section empty, add "input: docker"
-        index = line.rfind('}')
-        if index > -1:              # if call line ends in {}, insert in-between
-            line = line[:index] + " input: docker = docker " + line[index:]
-        else:
-            index = len(line) - 1   # if call doesn't have {}, set index to end of line
-            line += "{ input: docker = docker }"
+        index = len(line) - 1   # works - if call doesn't have {}, set index to end of line
+        line += " { input: docker = docker }"
 
     elif "docker" not in part.inputs.keys():  # works - if input not empty but no docker var: add it
         index = line.rfind('}')

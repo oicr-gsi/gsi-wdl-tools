@@ -9,7 +9,7 @@ parser.add_argument("--input-wdl-path", required=True)
 parser.add_argument("--docker-image", required=False)
 args = parser.parse_args()
 
-doc = WDL.load(args.input_wdl_path)         # loads the entire document
+doc = WDL.load(args.input_wdl_path)     # loads the entire document
 
 # converts all tabs to spaces for compatibility
 def tabs_to_spaces(num_spaces = 8):     # what about multiple tabs, or tab is in a string?
@@ -37,17 +37,16 @@ def find_indices(line, target):
 
 # helper function: add "docker = docker" to a call with a multi-line input section
 def docker_to_call_inputs_multiline(part):
-    # either multi-line has docker or hasn't, but will not be empty (single line)
+    # either multi-line has docker or hasn't, but will not be empty (that's single line)
     line_pos = part.pos.line - 1
-    if "docker" not in part.inputs.keys():
-        print("add comma docker = to the beginning")
+    if "docker" not in part.inputs.keys():  # add docker as new var
         line_pos += 2 if "input:" in doc.source_lines[line_pos + 1] else 1   # first line with input vars
         line = doc.source_lines[line_pos]
         num_spaces = len(line) - len(line.lstrip(' '))
         prepend = " " * num_spaces + "docker = docker,\n"
         doc.source_lines[line_pos] = prepend + line
 
-    else:
+    else:                                   # replace old docker var value
         while "docker" not in doc.source_lines[line_pos]:   # stops when line contains docker
             line_pos += 1
         line = doc.source_lines[line_pos]
@@ -100,6 +99,7 @@ def docker_to_workflow_inputs(num_spaces = 4):
             doc.source_lines[doc.workflow.inputs[0].pos.line - 1] = line
 
 # add docker to every task and workflow explicitly
+# ASSUMES NO COMMENTS IN INPUT, CALL, AND RUNTIME BLOCKS: UNTESTED
 def docker_runtime():
     # exit if user doesn't want to add a docker image
     if not args.docker_image:
@@ -120,13 +120,13 @@ def docker_runtime():
     # add image to all tasks
     for task in doc.tasks:
         if "docker" not in task.inputs:
-            print("add docker var to inputs")
+            print("placeholder - add docker var to inputs")
         if "docker" not in task.runtime:
-            print("add 'docker: ~{docker}'")
+            print("placeholder - add 'docker: ~{docker}'")
 
 # pull all task variables to the workflow that calls them
 def pull_to_root():
-    print("pull variables to root")
+    print("placeholder - pull variables to root")
 
 # source .bashrc and load required modules for each task
 def source_modules():
@@ -161,7 +161,7 @@ tabs_to_spaces()   # tested - convert tabs to spaces
 # docker_runtime()
     # docker_to_call_inputs_multiline(part)     # tested - add or convert docker for multi-line call
     # docker_to_call_inputs_single_line(part)   # tested - add or convert docker for single-line call
-docker_to_workflow_inputs(num_spaces = 4)     # NEED TESTING
+    # docker_to_workflow_inputs(num_spaces = 4) # tested - add or convert docker for workflow inputs
 # pull_to_root()
 # source_modules()  # tested - add source; module if "modules" var exists, else don't
 # test()

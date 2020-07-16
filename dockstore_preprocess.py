@@ -143,9 +143,9 @@ def source_modules():
 
 # TEST FUNCTION
 def test(num_spaces = 4):
-    line = '_  target = first, }'
+    line = '_  target = first }'
     index1, index2 = find_indices(line, target = "target")
-    line = line[:index1] + '"_addition_"' + line[index2:]
+    line = line[:index1] + 'xxx' + line[index2:]
     print(line)
 
 # final outputs to stdout or a file with modified name

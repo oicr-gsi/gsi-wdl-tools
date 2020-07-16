@@ -140,7 +140,7 @@ def docker_to_task_runtime(task):
             doc.source_lines[index] = line
 
         else:
-            index = task.runtime[task.runtime.keys()[0]].pos.line - 1
+            index = task.runtime[list(task.runtime.keys())[0]].pos.line - 1
             line = doc.source_lines[index]
             print(line)
             num_spaces = len(line) - len(line.lstrip(' '))

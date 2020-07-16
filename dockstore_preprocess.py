@@ -139,6 +139,7 @@ def test(num_spaces = 4):
                 line = doc.source_lines[input.pos.line - 1]
                 index1, index2 = find_indices(line = line, target = "docker")
                 line = line[:index1] + '"' + args.docker_image + '"' + line[index2:]
+                doc.source_lines[input.pos.line - 1] = line
 
         if not docker_in_inputs:    # then add it as the first input var
             line = doc.source_lines[doc.workflow.inputs[0].pos.line - 1]

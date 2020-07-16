@@ -150,7 +150,7 @@ def test(num_spaces = 4):
         if isinstance(body, WDL.Tree.Call):
             call_list.append(body)
         if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
-            todo_nodes.append(body)
+            todo_bodies.append(body)
 
     while todo_bodies:
         body = todo_bodies[0]           # pop the first element

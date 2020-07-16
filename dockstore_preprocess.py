@@ -157,7 +157,7 @@ def docker_to_task_runtime(task):   # all tested
             mode = "section",
             index = task.pos.line if not task.outputs else task.outputs[0].pos.line - 2,
             target = "docker",
-            insert = "~{docker}",
+            insert = '"~{docker}"',
             section = "runtime")
 
     else:
@@ -167,7 +167,7 @@ def docker_to_task_runtime(task):   # all tested
                 mode = "replace",
                 index = task.runtime[target].pos.line - 1,
                 target = "docker",
-                insert = "~{docker}")
+                insert = '"~{docker}"')
 
         else:
             docker_to_task_or_param(
@@ -175,7 +175,7 @@ def docker_to_task_runtime(task):   # all tested
                 mode = "add line",
                 index = task.runtime[list(task.runtime.keys())[0]].pos.line - 1,
                 target = "docker",
-                insert = "~{docker}")
+                insert = '"~{docker}"')
 
 # add docker parameter meta to workflow or task
 def docker_param_meta(body):

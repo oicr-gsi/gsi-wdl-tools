@@ -242,7 +242,7 @@ def pull_to_root():
 
     # read from pull_json for task name: var name
     # note: if task or var name doesn't exist, then gets ignored
-    pull = json.load(args.pull_json)
+    pull = json.loads(args.pull_json.read())
     print(pull.keys())
 
 # source .bashrc and load required modules for each task

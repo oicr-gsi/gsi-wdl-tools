@@ -133,20 +133,17 @@ def docker_to_task_runtime(task):
 
     else:
         if "docker" in task.runtime.keys():
-            print("docker in runtime")
             index = task.runtime["docker"].pos.line - 1
             line = doc.source_lines[index]
-            print(line)
             index1, index2 = find_indices(line = line, target = "docker:")
             line = line[:index1] + '"~{docker}"' + line[index2:]
             doc.source_lines[index] = line
-            print(line)
+
         else:
-            print("placeholder need to add docker")
-            # line = doc.source_lines[body.inputs[0].pos.line - 1]
-            # num_spaces = len(line) - len(line.lstrip(' '))
-            # line = ' ' * num_spaces + 'String docker = "' + args.docker_image + '"\n' + line
-            # doc.source_lines[body.inputs[0].pos.line - 1] = line
+            line = doc.source_lines[task.runtime[0].pos.line - 1]
+            num_spaces = len(line) - len(line.lstrip(' '))
+            line = ' ' * num_spaces + 'docker: "~{docker}"\n' + line
+            doc.source_lines[task.runtime[0].pos.line - 1] = line
 
 # add docker to every task and workflow explicitly
 # ASSUMES NO COMMENTS IN INPUT, CALL, AND RUNTIME BLOCKS: UNTESTED

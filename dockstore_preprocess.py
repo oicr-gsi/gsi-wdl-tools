@@ -126,7 +126,7 @@ def docker_to_workflow_or_task_inputs(body, num_spaces = 4):    # where body is 
     # index - the index of the source line to change
     # insert - what to replace the value with
 def docker_to_task_or_param(body, mode, index, insert, target = "docker", section = "runtime"):
-    if mode = "section":
+    if mode == "section":
         line = doc.source_lines[index]
         num_spaces = len(line) - len(line.lstrip(' '))
         line = ' ' * num_spaces + section + ' {\n' + \
@@ -134,13 +134,13 @@ def docker_to_task_or_param(body, mode, index, insert, target = "docker", sectio
                ' ' * num_spaces + '}\n\n' + line
         doc.source_lines[index] = line
 
-    if mode = "replace":
+    if mode == "replace":
         line = doc.source_lines[index]
         index1, index2 = find_indices(line = line, target = (target + ":"))
         line = line[:index1] + insert + line[index2:]
         doc.source_lines[index] = line
 
-    if mode = "add line":
+    if mode == "add line":
         line = doc.source_lines[index]
         num_spaces = len(line) - len(line.lstrip(' '))
         line = ' ' * num_spaces + target + ': ' + insert + '\n' + line

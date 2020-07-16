@@ -134,7 +134,7 @@ def test(num_spaces = 4):
 
     else:   # if inputs section does exist
         for input in doc.workflow.inputs:
-            print(", ".join([input.type, input.name, input.expr]))
+            print(", ".join([str(input.type), input.name, str(input.expr)]))
 
         # if "docker" not in doc.workflow.inputs:
         #     line = doc.source_lines[doc.workflow.inputs.pos.line - 1]

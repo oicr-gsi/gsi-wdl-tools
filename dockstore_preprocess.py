@@ -154,7 +154,7 @@ def docker_to_task_runtime(task):   # all tested
     if not task.runtime:
         docker_to_task_or_param(
             body = task,
-            mode = "replace",
+            mode = "section",
             index = task.pos.line if not task.outputs else task.outputs[0].pos.line - 2,
             target = "docker",
             insert = "~{docker}",
@@ -182,7 +182,7 @@ def docker_param_meta(body):
     if not body.parameter_meta:
         docker_to_task_or_param(
             body = body,
-            mode = "replace",
+            mode = "section",
             index = body.pos.line if not body.outputs else body.outputs[0].pos.line - 2,
             target = "docker",
             insert = '"Docker container to run the workflow in"',

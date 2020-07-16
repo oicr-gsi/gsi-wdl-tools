@@ -143,10 +143,13 @@ def source_modules():
 
 # TEST FUNCTION
 def test(num_spaces = 4):
-    line = '_  target = "inside, }string", }'
-    index1, index2 = find_indices(line, target = "target")
-    line = line[:index1] + 'xxx' + line[index2:]
-    print(line)
+    for part in doc.workflow.body:      # tested - able to delegate multi- and single insert
+        if isinstance(part, WDL.Tree.Call):
+            line = doc.source_lines[part.pos.line - 1]
+            if '{' in line and '}' not in line:
+                docker_runtime_multi(part)
+            else:
+                docker_runtime_single(part)
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -155,13 +158,13 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-tabs_to_spaces()   # tested - able to convert tabs to spaces
-# find_indices(line, target)    # NEED TESTING
+tabs_to_spaces()   # tested - convert tabs to spaces
+# find_indices(line, target)    # tested - isolate start and end of target's expression in line
 # docker_runtime()
-    # docker_runtime_multi(part)    # NEED TESTING MODIFY - able to add or convert docker for multi-line call
-    # docker_runtime_single(part)   # NEED TESTING MODIFY - able to add or convert docker for single-line call
+    # docker_runtime_multi(part)    # NEED TESTING MODIFY - add or convert docker for multi-line call
+    # docker_runtime_single(part)   # NEED TESTING MODIFY - add or convert docker for single-line call
     # docker_to_workflow_inputs(num_spaces = 4)     # NEED TESTING
 # pull_to_root()
 # source_modules()  # tested - add source; module if "modules" var exists, else don't
 test()
-# write_out()     # tested - able to write out
+# write_out()     # tested - write out

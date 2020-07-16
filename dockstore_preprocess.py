@@ -73,7 +73,7 @@ def docker_to_call_inputs_single_line(call):
     doc.source_lines[call.pos.line - 1] = line
 
 # add String docker to workflow inputs
-def docker_to_workflow_or_task_inputs(num_spaces = 4, body):    # where body is a workflow or task
+def docker_to_workflow_or_task_inputs(body, num_spaces = 4):    # where body is a workflow or task
     if not body.inputs:
         line = doc.source_lines[body.pos.line - 1]
         line += '\n' + \

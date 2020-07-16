@@ -159,12 +159,12 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 tabs_to_spaces()   # tested - convert tabs to spaces
-# find_indices(line, target)    # tested - isolate start and end of target's expression in line
+# find_indices(line, target)    # tested - isolate start and end of target's expression, special if string
 # docker_runtime()
-    # docker_to_call_inputs_multiline(part)    # NEED TESTING MODIFY - add or convert docker for multi-line call
-    # docker_to_call_inputs_single_line(part)   # NEED TESTING MODIFY - add or convert docker for single-line call
-    # docker_to_workflow_inputs(num_spaces = 4)     # NEED TESTING
+    # docker_to_call_inputs_multiline(part)     # tested - add or convert docker for multi-line call
+    # docker_to_call_inputs_single_line(part)   # tested - add or convert docker for single-line call
+docker_to_workflow_inputs(num_spaces = 4)     # NEED TESTING
 # pull_to_root()
 # source_modules()  # tested - add source; module if "modules" var exists, else don't
-test()
+# test()
 write_out()     # tested - write out

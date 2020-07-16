@@ -139,7 +139,7 @@ def test(num_spaces = 4):
                 docker_in_inputs = True
                 print(doc.source_lines[input.pos.line - 1])
         if not docker_in_inputs:
-            line = doc.source_lines[doc.workflow.inputs[0].pos.line]
+            line = doc.source_lines[doc.workflow.inputs[0].pos.line - 1]
             print(line)
 
 

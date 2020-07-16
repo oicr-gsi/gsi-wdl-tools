@@ -12,7 +12,7 @@ args = parser.parse_args()
 doc = WDL.load(args.input_wdl_path)         # loads the entire document
 
 # converts all tabs to spaces for compatibility
-def tabs_to_spaces(num_spaces):     # what about multiple tabs, or tab is in a string?
+def tabs_to_spaces(num_spaces = 8):     # what about multiple tabs, or tab is in a string?
     for index in range(len(doc.source_lines)):
         line = doc.source_lines[index].lstrip('\t')     # strips leading tabs
         num_tabs = len(doc.source_lines[index]) - len(line)     # how many tabs were stripped away
@@ -112,12 +112,20 @@ def source_modules():
                 doc.source_lines[pos] = prepend + doc.source_lines[pos][num_spaces:]
 
 # find all params that need to be replaced
-def test():
+def test(num_spaces = 4):
     if not doc.workflow.inputs:
+        line =
+        line += '\n' + \
+                ' ' * num_spaces + 'inputs {\n' + \
+                ' ' * num_spaces * 2 + 'String docker = "' + args.docker_image + '"\n' + \
+                ' ' * num_spaces + '}'
+        doc.source_lines[doc.workflow.pos.line - 1] = line
         print(doc.source_lines[doc.workflow.pos.line - 1])
+
     else:
         if "docker" not in doc.workflow.inputs:
             print("append inputs with docker")
+
         else:
             print("replace inputs docker")
 
@@ -128,7 +136,7 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-tabs_to_spaces(8)   # tested - able to convert tabs to spaces
+tabs_to_spaces()   # tested - able to convert tabs to spaces
 # docker_runtime()
     # docker_runtime_multi(part)    # tested - able to add or convert docker for multi-line call
     # docker_runtime_single(part)   # tested - able to add or convert docker for single-line call

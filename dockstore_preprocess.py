@@ -3,6 +3,7 @@
 import argparse
 import re
 import WDL
+import json
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--input-wdl-path", required=True)
@@ -149,7 +150,6 @@ def docker_to_task_or_param(body, mode, index, insert, target = "docker", sectio
         line = ' ' * num_spaces + target + ': ' + insert + '\n' + line
         doc.source_lines[index] = line
 
-
 # add docker to task runtime or replace existing var
 def docker_to_task_runtime(task, target = "docker"):   # all tested
     if not task.runtime:
@@ -242,7 +242,7 @@ def pull_to_root():
 
     # read from pull_json for task name: var name
     # note: if task or var name doesn't exist, then gets ignored
-    pull = WDL.values_from_json(args.pull_json).values_json
+    pull = list(json.loads(args.pull_json))
     print(pull)
 
 # source .bashrc and load required modules for each task
@@ -258,10 +258,7 @@ def source_modules():
 
 # TEST FUNCTION
 def test():
-    docker_param_meta(doc.workflow, target = "docker")
-    for task in doc.tasks:
-        docker_to_task_runtime(task, target = "docker")
-        docker_param_meta(task, target = "docker")
+    print("placeholder test")
 
 # final outputs to stdout or a file with modified name
 def write_out():

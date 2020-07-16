@@ -140,11 +140,11 @@ def docker_runtime():
             docker_to_call_inputs_single_line(call)
 
     # add image to all tasks
-    for task in doc.tasks:
-        if "docker" not in task.inputs:
-            print("placeholder - add docker var to inputs")
-        if "docker" not in task.runtime:
-            print("placeholder - add 'docker: ~{docker}'")
+    # for task in doc.tasks:
+    #     if "docker" not in task.inputs:
+    #         print("placeholder - add docker var to inputs")
+    #     if "docker" not in task.runtime:
+    #         print("placeholder - add 'docker: ~{docker}'")
 
 # pull all task variables to the workflow that calls them
 def pull_to_root():

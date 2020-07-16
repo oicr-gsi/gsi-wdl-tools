@@ -190,12 +190,13 @@ def docker_param_meta(body, target = "docker"):
 
     else:
         if target in body.parameter_meta.keys():
-            docker_to_task_or_param(
-                body = body,
-                mode = "replace",
-                index = body.parameter_meta[target].pos.line - 1,
-                target = target,
-                insert = '"Docker container to run the workflow in"')
+            print(body.parameter_meta[target])
+            # docker_to_task_or_param(
+            #     body = body,
+            #     mode = "replace",
+            #     index = body.parameter_meta[target].pos.line - 1,
+            #     target = target,
+            #     insert = '"Docker container to run the workflow in"')
 
         else:
             print(body.parameter_meta[list(body.parameter_meta.keys())[0]])

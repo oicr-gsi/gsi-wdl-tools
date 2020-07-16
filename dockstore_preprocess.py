@@ -135,10 +135,10 @@ def test(num_spaces = 4):
     else:   # if inputs section does exist
         docker_in_inputs = False
         for input in doc.workflow.inputs:
-            if "String docker" in input.name:
+            if "docker" in input.name:
                 docker_in_inputs = True
                 print(doc.source_lines[input.pos.line - 1])
-        if not docker_in_inputs:
+        if not docker_in_inputs:    # then add it as the first input var
             line = doc.source_lines[doc.workflow.inputs[0].pos.line - 1]
             num_spaces = len(line) - len(line.lstrip(' '))
             line = ' ' * num_spaces + 'String docker = "' + args.docker_image + '"\n' + line

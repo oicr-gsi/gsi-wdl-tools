@@ -123,12 +123,13 @@ def docker_to_workflow_or_task_inputs(body, num_spaces = 4):    # where body is 
 # add docker to task runtime or replace existing var
 def docker_to_task_runtime(task):
     if not task.runtime:
-        line = doc.source_lines[task.pos.line] if not task.outputs else doc.source_lines[task.outputs[0].pos.line - 1]
+        index = task.pos.line if not task.outputs else task.outputs[0].pos.line - 1
+        line = doc.source_lines[index]
         num_spaces = len(line) - len(line.lstrip(' '))
         line += ' ' * num_spaces + 'runtime {\n' + \
                 ' ' * num_spaces * 2 + 'docker: "~{docker}"\n' + \
                 ' ' * num_spaces + '}\n\n'
-        doc.source_lines[body.pos.line - 1] = line
+        doc.source_lines[index] = line
 
     else:
         print("modify existing runtime section")

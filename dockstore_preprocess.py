@@ -117,7 +117,7 @@ def docker_runtime():
             else:
                 docker_to_call_inputs_single_line(part)
 
-        # @@@@@@@ FIND CALLS WITHIN SCATTER AND CONDITIONALS
+    # @@@@@@@ RECURSIVELY FIND CALLS WITHIN SCATTER AND CONDITIONALS
 
     # add image to all tasks
     for task in doc.tasks:
@@ -144,13 +144,25 @@ def source_modules():
 # TEST FUNCTION
 def test(num_spaces = 4):
     # change inputs for calls within scatters and conditionals
-    for part in doc.workflow.body:      # tested - able to delegate multi- and single insert
-        if isinstance(part, WDL.Tree.Scatter):
-            # print(doc.source_lines[part.pos.line - 1])
-            print(str(part.variable))
-            for body in part.body:
-                print(doc.source_lines[body.pos.line - 1] + " @@ type: " + str(type(body)))
-                #for node in body.WorkflowNode:
+    call_list = []      # list of call objects found
+    todo_bodies = []     # list of scatters and conditions to search in
+    for body in doc.workflow.body:      # tested - able to delegate multi- and single insert
+        if isinstance(body, WDL.Tree.Call):
+            call_list.append(body)
+        if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
+            todo_nodes.append(body)
+
+    while todo_bodies:
+        body = todo_bodies[0]           # pop the first element
+        todo_bodies = todo_bodies[1:]
+
+        if isinstance(body, WDL.Tree.Call):
+            call_list.append(body)
+        if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
+            todo_bodies.extend(body.body)       # add sub-content of the scatter or conditional to todo
+
+    for call in call_list:
+        print(doc.source_lines[call.pos.line - 1])      # verify that all calls were found
 
 # final outputs to stdout or a file with modified name
 def write_out():

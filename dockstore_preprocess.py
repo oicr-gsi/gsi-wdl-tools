@@ -141,7 +141,7 @@ def test(num_spaces = 4):
         if not docker_in_inputs:
             line = doc.source_lines[doc.workflow.inputs[0].pos.line - 1]
             num_spaces = len(line) - len(line.lstrip(' '))
-            line += '\n' + ' ' * num_spaces + 'String docker = "' + args.docker_image + '"'
+            line = ' ' * num_spaces + 'String docker = "' + args.docker_image + '"\n' + line
             doc.source_lines[doc.workflow.pos.line - 1] = line
             print(doc.source_lines[doc.workflow.pos.line - 1])
 

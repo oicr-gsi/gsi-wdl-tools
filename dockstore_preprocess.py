@@ -114,7 +114,7 @@ def source_modules():
 # find all params that need to be replaced
 def test():
     if not doc.workflow.inputs:
-        print(doc.source_lines[doc.workflow.inputs.pos.line - 1])
+        print(doc.source_lines[doc.workflow.pos.line - 1])
     else:
         if "docker" not in doc.workflow.inputs:
             print("append inputs with docker")

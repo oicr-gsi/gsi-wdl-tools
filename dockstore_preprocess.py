@@ -141,13 +141,10 @@ def source_modules():
 
 # TEST FUNCTION
 def test(num_spaces = 4):
+    # change inputs for calls within scatters
     for part in doc.workflow.body:      # tested - able to delegate multi- and single insert
         if isinstance(part, WDL.Tree.Call):
-            line = doc.source_lines[part.pos.line - 1]
-            if '{' in line and '}' not in line:
-                docker_to_call_inputs_multiline(part)
-            else:
-                docker_to_call_inputs_single_line(part)
+            print(doc.source_lines[part.pos.line - 1])
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -164,5 +161,5 @@ tabs_to_spaces()   # tested - convert tabs to spaces
     # docker_to_workflow_inputs(num_spaces = 4) # tested - add or convert docker for workflow inputs
 # pull_to_root()
 # source_modules()  # tested - add source; module if "modules" var exists, else don't
-# test()
+test()
 write_out()     # tested - write out

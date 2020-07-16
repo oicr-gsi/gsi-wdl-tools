@@ -73,13 +73,8 @@ def docker_runtime_single(part):
 
     doc.source_lines[part.pos.line - 1] = line
 
-# add docker to every task and workflow explicitly
-def docker_runtime():
-    # exit if user doesn't want to add a docker image
-    if not args.docker_image:
-        return
-
-    # add image to workflow inputs
+# add String docker to workflow inputs
+def docker_to_workflow_inputs(num_spaces = 4):
     if not doc.workflow.inputs:
         line = doc.source_lines[doc.workflow.pos.line - 1]
         line += '\n' + \
@@ -88,12 +83,32 @@ def docker_runtime():
                 ' ' * num_spaces + '}\n'
         doc.source_lines[doc.workflow.pos.line - 1] = line
         print(doc.source_lines[doc.workflow.pos.line - 1])
-    else:
-        if "docker" not in doc.workflow.inputs:
-            print("append inputs with docker")
 
-        else:
-            print("replace inputs docker")
+    else:   # if inputs section does exist
+        docker_in_inputs = False
+        for input in doc.workflow.inputs:
+            if "docker" in input.name:
+                docker_in_inputs = True
+                line = doc.source_lines[input.pos.line - 1]
+                index1, index2 = find_indices(line = line, target = "docker")
+                line = line[:index1] + '"' + args.docker_image + '"' + line[index2:]
+                doc.source_lines[input.pos.line - 1] = line
+
+        if not docker_in_inputs:    # then add it as the first input var
+            line = doc.source_lines[doc.workflow.inputs[0].pos.line - 1]
+            num_spaces = len(line) - len(line.lstrip(' '))
+            line = ' ' * num_spaces + 'String docker = "' + args.docker_image + '"\n' + line
+            doc.source_lines[doc.workflow.pos.line - 1] = line
+            print(doc.source_lines[doc.workflow.pos.line - 1])
+
+# add docker to every task and workflow explicitly
+def docker_runtime():
+    # exit if user doesn't want to add a docker image
+    if not args.docker_image:
+        return
+
+    # add image to workflow inputs
+    docker_to_workflow_inputs(num_spaces = 4)
 
     # add image to all task calls
     for part in doc.workflow.body:      # tested - able to delegate multi- and single insert
@@ -128,31 +143,9 @@ def source_modules():
 
 # TEST FUNCTION
 def test(num_spaces = 4):
-    if not doc.workflow.inputs:
-        line = doc.source_lines[doc.workflow.pos.line - 1]
-        line += '\n' + \
-                ' ' * num_spaces + 'inputs {\n' + \
-                ' ' * num_spaces * 2 + 'String docker = "' + args.docker_image + '"\n' + \
-                ' ' * num_spaces + '}\n'
-        doc.source_lines[doc.workflow.pos.line - 1] = line
-        print(doc.source_lines[doc.workflow.pos.line - 1])
-
-    else:   # if inputs section does exist
-        docker_in_inputs = False
-        for input in doc.workflow.inputs:
-            if "docker" in input.name:
-                docker_in_inputs = True
-                line = doc.source_lines[input.pos.line - 1]
-                index1, index2 = find_indices(line = line, target = "docker")
-                line = line[:index1] + '"' + args.docker_image + '"' + line[index2:]
-                doc.source_lines[input.pos.line - 1] = line
-
-        if not docker_in_inputs:    # then add it as the first input var
-            line = doc.source_lines[doc.workflow.inputs[0].pos.line - 1]
-            num_spaces = len(line) - len(line.lstrip(' '))
-            line = ' ' * num_spaces + 'String docker = "' + args.docker_image + '"\n' + line
-            doc.source_lines[doc.workflow.pos.line - 1] = line
-            print(doc.source_lines[doc.workflow.pos.line - 1])
+    line = '_  target = first, }'
+    find_indices(line, target = "target")
+    line = line[:index1] + '"_addition_"' + line[index2:]
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -166,6 +159,7 @@ tabs_to_spaces()   # tested - able to convert tabs to spaces
 # docker_runtime()
     # docker_runtime_multi(part)    # NEED TESTING MODIFY - able to add or convert docker for multi-line call
     # docker_runtime_single(part)   # NEED TESTING MODIFY - able to add or convert docker for single-line call
+    # docker_to_workflow_inputs(num_spaces = 4)     # NEED TESTING
 # pull_to_root()
 # source_modules()  # tested - add source; module if "modules" var exists, else don't
 test()

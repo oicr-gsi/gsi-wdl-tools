@@ -198,12 +198,13 @@ def docker_param_meta(body, target = "docker"):
                 insert = '"Docker container to run the workflow in"')
 
         else:
-            docker_to_task_or_param(
-                body = body,
-                mode = "add line",
-                index = body.parameter_meta[list(body.parameter_meta.keys())[0]].pos.line - 1,
-                target = target,
-                insert = '"Docker container to run the workflow in"')
+            print(body.parameter_meta[list(body.parameter_meta.keys())[0]])
+            # docker_to_task_or_param(
+            #     body = body,
+            #     mode = "add line",
+            #     index = body.parameter_meta[list(body.parameter_meta.keys())[0]].pos.line - 1,
+            #     target = target,
+            #     insert = '"Docker container to run the workflow in"')
 
 # add docker to every task and workflow explicitly
 def docker_runtime():

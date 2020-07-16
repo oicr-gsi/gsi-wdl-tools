@@ -35,6 +35,28 @@ def find_indices(line, target):
         index2 = index_temp if index_temp > index1 - 1 and index_temp < index2 else index2
     return index1, index2
 
+# find all nested calls within a workflow
+def find_calls():
+    # change inputs for calls within scatters and conditionals
+    call_list = []      # list of call objects found
+    todo_bodies = []     # list of scatters and conditions to search in
+    for body in doc.workflow.body:      # tested - able to delegate multi- and single insert
+        if isinstance(body, WDL.Tree.Call):
+            call_list.append(body)
+        if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
+            todo_bodies.append(body)
+
+    while todo_bodies:
+        body = todo_bodies[0]           # pop the first element
+        todo_bodies = todo_bodies[1:]
+
+        if isinstance(body, WDL.Tree.Call):
+            call_list.append(body)
+        if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
+            todo_bodies.extend(body.body)       # add sub-content of the scatter or conditional to todo
+
+    return call_list
+
 # helper function: add "docker = docker" to a call with a multi-line input section
 def docker_to_call_inputs_multiline(call):
     # either multi-line has docker or hasn't, but will not be empty (that's single line)
@@ -98,32 +120,31 @@ def docker_to_workflow_or_task_inputs(body, num_spaces = 4):    # where body is 
             line = ' ' * num_spaces + 'String docker = "' + args.docker_image + '"\n' + line
             doc.source_lines[body.inputs[0].pos.line - 1] = line
 
-# find all nested calls within a workflow
-def find_calls():
-    # change inputs for calls within scatters and conditionals
-    call_list = []      # list of call objects found
-    todo_bodies = []     # list of scatters and conditions to search in
-    for body in doc.workflow.body:      # tested - able to delegate multi- and single insert
-        if isinstance(body, WDL.Tree.Call):
-            call_list.append(body)
-        if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
-            todo_bodies.append(body)
-
-    while todo_bodies:
-        body = todo_bodies[0]           # pop the first element
-        todo_bodies = todo_bodies[1:]
-
-        if isinstance(body, WDL.Tree.Call):
-            call_list.append(body)
-        if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
-            todo_bodies.extend(body.body)       # add sub-content of the scatter or conditional to todo
-
-    return call_list
-
 # add docker to task runtime or replace existing var
 def docker_to_task_runtime(task):
-    if "docker" not in task.runtime.keys():
-        print(doc.source_lines[task.pos.line - 1])
+    if not task.runtime:
+        line = doc.source_lines[task.pos.line] if not task.outputs else doc.source_lines[task.outputs.pos.line - 1]
+        num_spaces = len(line) - len(line.lstrip(' '))
+        line += ' ' * num_spaces + 'runtime {\n' + \
+                ' ' * num_spaces * 2 + 'docker: "~{docker}"\n' + \
+                ' ' * num_spaces + '}\n\n'
+        doc.source_lines[body.pos.line - 1] = line
+
+    else:
+        # docker_in_inputs = False
+        # for input in body.inputs:  # replace existing docker var
+        #     if "docker" in input.name:
+        #         docker_in_inputs = True
+        #         line = doc.source_lines[input.pos.line - 1]
+        #         index1, index2 = find_indices(line=line, target="docker")
+        #         line = line[:index1] + '"' + args.docker_image + '"' + line[index2:]
+        #         doc.source_lines[input.pos.line - 1] = line
+        #
+        # if not docker_in_inputs:  # add new docker var
+        #     line = doc.source_lines[body.inputs[0].pos.line - 1]
+        #     num_spaces = len(line) - len(line.lstrip(' '))
+        #     line = ' ' * num_spaces + 'String docker = "' + args.docker_image + '"\n' + line
+        #     doc.source_lines[body.inputs[0].pos.line - 1] = line
 
 # add docker to every task and workflow explicitly
 # ASSUMES NO COMMENTS IN INPUT, CALL, AND RUNTIME BLOCKS: UNTESTED
@@ -148,6 +169,8 @@ def docker_runtime():
     for task in doc.tasks:
         docker_to_workflow_or_task_inputs(body=task)
         docker_to_task_runtime(task = task)
+
+    # @@@ TODO: ADD TO ALL PARAM META IN WORKFLOW AND TASKS
 
 # pull all task variables to the workflow that calls them
 def pull_to_root():

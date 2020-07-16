@@ -18,6 +18,17 @@ def tabs_to_spaces(num_spaces = 8):     # what about multiple tabs, or tab is in
         num_tabs = len(doc.source_lines[index]) - len(line)     # how many tabs were stripped away
         doc.source_lines[index] = " " * num_spaces * num_tabs + line
 
+# find index1 and index2 around a keyword
+def find_indices(line, target):
+    index1 = line.find(target) + len(target)
+    while line[index1] in " =":  # move forward until at start of assignment
+        index1 += 1
+    index2 = len(line) - 1  # initialize at end of line
+    for c in "} ,":  # value ends in ,/ /} whichever is smallest but must > -1
+        index_temp = line[index1:].find(c) + index1
+        index2 = index_temp if index_temp > index1 - 1 and index_temp < index2 else index2
+    return index1, index2
+
 # helper function: add "docker = docker" to a call with a multi-line input section
 def docker_runtime_multi(part):
     # either multi-line has docker or hasn't, but will not be empty (single line)
@@ -34,13 +45,7 @@ def docker_runtime_multi(part):
         while "docker" not in doc.source_lines[line_pos]:   # stops when line contains docker
             line_pos += 1
         line = doc.source_lines[line_pos]
-        index1 = line.find("docker") + len("docker")
-        while line[index1] in " =":  # move forward until at start of assignment
-            index1 += 1
-        index2 = len(line) - 1  # initialize at end of line
-        for c in "} ,":         # value ends in ,/ /} whichever is smallest but must > -1
-            index_temp = line[index1:].find(c) + index1
-            index2 = index_temp if index_temp >  index1 - 1 and index_temp < index2 else index2
+        index1, index2 = find_indices(line = line, target = "docker")
         line = line[:index1] + "docker" + line[index2:]
         doc.source_lines[line_pos] = line
 
@@ -57,19 +62,13 @@ def docker_runtime_single(part):
         line = line[:index] + ", docker = docker" + line[index:]
 
     else:                                       # if docker var exists, modify it
-        index1 = line.find("docker") + len("docker")
-        while line[index1] in " =":  # move forward until at start of assignment
-            index1 += 1
-        index2 = len(line) - 1  # initialize at end of line
-        for c in "} ,":         # value ends in ,/ /} whichever is smallest but must > -1
-            index_temp = line[index1:].find(c) + index1
-            index2 = index_temp if index_temp >  index1 - 1 and index_temp < index2 else index2
+        index1, index2 = find_indices(line = line, target = "docker")
         line = line[:index1] + "docker" + line[index2:]
 
     doc.source_lines[part.pos.line - 1] = line
 
 # add docker to every task and workflow explicitly
-def docker_runtime(num_spaces = 4):
+def docker_runtime():
     # exit if user doesn't want to add a docker image
     if not args.docker_image:
         return
@@ -108,7 +107,7 @@ def docker_runtime(num_spaces = 4):
 
 # pull all task variables to the workflow that calls them
 def pull_to_root():
-    print("placeholder")
+    print("pull variables to root")
 
 # source .bashrc and load required modules for each task
 def source_modules():
@@ -137,29 +136,16 @@ def test(num_spaces = 4):
         for input in doc.workflow.inputs:
             if "docker" in input.name:
                 docker_in_inputs = True
-                print(doc.source_lines[input.pos.line - 1])
+                line = doc.source_lines[input.pos.line - 1]
+                index1, index2 = find_indices(line = line, target = "docker")
+                line = line[:index1] + '"' + args.docker_image + '"' + line[index2:]
+
         if not docker_in_inputs:    # then add it as the first input var
             line = doc.source_lines[doc.workflow.inputs[0].pos.line - 1]
             num_spaces = len(line) - len(line.lstrip(' '))
             line = ' ' * num_spaces + 'String docker = "' + args.docker_image + '"\n' + line
             doc.source_lines[doc.workflow.pos.line - 1] = line
             print(doc.source_lines[doc.workflow.pos.line - 1])
-
-
-
-
-        #     while "docker" not in doc.source_lines[line_pos]:  # stops when line contains docker
-        #         line_pos += 1
-        #     line = doc.source_lines[line_pos]
-        #     index1 = line.find("docker") + len("docker")
-        #     while line[index1] in " =":  # move forward until at start of assignment
-        #         index1 += 1
-        #     index2 = len(line) - 1  # initialize at end of line
-        #     for c in "} ,":  # value ends in ,/ /} whichever is smallest but must > -1
-        #         index_temp = line[index1:].find(c) + index1
-        #         index2 = index_temp if index_temp > index1 - 1 and index_temp < index2 else index2
-        #     line = line[:index1] + "docker" + line[index2:]
-        #     doc.source_lines[line_pos] = line
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -169,10 +155,11 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 tabs_to_spaces()   # tested - able to convert tabs to spaces
+# find_indices(line, target)    # NEED TESTING
 # docker_runtime()
-    # docker_runtime_multi(part)    # tested - able to add or convert docker for multi-line call
-    # docker_runtime_single(part)   # tested - able to add or convert docker for single-line call
+    # docker_runtime_multi(part)    # NEED TESTING MODIFY - able to add or convert docker for multi-line call
+    # docker_runtime_single(part)   # NEED TESTING MODIFY - able to add or convert docker for single-line call
 # pull_to_root()
-source_modules()  # tested - add source; module if "modules" var exists, else don't
+# source_modules()  # tested - add source; module if "modules" var exists, else don't
 test()
 write_out()     # tested - able to write out

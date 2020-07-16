@@ -144,8 +144,9 @@ def source_modules():
 # TEST FUNCTION
 def test(num_spaces = 4):
     line = '_  target = first, }'
-    find_indices(line, target = "target")
+    index1, index2 = find_indices(line, target = "target")
     line = line[:index1] + '"_addition_"' + line[index2:]
+    print(line)
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -163,4 +164,4 @@ tabs_to_spaces()   # tested - able to convert tabs to spaces
 # pull_to_root()
 # source_modules()  # tested - add source; module if "modules" var exists, else don't
 test()
-write_out()     # tested - able to write out
+# write_out()     # tested - able to write out

@@ -125,6 +125,7 @@ def docker_to_task_runtime(task):
     if not task.runtime:
         index = task.pos.line if not task.outputs else task.outputs[0].pos.line - 1
         line = doc.source_lines[index]
+        print(line)
         num_spaces = len(line) - len(line.lstrip(' '))
         line += ' ' * num_spaces + 'runtime {\n' + \
                 ' ' * num_spaces * 2 + 'docker: "~{docker}"\n' + \

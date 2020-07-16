@@ -201,7 +201,7 @@ def docker_param_meta(body, target = "docker"):
             docker_to_task_or_param(
                 body = body,
                 mode = "add line",
-                index = body.parameter_meta[list(body.parameter_meta.keys())[0].pos.line - 1],
+                index = body.parameter_meta[list(body.parameter_meta.keys())[0]].pos.line - 1,
                 target = target,
                 insert = '"Docker container to run the workflow in"')
 

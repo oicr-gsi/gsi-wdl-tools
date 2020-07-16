@@ -123,13 +123,13 @@ def docker_to_workflow_or_task_inputs(body, num_spaces = 4):    # where body is 
 # add docker to task runtime or replace existing var
 def docker_to_task_runtime(task):
     if not task.runtime:
-        index = task.pos.line if not task.outputs else task.outputs[0].pos.line - 1
+        index = task.pos.line if not task.outputs else task.outputs[0].pos.line - 2
         line = doc.source_lines[index]
         print(line)
         num_spaces = len(line) - len(line.lstrip(' '))
-        line += ' ' * num_spaces + 'runtime {\n' + \
-                ' ' * num_spaces * 2 + 'docker: "~{docker}"\n' + \
-                ' ' * num_spaces + '}\n\n'
+        line = ' ' * num_spaces + 'runtime {\n' + \
+               ' ' * num_spaces * 2 + 'docker: "~{docker}"\n' + \
+               ' ' * num_spaces + '}\n\n' + line
         doc.source_lines[index] = line
 
     else:

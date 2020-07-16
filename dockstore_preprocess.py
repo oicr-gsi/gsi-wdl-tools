@@ -82,7 +82,6 @@ def docker_to_workflow_inputs(num_spaces = 4):
                 ' ' * num_spaces * 2 + 'String docker = "' + args.docker_image + '"\n' + \
                 ' ' * num_spaces + '}\n'
         doc.source_lines[doc.workflow.pos.line - 1] = line
-        print(doc.source_lines[doc.workflow.pos.line - 1])
 
     else:   # if inputs section does exist
         docker_in_inputs = False
@@ -99,7 +98,6 @@ def docker_to_workflow_inputs(num_spaces = 4):
             num_spaces = len(line) - len(line.lstrip(' '))
             line = ' ' * num_spaces + 'String docker = "' + args.docker_image + '"\n' + line
             doc.source_lines[doc.workflow.pos.line - 1] = line
-            print(doc.source_lines[doc.workflow.pos.line - 1])
 
 # add docker to every task and workflow explicitly
 def docker_runtime():

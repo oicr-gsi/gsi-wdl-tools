@@ -136,16 +136,15 @@ def test(num_spaces = 4):
         docker_in_inputs = False
         for input in doc.workflow.inputs:
             if "String docker" in input.name:
+                docker_in_inputs = True
                 print(doc.source_lines[input.pos.line - 1])
+        if not docker_in_inputs:
+            line = doc.source_lines[doc.workflow.inputs.pos.line]
+            print(line)
 
 
-        # if not docker_in_inputs:
-        #     line = doc.source_lines[doc.workflow.inputs.pos.line - 1]
-        #     print(line)
-        #
-        #
-        #
-        #
+
+
         #     while "docker" not in doc.source_lines[line_pos]:  # stops when line contains docker
         #         line_pos += 1
         #     line = doc.source_lines[line_pos]

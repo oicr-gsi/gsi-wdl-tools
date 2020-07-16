@@ -36,7 +36,7 @@ def find_indices(line, target):
     return index1, index2
 
 # helper function: add "docker = docker" to a call with a multi-line input section
-def docker_runtime_multi(part):
+def docker_to_call_inputs_multiline(part):
     # either multi-line has docker or hasn't, but will not be empty (single line)
     line_pos = part.pos.line - 1
     if "docker" not in part.inputs.keys():
@@ -56,7 +56,7 @@ def docker_runtime_multi(part):
         doc.source_lines[line_pos] = line
 
 # helper function: add "docker = docker" to a call with a single line input section
-def docker_runtime_single(part):
+def docker_to_call_inputs_single_line(part):
     line = doc.source_lines[part.pos.line - 1]
     if not part.inputs:     # if input section empty, add "input: docker"
         index = len(line) - 1                   # if call doesn't have {}, set index to end of line
@@ -115,9 +115,9 @@ def docker_runtime():
         if isinstance(part, WDL.Tree.Call):
             line = doc.source_lines[part.pos.line - 1]
             if '{' in line and '}' not in line:
-                docker_runtime_multi(part)
+                docker_to_call_inputs_multiline(part)
             else:
-                docker_runtime_single(part)
+                docker_to_call_inputs_single_line(part)
 
     # add image to all tasks
     for task in doc.tasks:
@@ -147,9 +147,9 @@ def test(num_spaces = 4):
         if isinstance(part, WDL.Tree.Call):
             line = doc.source_lines[part.pos.line - 1]
             if '{' in line and '}' not in line:
-                docker_runtime_multi(part)
+                docker_to_call_inputs_multiline(part)
             else:
-                docker_runtime_single(part)
+                docker_to_call_inputs_single_line(part)
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -161,8 +161,8 @@ def write_out():
 tabs_to_spaces()   # tested - convert tabs to spaces
 # find_indices(line, target)    # tested - isolate start and end of target's expression in line
 # docker_runtime()
-    # docker_runtime_multi(part)    # NEED TESTING MODIFY - add or convert docker for multi-line call
-    # docker_runtime_single(part)   # NEED TESTING MODIFY - add or convert docker for single-line call
+    # docker_to_call_inputs_multiline(part)    # NEED TESTING MODIFY - add or convert docker for multi-line call
+    # docker_to_call_inputs_single_line(part)   # NEED TESTING MODIFY - add or convert docker for single-line call
     # docker_to_workflow_inputs(num_spaces = 4)     # NEED TESTING
 # pull_to_root()
 # source_modules()  # tested - add source; module if "modules" var exists, else don't

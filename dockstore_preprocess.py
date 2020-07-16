@@ -7,6 +7,7 @@ import WDL
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--input-wdl-path", required=True)
 parser.add_argument("--docker-image", required=False)
+parser.add_argument("--pull-json", required=False)
 args = parser.parse_args()
 
 doc = WDL.load(args.input_wdl_path)     # loads the entire document
@@ -236,7 +237,13 @@ def docker_runtime():
 
 # pull all task variables to the workflow that calls them
 def pull_to_root():
-    print("placeholder - pull variables to root")
+    if not args.pull_json:
+        return
+
+    # read from pull_json for task name: var name
+    # note: if task or var name doesn't exist, then gets ignored
+    pull = WDL.values_from_json(args.pull_json).values_json
+    print(pull)
 
 # source .bashrc and load required modules for each task
 def source_modules():
@@ -273,7 +280,7 @@ tabs_to_spaces()                            # tested - convert tabs to spaces
     # docker_to_task_runtime()              # tested - add docker to task runtime or replace existing val
     # docker_param_meta()
         # docker_to_task_or_param()         # tested - given a mode, acts on the target with insert
-# pull_to_root()
+ pull_to_root()
 # source_modules()                          # tested - add source; module if "modules" var exists, else don't
 # test()
 write_out()                                 # tested - write out

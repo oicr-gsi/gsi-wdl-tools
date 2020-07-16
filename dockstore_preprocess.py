@@ -149,7 +149,7 @@ def test(num_spaces = 4):
             # print(doc.source_lines[part.pos.line - 1])
             print(str(part.variable))
             for body in part.body:
-                print(doc.source_lines[body.pos.line - 1])
+                print(doc.source_lines[body.pos.line - 1] + " @@ type: " + type(body))
                 #for node in body.WorkflowNode:
 
 # final outputs to stdout or a file with modified name

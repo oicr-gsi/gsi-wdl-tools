@@ -120,6 +120,10 @@ def find_calls():
 
     return call_list
 
+# add docker to task runtime or replace existing var
+def docker_to_task_runtime(task):
+    print(task.runtime.keys())
+
 # add docker to every task and workflow explicitly
 # ASSUMES NO COMMENTS IN INPUT, CALL, AND RUNTIME BLOCKS: UNTESTED
 def docker_runtime():
@@ -139,12 +143,10 @@ def docker_runtime():
         else:
             docker_to_call_inputs_single_line(call)
 
-    # add image to all tasks
-    # for task in doc.tasks:
-    #     if "docker" not in task.inputs:
-    #         print("placeholder - add docker var to inputs")
-    #     if "docker" not in task.runtime:
-    #         print("placeholder - add 'docker: ~{docker}'")
+    # add image to all task inputs and runtime
+    for task in doc.tasks:
+        docker_to_workflow_or_task_inputs(body=task)
+        docker_to_task_runtime(task = task)
 
 # pull all task variables to the workflow that calls them
 def pull_to_root():
@@ -165,7 +167,7 @@ def source_modules():
 def test():
     # add image to all tasks
     for task in doc.tasks:
-        docker_to_workflow_or_task_inputs(body = task)
+        docker_to_task_runtime(task)
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -174,14 +176,15 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-tabs_to_spaces()                                # tested - convert tabs to spaces
-# find_indices(line, target)                    # tested - isolate start and end of target's expression, special if string
+tabs_to_spaces()                            # tested - convert tabs to spaces
+# find_indices(line, target)                # tested - isolate start and end of target's expression, special if string
 # docker_runtime()
-    # find_calls()                              # tested - find all nested calls in a workflow
-    # docker_to_call_inputs_multiline(call)     # tested - add or convert docker for multi-line call
-    # docker_to_call_inputs_single_line(call)   # tested - add or convert docker for single-line call
-    # docker_to_workflow_or_task_inputs(num_spaces = 4) # tested - add or convert docker for workflow inputs
+    # find_calls()                          # tested - find all nested calls in a workflow
+    # docker_to_call_inputs_multiline()     # tested - add or convert docker for multi-line call
+    # docker_to_call_inputs_single_line()   # tested - add or convert docker for single-line call
+    # docker_to_workflow_or_task_inputs()   # tested - add or convert docker for workflow or task inputs
+    # docker_to_task_runtime()
 # pull_to_root()
-# source_modules()                              # tested - add source; module if "modules" var exists, else don't
+# source_modules()                          # tested - add source; module if "modules" var exists, else don't
 test()
-write_out()                                     # tested - write out
+write_out()                                 # tested - write out

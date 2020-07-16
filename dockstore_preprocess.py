@@ -163,7 +163,7 @@ def source_modules():
 
 # TEST FUNCTION
 def test(num_spaces = 4):
-
+    print("test")
 
 # final outputs to stdout or a file with modified name
 def write_out():

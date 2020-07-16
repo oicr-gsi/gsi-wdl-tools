@@ -167,4 +167,4 @@ tabs_to_spaces()   # tested - convert tabs to spaces
 # pull_to_root()
 # source_modules()  # tested - add source; module if "modules" var exists, else don't
 test()
-# write_out()     # tested - write out
+write_out()     # tested - write out

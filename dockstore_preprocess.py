@@ -122,7 +122,8 @@ def find_calls():
 
 # add docker to task runtime or replace existing var
 def docker_to_task_runtime(task):
-    print(task.runtime.keys())
+    if "docker" not in task.runtime.keys():
+        print(doc.source_lines[task.pos.line - 1])
 
 # add docker to every task and workflow explicitly
 # ASSUMES NO COMMENTS IN INPUT, CALL, AND RUNTIME BLOCKS: UNTESTED

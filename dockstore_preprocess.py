@@ -113,11 +113,13 @@ def source_modules():
 
 # find all params that need to be replaced
 def test():
-    print(doc.workflow.inputs)
-    # if "docker" not in doc.workflow.inputs:
-    #     print("append args.docker_image with docker: '~{docker}'")
-    # else:
-    #     print("replace old docker with docker: '~{docker}'")
+    if not doc.workflow.inputs:
+        print("workflow has no inputs section")
+    else:
+        if "docker" not in doc.workflow.inputs:
+            print("append inputs with docker")
+        else:
+            print("replace inputs docker")
 
 # final outputs to stdout or a file with modified name
 def write_out():

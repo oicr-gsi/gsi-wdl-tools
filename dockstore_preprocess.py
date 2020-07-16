@@ -138,7 +138,7 @@ def docker_to_task_runtime(task):
             line = doc.source_lines[index]
             print(line)
             index1, index2 = find_indices(line = line, target = "docker:")
-            line = line[:index1] + "~{docker}" + line[index2:]
+            line = line[:index1] + '"~{docker}"' + line[index2:]
             doc.source_lines[index] = line
             print(line)
         else:

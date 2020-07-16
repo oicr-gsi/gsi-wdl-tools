@@ -120,35 +120,90 @@ def docker_to_workflow_or_task_inputs(body, num_spaces = 4):    # where body is 
             line = ' ' * num_spaces + 'String docker = "' + args.docker_image + '"\n' + line
             doc.source_lines[body.inputs[0].pos.line - 1] = line
 
-# add docker to task runtime or replace existing var
-def docker_to_task_runtime(task):
-    if not task.runtime:        # tested - adds a runtime section if none exist
-        index = task.pos.line if not task.outputs else task.outputs[0].pos.line - 2
+# add docker to runtime or param meta
+    # body - the task or workflow
+    # mode - the type of insert
+    # index - the index of the source line to change
+    # insert - what to replace the value with
+def docker_to_task_or_param(body, mode, index, insert, target = "docker", section = "runtime"):
+    if mode = "section":
         line = doc.source_lines[index]
         num_spaces = len(line) - len(line.lstrip(' '))
-        line = ' ' * num_spaces + 'runtime {\n' + \
-               ' ' * num_spaces * 2 + 'docker: "~{docker}"\n' + \
+        line = ' ' * num_spaces + section + ' {\n' + \
+               ' ' * num_spaces * 2 + target + ': ' + insert + '\n' + \
                ' ' * num_spaces + '}\n\n' + line
         doc.source_lines[index] = line
 
+    if mode = "replace":
+        line = doc.source_lines[index]
+        index1, index2 = find_indices(line = line, target = (target + ":"))
+        line = line[:index1] + insert + line[index2:]
+        doc.source_lines[index] = line
+
+    if mode = "add line":
+        line = doc.source_lines[index]
+        num_spaces = len(line) - len(line.lstrip(' '))
+        line = ' ' * num_spaces + target + ': ' + insert + '\n' + line
+        doc.source_lines[index] = line
+
+
+# add docker to task runtime or replace existing var
+def docker_to_task_runtime(task):   # all tested
+    if not task.runtime:
+        docker_to_task_or_param(
+            body = task,
+            mode = "replace",
+            index = task.pos.line if not task.outputs else task.outputs[0].pos.line - 2,
+            target = "docker",
+            insert = "~{docker}",
+            section = "runtime")
+
     else:
-        if "docker" in task.runtime.keys():
-            index = task.runtime["docker"].pos.line - 1
-            line = doc.source_lines[index]
-            index1, index2 = find_indices(line = line, target = "docker:")
-            line = line[:index1] + '"~{docker}"' + line[index2:]
-            doc.source_lines[index] = line
+        if target in task.runtime.keys():
+            docker_to_task_or_param(
+                body = task,
+                mode = "replace",
+                index = task.runtime[target].pos.line - 1,
+                target = "docker",
+                insert = "~{docker}")
 
         else:
-            index = task.runtime[list(task.runtime.keys())[0]].pos.line - 1
-            line = doc.source_lines[index]
-            num_spaces = len(line) - len(line.lstrip(' '))
-            line = ' ' * num_spaces + 'docker: "~{docker}"\n' + line
-            doc.source_lines[index] = line
-            print(line)
+            docker_to_task_or_param(
+                body = task,
+                mode = "add line",
+                index = task.runtime[list(task.runtime.keys())[0]].pos.line - 1,
+                target = "docker",
+                insert = "~{docker}")
+
+# add docker parameter meta to workflow or task
+def docker_param_meta(body):
+    if not body.parameter_meta:
+        docker_to_task_or_param(
+            body = body,
+            mode = "replace",
+            index = body.pos.line if not body.outputs else body.outputs[0].pos.line - 2,
+            target = "docker",
+            insert = '"Docker container to run the workflow in"',
+            section = "parameter_meta")
+
+    else:
+        if target in body.parameter_meta.keys():
+            docker_to_task_or_param(
+                body = body,
+                mode = "replace",
+                index = body.parameter_meta[target].pos.line - 1,
+                target = "docker",
+                insert = '"Docker container to run the workflow in"')
+
+        else:
+            docker_to_task_or_param(
+                body = body,
+                mode = "add line",
+                index = body.parameter_meta[list(body.parameter_meta.keys())[0].pos.line - 1],
+                target = "docker",
+                insert = '"Docker container to run the workflow in"')
 
 # add docker to every task and workflow explicitly
-# ASSUMES NO COMMENTS IN INPUT, CALL, AND RUNTIME BLOCKS: UNTESTED
 def docker_runtime():
     # exit if user doesn't want to add a docker image
     if not args.docker_image:
@@ -156,6 +211,11 @@ def docker_runtime():
 
     # add image to workflow inputs
     docker_to_workflow_or_task_inputs(body = doc.workflow)
+
+    # add docker parameter meta to workflow and tasks
+    docker_param_meta(doc.workflow)
+    for task in doc.tasks:
+        docker_param_meta(task)
 
     # add image to all task calls
     call_list = find_calls()
@@ -170,8 +230,6 @@ def docker_runtime():
     for task in doc.tasks:
         docker_to_workflow_or_task_inputs(body=task)
         docker_to_task_runtime(task = task)
-
-    # @@@ TODO: ADD TO ALL PARAM META IN WORKFLOW AND TASKS
 
 # pull all task variables to the workflow that calls them
 def pull_to_root():
@@ -202,13 +260,15 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 tabs_to_spaces()                            # tested - convert tabs to spaces
-# find_indices(line, target)                # tested - isolate start and end of target's expression, special if string
 # docker_runtime()
+    # find_indices(line, target)            # tested - isolate start and end of target's expression, special if string
     # find_calls()                          # tested - find all nested calls in a workflow
     # docker_to_call_inputs_multiline()     # tested - add or convert docker for multi-line call
     # docker_to_call_inputs_single_line()   # tested - add or convert docker for single-line call
     # docker_to_workflow_or_task_inputs()   # tested - add or convert docker for workflow or task inputs
     # docker_to_task_runtime()
+    # docker_param_meta()
+        # docker_to_task_or_param()
 # pull_to_root()
 # source_modules()                          # tested - add source; module if "modules" var exists, else don't
 test()

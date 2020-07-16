@@ -109,13 +109,15 @@ def docker_runtime():
     docker_to_workflow_inputs(num_spaces = 4)
 
     # add image to all task calls
-    for part in doc.workflow.body:      # tested - able to delegate multi- and single insert
+    for part in doc.workflow.body:      # tested - able to delegate multi- and single insert for calls
         if isinstance(part, WDL.Tree.Call):
             line = doc.source_lines[part.pos.line - 1]
             if '{' in line and '}' not in line:
                 docker_to_call_inputs_multiline(part)
             else:
                 docker_to_call_inputs_single_line(part)
+
+        # @@@@@@@ FIND CALLS WITHIN SCATTER AND CONDITIONALS
 
     # add image to all tasks
     for task in doc.tasks:
@@ -141,11 +143,14 @@ def source_modules():
 
 # TEST FUNCTION
 def test(num_spaces = 4):
-    # change inputs for calls within scatters
+    # change inputs for calls within scatters and conditionals
     for part in doc.workflow.body:      # tested - able to delegate multi- and single insert
         if isinstance(part, WDL.Tree.Scatter):
             # print(doc.source_lines[part.pos.line - 1])
             print(str(part.variable))
+            for body in part.body:
+                for node in body.WorkflowNode:
+                    print(doc.source_lines[node.pos.line - 1])
 
 # final outputs to stdout or a file with modified name
 def write_out():

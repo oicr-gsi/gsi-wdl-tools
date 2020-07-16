@@ -78,7 +78,7 @@ def docker_to_workflow_inputs(num_spaces = 4):
     if not doc.workflow.inputs:
         line = doc.source_lines[doc.workflow.pos.line - 1]
         line += '\n' + \
-                ' ' * num_spaces + 'inputs {\n' + \
+                ' ' * num_spaces + 'input {\n' + \
                 ' ' * num_spaces * 2 + 'String docker = "' + args.docker_image + '"\n' + \
                 ' ' * num_spaces + '}\n'
         doc.source_lines[doc.workflow.pos.line - 1] = line

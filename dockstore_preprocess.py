@@ -144,7 +144,8 @@ def test(num_spaces = 4):
     # change inputs for calls within scatters
     for part in doc.workflow.body:      # tested - able to delegate multi- and single insert
         if isinstance(part, WDL.Tree.Call):
-            print(doc.source_lines[part.pos.line - 1])
+            # print(doc.source_lines[part.pos.line - 1])
+            print(str(part.variable))
 
 # final outputs to stdout or a file with modified name
 def write_out():

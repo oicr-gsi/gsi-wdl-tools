@@ -143,7 +143,7 @@ def source_modules():
 
 # TEST FUNCTION
 def test(num_spaces = 4):
-    line = '_  target = "inside_string", }'
+    line = '_  target = "inside, }string", }'
     index1, index2 = find_indices(line, target = "target")
     line = line[:index1] + 'xxx' + line[index2:]
     print(line)

@@ -113,10 +113,11 @@ def source_modules():
 
 # find all params that need to be replaced
 def test():
-    if "docker" not in doc.workflow.inputs:
-        print("append args.docker_image with docker: '~{docker}'")
-    else:
-        print("replace old docker with docker: '~{docker}'")
+    print(doc.workflow.inputs)
+    # if "docker" not in doc.workflow.inputs:
+    #     print("append args.docker_image with docker: '~{docker}'")
+    # else:
+    #     print("replace old docker with docker: '~{docker}'")
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -126,10 +127,10 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 tabs_to_spaces(8)   # tested - able to convert tabs to spaces
-docker_runtime()
+# docker_runtime()
     # docker_runtime_multi(part)    # tested - able to add or convert docker for multi-line call
     # docker_runtime_single(part)   # tested - able to add or convert docker for single-line call
 # pull_to_root()
 source_modules()  # tested - add source; module if "modules" var exists, else don't
-# test()
+test()
 write_out()     # tested - able to write out

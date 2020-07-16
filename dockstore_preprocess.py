@@ -150,13 +150,13 @@ def docker_to_task_or_param(body, mode, index, insert, target = "docker", sectio
 
 
 # add docker to task runtime or replace existing var
-def docker_to_task_runtime(task):   # all tested
+def docker_to_task_runtime(task, target = "docker"):   # all tested
     if not task.runtime:
         docker_to_task_or_param(
             body = task,
             mode = "section",
             index = task.pos.line if not task.outputs else task.outputs[0].pos.line - 2,
-            target = "docker",
+            target = target,
             insert = '"~{docker}"',
             section = "runtime")
 
@@ -166,7 +166,7 @@ def docker_to_task_runtime(task):   # all tested
                 body = task,
                 mode = "replace",
                 index = task.runtime[target].pos.line - 1,
-                target = "docker",
+                target = target,
                 insert = '"~{docker}"')
 
         else:
@@ -174,11 +174,11 @@ def docker_to_task_runtime(task):   # all tested
                 body = task,
                 mode = "add line",
                 index = task.runtime[list(task.runtime.keys())[0]].pos.line - 1,
-                target = "docker",
+                target = target,
                 insert = '"~{docker}"')
 
 # add docker parameter meta to workflow or task
-def docker_param_meta(body):
+def docker_param_meta(body, target = "docker"):
     if not body.parameter_meta:
         docker_to_task_or_param(
             body = body,
@@ -194,7 +194,7 @@ def docker_param_meta(body):
                 body = body,
                 mode = "replace",
                 index = body.parameter_meta[target].pos.line - 1,
-                target = "docker",
+                target = target,
                 insert = '"Docker container to run the workflow in"')
 
         else:
@@ -202,7 +202,7 @@ def docker_param_meta(body):
                 body = body,
                 mode = "add line",
                 index = body.parameter_meta[list(body.parameter_meta.keys())[0].pos.line - 1],
-                target = "docker",
+                target = target,
                 insert = '"Docker container to run the workflow in"')
 
 # add docker to every task and workflow explicitly
@@ -214,10 +214,8 @@ def docker_runtime():
     # add image to workflow inputs
     docker_to_workflow_or_task_inputs(body = doc.workflow)
 
-    # add docker parameter meta to workflow and tasks
-    docker_param_meta(doc.workflow)
-    for task in doc.tasks:
-        docker_param_meta(task)
+    # add docker parameter meta to workflow
+    docker_param_meta(doc.workflow, target = "docker")
 
     # add image to all task calls
     call_list = find_calls()
@@ -230,8 +228,9 @@ def docker_runtime():
 
     # add image to all task inputs and runtime
     for task in doc.tasks:
-        docker_to_workflow_or_task_inputs(body=task)
-        docker_to_task_runtime(task = task)
+        docker_to_workflow_or_task_inputs(task)
+        docker_to_task_runtime(task, target = "docker")
+        docker_param_meta(task, target = "docker")
 
 # pull all task variables to the workflow that calls them
 def pull_to_root():
@@ -250,10 +249,10 @@ def source_modules():
 
 # TEST FUNCTION
 def test():
-    docker_param_meta(doc.workflow)
+    docker_param_meta(doc.workflow, target = "docker")
     for task in doc.tasks:
-        docker_param_meta(task)
-        docker_to_task_runtime(task)
+        docker_to_task_runtime(task, target = "docker")
+        docker_param_meta(task, target = "docker")
 
 # final outputs to stdout or a file with modified name
 def write_out():

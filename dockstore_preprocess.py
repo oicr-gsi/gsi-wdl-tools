@@ -85,7 +85,7 @@ def docker_to_workflow_inputs(num_spaces = 4):
 
     else:   # if inputs section does exist
         docker_in_inputs = False
-        for input in doc.workflow.inputs:
+        for input in doc.workflow.inputs:   # replace existing docker var
             if "docker" in input.name:
                 docker_in_inputs = True
                 line = doc.source_lines[input.pos.line - 1]
@@ -93,11 +93,11 @@ def docker_to_workflow_inputs(num_spaces = 4):
                 line = line[:index1] + '"' + args.docker_image + '"' + line[index2:]
                 doc.source_lines[input.pos.line - 1] = line
 
-        if not docker_in_inputs:    # then add it as the first input var
+        if not docker_in_inputs:            # add new docker var
             line = doc.source_lines[doc.workflow.inputs[0].pos.line - 1]
             num_spaces = len(line) - len(line.lstrip(' '))
             line = ' ' * num_spaces + 'String docker = "' + args.docker_image + '"\n' + line
-            doc.source_lines[doc.workflow.pos.line - 1] = line
+            doc.source_lines[doc.workflow.inputs[0].pos.line - 1] = line
 
 # add docker to every task and workflow explicitly
 def docker_runtime():

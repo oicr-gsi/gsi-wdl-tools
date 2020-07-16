@@ -244,7 +244,7 @@ def pull_to_root():
     # note: if task or var name doesn't exist, then gets ignored
     with open(args.pull_json) as f:
         pull = json.load(f)
-        print(pull.keys())
+        print(list(pull))
 
 # source .bashrc and load required modules for each task
 def source_modules():

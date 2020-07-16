@@ -142,10 +142,10 @@ def docker_to_task_runtime(task):
         else:
             index = task.runtime[list(task.runtime.keys())[0]].pos.line - 1
             line = doc.source_lines[index]
-            print(line)
             num_spaces = len(line) - len(line.lstrip(' '))
             line = ' ' * num_spaces + 'docker: "~{docker}"\n' + line
             doc.source_lines[index] = line
+            print(line)
 
 # add docker to every task and workflow explicitly
 # ASSUMES NO COMMENTS IN INPUT, CALL, AND RUNTIME BLOCKS: UNTESTED

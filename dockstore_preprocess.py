@@ -133,7 +133,7 @@ def test(num_spaces = 4):
         print(doc.source_lines[doc.workflow.pos.line - 1])
 
     else:   # if inputs section does exist
-        print(type(doc.workflow.inputs))
+        print(", ".join(doc.workflow.inputs))
         # if "docker" not in doc.workflow.inputs:
         #     line = doc.source_lines[doc.workflow.inputs.pos.line - 1]
         #     print(line)

@@ -69,16 +69,26 @@ def docker_runtime_single(part):
     doc.source_lines[part.pos.line - 1] = line
 
 # add docker to every task and workflow explicitly
-def docker_runtime():
+def docker_runtime(num_spaces = 4):
     # exit if user doesn't want to add a docker image
     if not args.docker_image:
         return
 
     # add image to workflow inputs
-    if "docker" not in doc.workflow.inputs:
-        print("append args.docker_image with docker: '~{docker}'")
+    if not doc.workflow.inputs:
+        line = doc.source_lines[doc.workflow.pos.line - 1]
+        line += '\n' + \
+                ' ' * num_spaces + 'inputs {\n' + \
+                ' ' * num_spaces * 2 + 'String docker = "' + args.docker_image + '"\n' + \
+                ' ' * num_spaces + '}\n'
+        doc.source_lines[doc.workflow.pos.line - 1] = line
+        print(doc.source_lines[doc.workflow.pos.line - 1])
     else:
-        print("replace old docker with docker: '~{docker}'")
+        if "docker" not in doc.workflow.inputs:
+            print("append inputs with docker")
+
+        else:
+            print("replace inputs docker")
 
     # add image to all task calls
     for part in doc.workflow.body:      # tested - able to delegate multi- and single insert
@@ -111,20 +121,21 @@ def source_modules():
                 prepend = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 20; "} \n\n' + ' ' * num_spaces
                 doc.source_lines[pos] = prepend + doc.source_lines[pos][num_spaces:]
 
-# find all params that need to be replaced
+# TEST FUNCTION
 def test(num_spaces = 4):
     if not doc.workflow.inputs:
         line = doc.source_lines[doc.workflow.pos.line - 1]
         line += '\n' + \
                 ' ' * num_spaces + 'inputs {\n' + \
                 ' ' * num_spaces * 2 + 'String docker = "' + args.docker_image + '"\n' + \
-                ' ' * num_spaces + '}'
+                ' ' * num_spaces + '}\n'
         doc.source_lines[doc.workflow.pos.line - 1] = line
         print(doc.source_lines[doc.workflow.pos.line - 1])
 
     else:
         if "docker" not in doc.workflow.inputs:
-            print("append inputs with docker")
+            line = doc.source_lines[doc.workflow.inputs.pos.line - 1]
+            print(line)
 
         else:
             print("replace inputs docker")

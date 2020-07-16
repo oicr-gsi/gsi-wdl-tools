@@ -131,6 +131,7 @@ def docker_to_task_runtime(task):
         doc.source_lines[body.pos.line - 1] = line
 
     else:
+        print("modify existing runtime section")
         # docker_in_inputs = False
         # for input in body.inputs:  # replace existing docker var
         #     if "docker" in input.name:

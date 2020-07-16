@@ -143,7 +143,7 @@ def source_modules():
 def test(num_spaces = 4):
     # change inputs for calls within scatters
     for part in doc.workflow.body:      # tested - able to delegate multi- and single insert
-        if isinstance(part, WDL.Tree.Call):
+        if isinstance(part, WDL.Tree.Scatter):
             # print(doc.source_lines[part.pos.line - 1])
             print(str(part.variable))
 

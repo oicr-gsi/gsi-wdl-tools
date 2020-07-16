@@ -133,15 +133,31 @@ def test(num_spaces = 4):
         print(doc.source_lines[doc.workflow.pos.line - 1])
 
     else:   # if inputs section does exist
+        docker_in_inputs = False
         for input in doc.workflow.inputs:
-            print(", ".join([str(input.type), input.name, str(input.expr)]))
+            if "String docker" in input.name:
+                print(doc.source_lines[input.pos.line - 1])
 
-        # if "docker" not in doc.workflow.inputs:
+
+        # if not docker_in_inputs:
         #     line = doc.source_lines[doc.workflow.inputs.pos.line - 1]
         #     print(line)
         #
-        # else:
-        #     print("replace inputs docker")
+        #
+        #
+        #
+        #     while "docker" not in doc.source_lines[line_pos]:  # stops when line contains docker
+        #         line_pos += 1
+        #     line = doc.source_lines[line_pos]
+        #     index1 = line.find("docker") + len("docker")
+        #     while line[index1] in " =":  # move forward until at start of assignment
+        #         index1 += 1
+        #     index2 = len(line) - 1  # initialize at end of line
+        #     for c in "} ,":  # value ends in ,/ /} whichever is smallest but must > -1
+        #         index_temp = line[index1:].find(c) + index1
+        #         index2 = index_temp if index_temp > index1 - 1 and index_temp < index2 else index2
+        #     line = line[:index1] + "docker" + line[index2:]
+        #     doc.source_lines[line_pos] = line
 
 # final outputs to stdout or a file with modified name
 def write_out():

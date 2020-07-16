@@ -270,10 +270,10 @@ tabs_to_spaces()                            # tested - convert tabs to spaces
     # docker_to_call_inputs_multiline()     # tested - add or convert docker for multi-line call
     # docker_to_call_inputs_single_line()   # tested - add or convert docker for single-line call
     # docker_to_workflow_or_task_inputs()   # tested - add or convert docker for workflow or task inputs
-    # docker_to_task_runtime()
+    # docker_to_task_runtime()              # tested - add docker to task runtime or replace existing val
     # docker_param_meta()
-        # docker_to_task_or_param()
+        # docker_to_task_or_param()         # tested - given a mode, acts on the target with insert
 # pull_to_root()
 # source_modules()                          # tested - add source; module if "modules" var exists, else don't
-test()
+# test()
 write_out()                                 # tested - write out

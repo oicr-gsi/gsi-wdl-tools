@@ -113,15 +113,10 @@ def source_modules():
 
 # find all params that need to be replaced
 def test():
-    for part in doc.workflow.body:
-        if isinstance(part, WDL.Tree.Call):
-            line = doc.source_lines[part.pos.line - 1]
-            if '{' in line and '}' not in line:     # multi-line input
-                print("run multi insert")
-                docker_runtime_multi(part)
-            else:                                   # single-line input
-                print("run single insert")
-                docker_runtime_single(part)
+    if "docker" not in doc.workflow.inputs:
+        print("append args.docker_image with docker: '~{docker}'")
+    else:
+        print("replace old docker with docker: '~{docker}'")
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -131,10 +126,10 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 tabs_to_spaces(8)   # tested - able to convert tabs to spaces
+docker_runtime()
     # docker_runtime_multi(part)    # tested - able to add or convert docker for multi-line call
     # docker_runtime_single(part)   # tested - able to add or convert docker for single-line call
-# docker_runtime()
 # pull_to_root()
-source_modules()  # need testing: add lines if var exists, else don't
-test()
+source_modules()  # tested - add source; module if "modules" var exists, else don't
+# test()
 write_out()     # tested - able to write out

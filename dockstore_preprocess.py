@@ -248,8 +248,9 @@ def source_modules():
 
 # TEST FUNCTION
 def test():
-    # add image to all tasks
+    docker_param_meta(doc.workflow)
     for task in doc.tasks:
+        docker_param_meta(task)
         docker_to_task_runtime(task)
 
 # final outputs to stdout or a file with modified name

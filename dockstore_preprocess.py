@@ -98,6 +98,28 @@ def docker_to_workflow_inputs(num_spaces = 4):
             line = ' ' * num_spaces + 'String docker = "' + args.docker_image + '"\n' + line
             doc.source_lines[doc.workflow.inputs[0].pos.line - 1] = line
 
+# find all nested calls within a workflow
+def find_calls():
+    # change inputs for calls within scatters and conditionals
+    call_list = []      # list of call objects found
+    todo_bodies = []     # list of scatters and conditions to search in
+    for body in doc.workflow.body:      # tested - able to delegate multi- and single insert
+        if isinstance(body, WDL.Tree.Call):
+            call_list.append(body)
+        if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
+            todo_bodies.append(body)
+
+    while todo_bodies:
+        body = todo_bodies[0]           # pop the first element
+        todo_bodies = todo_bodies[1:]
+
+        if isinstance(body, WDL.Tree.Call):
+            call_list.append(body)
+        if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
+            todo_bodies.extend(body.body)       # add sub-content of the scatter or conditional to todo
+
+    return call_list
+
 # add docker to every task and workflow explicitly
 # ASSUMES NO COMMENTS IN INPUT, CALL, AND RUNTIME BLOCKS: UNTESTED
 def docker_runtime():
@@ -109,15 +131,13 @@ def docker_runtime():
     docker_to_workflow_inputs(num_spaces = 4)
 
     # add image to all task calls
-    for part in doc.workflow.body:      # tested - able to delegate multi- and single insert for calls
-        if isinstance(part, WDL.Tree.Call):
-            line = doc.source_lines[part.pos.line - 1]
-            if '{' in line and '}' not in line:
-                docker_to_call_inputs_multiline(part)
-            else:
-                docker_to_call_inputs_single_line(part)
-
-    # @@@@@@@ RECURSIVELY FIND CALLS WITHIN SCATTER AND CONDITIONALS
+    call_list = find_calls()
+    for call in call_list:
+        line = doc.source_lines[call.pos.line - 1]
+        if '{' in line and '}' not in line:
+            docker_to_call_inputs_multiline(call)
+        else:
+            docker_to_call_inputs_single_line(call)
 
     # add image to all tasks
     for task in doc.tasks:
@@ -143,26 +163,7 @@ def source_modules():
 
 # TEST FUNCTION
 def test(num_spaces = 4):
-    # change inputs for calls within scatters and conditionals
-    call_list = []      # list of call objects found
-    todo_bodies = []     # list of scatters and conditions to search in
-    for body in doc.workflow.body:      # tested - able to delegate multi- and single insert
-        if isinstance(body, WDL.Tree.Call):
-            call_list.append(body)
-        if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
-            todo_bodies.append(body)
 
-    while todo_bodies:
-        body = todo_bodies[0]           # pop the first element
-        todo_bodies = todo_bodies[1:]
-
-        if isinstance(body, WDL.Tree.Call):
-            call_list.append(body)
-        if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
-            todo_bodies.extend(body.body)       # add sub-content of the scatter or conditional to todo
-
-    for call in call_list:
-        print(doc.source_lines[call.pos.line - 1])      # verify that all calls were found
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -171,13 +172,14 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-tabs_to_spaces()   # tested - convert tabs to spaces
-# find_indices(line, target)    # tested - isolate start and end of target's expression, special if string
-# docker_runtime()
+tabs_to_spaces()                                # tested - convert tabs to spaces
+# find_indices(line, target)                    # tested - isolate start and end of target's expression, special if string
+docker_runtime()
+    # find_calls()                              # tested - find all nested calls in a workflow
     # docker_to_call_inputs_multiline(part)     # tested - add or convert docker for multi-line call
     # docker_to_call_inputs_single_line(part)   # tested - add or convert docker for single-line call
     # docker_to_workflow_inputs(num_spaces = 4) # tested - add or convert docker for workflow inputs
 # pull_to_root()
-# source_modules()  # tested - add source; module if "modules" var exists, else don't
-test()
-write_out()     # tested - write out
+# source_modules()                              # tested - add source; module if "modules" var exists, else don't
+# test()
+write_out()                                     # tested - write out

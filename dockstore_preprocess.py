@@ -114,7 +114,7 @@ def source_modules():
 # find all params that need to be replaced
 def test(num_spaces = 4):
     if not doc.workflow.inputs:
-        line =
+        line = doc.source_lines[doc.workflow.pos.line - 1]
         line += '\n' + \
                 ' ' * num_spaces + 'inputs {\n' + \
                 ' ' * num_spaces * 2 + 'String docker = "' + args.docker_image + '"\n' + \

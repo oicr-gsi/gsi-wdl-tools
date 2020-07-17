@@ -247,7 +247,7 @@ def pull_to_root():
     with open(args.pull_json) as f:
         pull = json.load(f)
     for task in pull.keys():
-        task_obj = (obj for obj in doc.tasks if obj.name = task)[0]     # the WDL.Tree.Task object
+        task_obj = (obj for obj in doc.tasks if obj.name == task)[0]     # the WDL.Tree.Task object
         relevant_calls = [call for call in call_list if task in call.callee_id] # all calls referencing the task
 
         for var in pull[task]:

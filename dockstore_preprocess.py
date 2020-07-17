@@ -239,12 +239,14 @@ def pull_to_root():
     if not args.pull_json:
         return
 
-    # read from pull_json for task name: var name
+    # read from pull_json for "task": ["var1", "var2"]
     # note: if task or var name doesn't exist, then gets ignored
     with open(args.pull_json) as f:
         pull = json.load(f)
-    for task_name in pull.keys():
-        print(task_name)
+    for task in pull.keys():
+        print("name: " + task + ", variables: " + "//".join(pull[task]))
+
+    call_list = find_calls()
 
     # @@@@@@@@ GO THROUGH EACH TASK IN THE DOCUMENT
     # IF VARIABLE EXISTS
@@ -273,16 +275,16 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 tabs_to_spaces()                            # tested - convert tabs to spaces
-docker_runtime()
-    # find_indices(line, target)            # tested - isolate start and end of target's expression, special if string
-    # find_calls()                          # tested - find all nested calls in a workflow
+# docker_runtime()                            # tested - applies the below functions to add docker var to document
+        # find_indices(line, target)        # tested - isolate start and end of target's expression, special if string
+        # find_calls()                      # tested - find all nested calls in a workflow
     # docker_to_call_inputs_multiline()     # tested - add or convert docker for multi-line call
     # docker_to_call_inputs_single_line()   # tested - add or convert docker for single-line call
     # docker_to_workflow_or_task_inputs()   # tested - add or convert docker for workflow or task inputs
     # docker_to_task_runtime()              # tested - add docker to task runtime or replace existing val
-        # docker_to_task_or_param()         # tested - given a mode, acts on the target with insert
+        # docker_to_task_or_param()         # tested - given a mode, inserts new value after the target
     # docker_param_meta()                   # not used: can't find .pos of param string
-# pull_to_root()
-source_modules()                            # tested - add source; module if "modules" var exists, else don't
+pull_to_root()
+# source_modules()                            # tested - add source; module if "modules" var exists, else don't
 # test()
 write_out()                                 # tested - write out to a new wdl file

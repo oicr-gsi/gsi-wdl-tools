@@ -60,66 +60,66 @@ def find_calls():
     return call_list
 
 # helper function: add "docker = docker" to a call with a multi-line input section
-def docker_to_call_inputs_multiline(call):
+def var_to_call_inputs_multiline(call, task_var_name = "docker", workflow_var_name = "docker"):
     # either multi-line has docker or hasn't, but will not be empty (that's single line)
     line_pos = call.pos.line - 1
-    if "docker" not in call.inputs.keys():  # add docker as new var
+    if task_var_name not in call.inputs.keys():  # add docker as new var
         line_pos += 2 if "input:" in doc.source_lines[line_pos + 1] else 1   # first line with input vars
         line = doc.source_lines[line_pos]
         num_spaces = len(line) - len(line.lstrip(' '))
-        prepend = " " * num_spaces + "docker = docker,\n"
+        prepend = " " * num_spaces + task_var_name + " = " + workflow_var_name + ",\n"
         doc.source_lines[line_pos] = prepend + line
 
     else:                                   # replace old docker var value
-        while "docker" not in doc.source_lines[line_pos]:   # stops when line contains docker
+        while task_var_name not in doc.source_lines[line_pos]:   # stops when line contains docker
             line_pos += 1
         line = doc.source_lines[line_pos]
-        index1, index2 = find_indices(line = line, target = "docker")
-        line = line[:index1] + "docker" + line[index2:]
+        index1, index2 = find_indices(line = line, target = task_var_name)
+        line = line[:index1] + workflow_var_name + line[index2:]
         doc.source_lines[line_pos] = line
 
 # helper function: add "docker = docker" to a call with a single line input section
-def docker_to_call_inputs_single_line(call):
+def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_name = "docker"):
     line = doc.source_lines[call.pos.line - 1]
     if not call.inputs:     # if input section empty, add "input: docker"
         index = len(line) - 1                   # if call doesn't have {}, set index to end of line
-        line += " { input: docker = docker }"
+        line += " { input: " + task_var_name + " = " + workflow_var_name + " }"
 
-    elif "docker" not in call.inputs.keys():    # if input not empty but no docker var: add it
+    elif task_var_name not in call.inputs.keys():    # if input not empty but no docker var: add it
         index = line.rfind('}')
         index -= (line[index - 1] == ' ')       # move one back if " }"
-        line = line[:index] + ", docker = docker" + line[index:]
+        line = line[:index] + ", " + task_var_name + " = " + workflow_var_name + line[index:]
 
     else:                                       # if docker var exists, modify it
-        index1, index2 = find_indices(line = line, target = "docker")
-        line = line[:index1] + "docker" + line[index2:]
+        index1, index2 = find_indices(line = line, target = task_var_name)
+        line = line[:index1] + workflow_var_name + line[index2:]
 
     doc.source_lines[call.pos.line - 1] = line
 
 # add String docker to workflow inputs
-def docker_to_workflow_or_task_inputs(body, num_spaces = 4):    # where body is a workflow or task
+def var_to_workflow_or_task_inputs(body, var_type = "String", var_name = "docker", expr = args.docker_image, num_spaces = 4):    # where body is a workflow or task
     if not body.inputs:
         line = doc.source_lines[body.pos.line - 1]
         line += '\n' + \
                 ' ' * num_spaces + 'input {\n' + \
-                ' ' * num_spaces * 2 + 'String docker = "' + args.docker_image + '"\n' + \
+                ' ' * num_spaces * 2 + var_type + ' ' + var_name + ' = "' + expr + '"\n' + \
                 ' ' * num_spaces + '}\n'
         doc.source_lines[body.pos.line - 1] = line
 
     else:   # if inputs section does exist
         docker_in_inputs = False
         for input in body.inputs:   # replace existing docker var
-            if "docker" in input.name:
+            if var_name in input.name:
                 docker_in_inputs = True
                 line = doc.source_lines[input.pos.line - 1]
-                index1, index2 = find_indices(line = line, target = "docker")
-                line = line[:index1] + '"' + args.docker_image + '"' + line[index2:]
+                index1, index2 = find_indices(line = line, target = var_name)
+                line = line[:index1] + '"' + expr + '"' + line[index2:]
                 doc.source_lines[input.pos.line - 1] = line
 
         if not docker_in_inputs:            # add new docker var
             line = doc.source_lines[body.inputs[0].pos.line - 1]
             num_spaces = len(line) - len(line.lstrip(' '))
-            line = ' ' * num_spaces + 'String docker = "' + args.docker_image + '"\n' + line
+            line = ' ' * num_spaces + var_type + ' ' + var_name + ' = "' + expr + '"\n' + line
             doc.source_lines[body.inputs[0].pos.line - 1] = line
 
 # add docker to runtime or param meta
@@ -214,7 +214,7 @@ def docker_runtime():
         return
 
     # add image to workflow inputs
-    docker_to_workflow_or_task_inputs(body = doc.workflow)
+    var_to_workflow_or_task_inputs(body = doc.workflow, var_type="String", var_name="docker", expr = args.docker_image)
 
     # add docker parameter meta to workflow
     # docker_param_meta(doc.workflow, target = "docker")
@@ -224,13 +224,13 @@ def docker_runtime():
     for call in call_list:
         line = doc.source_lines[call.pos.line - 1]
         if '{' in line and '}' not in line:
-            docker_to_call_inputs_multiline(call)
+            var_to_call_inputs_multiline(call = call, var_name="docker", workflow_var_name="docker")
         else:
-            docker_to_call_inputs_single_line(call)
+            var_to_call_inputs_single_line(call = call, task_var_name="docker", workflow_var_name="docker")
 
     # add image to all task inputs and runtime
     for task in doc.tasks:
-        docker_to_workflow_or_task_inputs(task)
+        var_to_workflow_or_task_inputs(body = task, var_type="String", var_name="docker", expr = args.docker_image)
         docker_to_task_runtime(task, target = "docker")
         # docker_param_meta(task, target = "docker")
 
@@ -239,18 +239,31 @@ def pull_to_root():
     if not args.pull_json:
         return
 
+    # get the list of all calls
+    call_list = find_calls()
+
     # read from pull_json for "task": ["var1", "var2"]
     # note: if task or var name doesn't exist, then gets ignored
     with open(args.pull_json) as f:
         pull = json.load(f)
     for task in pull.keys():
-        print("name: " + task + ", variables: " + "//".join(pull[task]))
+        task_obj = (obj for obj in doc.tasks if obj.name = task)[0]     # the WDL.Tree.Task object
+        relevant_calls = [call for call in call_list if task in call.callee_id] # all calls referencing the task
 
-    call_list = find_calls()
+        for var in pull[task]:
+            extended_name = task + '_' + var
+            for input in task_obj.inputs:
+                if input.name == var
+                    var_type = str(input.type)
+                    expr = str(input.expr)
+                    break       # stop looking at the next input
 
-    # @@@@@@@@ GO THROUGH EACH TASK IN THE DOCUMENT
-    # IF VARIABLE EXISTS
-    # IF CALLEE_ID IS IN
+            # add the var and default value to workflow inputs
+            var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr = expr)
+
+            for call in relevant_calls:
+                var_to_call_inputs_multiline(call = call, task_var_name=var, workflow_var_name=extended_name)
+                var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_name)
 
 # source .bashrc and load required modules for each task
 def source_modules():
@@ -265,7 +278,18 @@ def source_modules():
 
 # TEST FUNCTION
 def test():
-    print("placeholder test")
+    var_to_workflow_or_task_inputs(body = doc.workflow, var_type="String", var_name="docker", expr = args.docker_image)
+
+    call_list = find_calls()
+    for call in call_list:
+        line = doc.source_lines[call.pos.line - 1]
+        if '{' in line and '}' not in line:
+            var_to_call_inputs_multiline(call = call, var_name="docker", workflow_var_name="docker")
+        else:
+            var_to_call_inputs_single_line(call = call, task_var_name="docker", workflow_var_name="docker")
+
+    for task in doc.tasks:
+        var_to_workflow_or_task_inputs(body = task, var_type="String", var_name="docker", expr = args.docker_image)
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -278,13 +302,13 @@ tabs_to_spaces()                            # tested - convert tabs to spaces
 # docker_runtime()                            # tested - applies the below functions to add docker var to document
         # find_indices(line, target)        # tested - isolate start and end of target's expression, special if string
         # find_calls()                      # tested - find all nested calls in a workflow
-    # docker_to_call_inputs_multiline()     # tested - add or convert docker for multi-line call
-    # docker_to_call_inputs_single_line()   # tested - add or convert docker for single-line call
-    # docker_to_workflow_or_task_inputs()   # tested - add or convert docker for workflow or task inputs
+        # var_to_call_inputs_multiline()    # @@@ add or convert docker for multi-line call
+        # var_to_call_inputs_single_line()  # @@@ add or convert docker for single-line call
+        # var_to_workflow_or_task_inputs()  # @@@ add or convert docker for workflow or task inputs
     # docker_to_task_runtime()              # tested - add docker to task runtime or replace existing val
         # docker_to_task_or_param()         # tested - given a mode, inserts new value after the target
     # docker_param_meta()                   # not used: can't find .pos of param string
-pull_to_root()
+# pull_to_root()
 # source_modules()                            # tested - add source; module if "modules" var exists, else don't
-# test()
+test()
 write_out()                                 # tested - write out to a new wdl file

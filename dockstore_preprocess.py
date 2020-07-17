@@ -253,7 +253,7 @@ def pull_to_root():
         for var in pull[task]:
             extended_name = task + '_' + var
             for input in task_obj.inputs:
-                if input.name == var
+                if input.name == var:
                     var_type = str(input.type)
                     expr = str(input.expr)
                     break       # stop looking at the next input

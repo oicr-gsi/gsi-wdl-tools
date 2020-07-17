@@ -179,6 +179,7 @@ def docker_to_task_runtime(task, target = "docker"):   # all tested
                 insert = '"~{docker}"')
 
 # add docker parameter meta to workflow or task
+# not used: can't find .pos of type str
 def docker_param_meta(body, target = "docker"):
     if not body.parameter_meta:
         docker_to_task_or_param(
@@ -191,7 +192,6 @@ def docker_param_meta(body, target = "docker"):
 
     else:
         if target in body.parameter_meta.keys():
-            # print(body.parameter_meta[target])
             docker_to_task_or_param(
                 body = body,
                 mode = "replace",
@@ -200,7 +200,6 @@ def docker_param_meta(body, target = "docker"):
                 insert = '"Docker container to run the workflow in"')
 
         else:
-            # print(body.parameter_meta[list(body.parameter_meta.keys())[0]])
             docker_to_task_or_param(
                 body = body,
                 mode = "add line",
@@ -218,7 +217,7 @@ def docker_runtime():
     docker_to_workflow_or_task_inputs(body = doc.workflow)
 
     # add docker parameter meta to workflow
-    docker_param_meta(doc.workflow, target = "docker")
+    # docker_param_meta(doc.workflow, target = "docker")
 
     # add image to all task calls
     call_list = find_calls()
@@ -233,7 +232,7 @@ def docker_runtime():
     for task in doc.tasks:
         docker_to_workflow_or_task_inputs(task)
         docker_to_task_runtime(task, target = "docker")
-        docker_param_meta(task, target = "docker")
+        # docker_param_meta(task, target = "docker")
 
 # pull all task variables to the workflow that calls them
 def pull_to_root():
@@ -259,8 +258,8 @@ def source_modules():
             if index > -1:  # if the task does use modules
                 pos = task.command.pos.line
                 num_spaces = len(doc.source_lines[pos]) - len(doc.source_lines[pos].lstrip(' '))
-                prepend = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 20; "} \n\n' + ' ' * num_spaces
-                doc.source_lines[pos] = prepend + doc.source_lines[pos][num_spaces:]
+                prepend = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 20; "} \n\n'
+                doc.source_lines[pos] = prepend + doc.source_lines[pos]
 
 # TEST FUNCTION
 def test():
@@ -281,9 +280,9 @@ docker_runtime()
     # docker_to_call_inputs_single_line()   # tested - add or convert docker for single-line call
     # docker_to_workflow_or_task_inputs()   # tested - add or convert docker for workflow or task inputs
     # docker_to_task_runtime()              # tested - add docker to task runtime or replace existing val
-    # docker_param_meta()
         # docker_to_task_or_param()         # tested - given a mode, acts on the target with insert
+    # docker_param_meta()                   # not used: can't find .pos of param string
 # pull_to_root()
-# source_modules()                          # tested - add source; module if "modules" var exists, else don't
+source_modules()                            # tested - add source; module if "modules" var exists, else don't
 # test()
 write_out()                                 # tested - write out to a new wdl file

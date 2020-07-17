@@ -224,7 +224,7 @@ def docker_runtime():
     for call in call_list:
         line = doc.source_lines[call.pos.line - 1]
         if '{' in line and '}' not in line:
-            var_to_call_inputs_multiline(call = call, var_name="docker", workflow_var_name="docker")
+            var_to_call_inputs_multiline(call = call, task_var_name="docker", workflow_var_name="docker")
         else:
             var_to_call_inputs_single_line(call = call, task_var_name="docker", workflow_var_name="docker")
 
@@ -284,7 +284,7 @@ def test():
     for call in call_list:
         line = doc.source_lines[call.pos.line - 1]
         if '{' in line and '}' not in line:
-            var_to_call_inputs_multiline(call = call, var_name="docker", workflow_var_name="docker")
+            var_to_call_inputs_multiline(call = call, task_var_name="docker", workflow_var_name="docker")
         else:
             var_to_call_inputs_single_line(call = call, task_var_name="docker", workflow_var_name="docker")
 

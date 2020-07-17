@@ -247,6 +247,10 @@ def pull_to_root():
     for task_name in pull.keys():
         print(task_name)
 
+    # @@@@@@@@ GO THROUGH EACH TASK IN THE DOCUMENT
+    # IF VARIABLE EXISTS
+    # IF CALLEE_ID IS IN
+
 # source .bashrc and load required modules for each task
 def source_modules():
     for task in doc.tasks or []:
@@ -270,7 +274,7 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 tabs_to_spaces()                            # tested - convert tabs to spaces
-# docker_runtime()
+docker_runtime()
     # find_indices(line, target)            # tested - isolate start and end of target's expression, special if string
     # find_calls()                          # tested - find all nested calls in a workflow
     # docker_to_call_inputs_multiline()     # tested - add or convert docker for multi-line call
@@ -279,7 +283,7 @@ tabs_to_spaces()                            # tested - convert tabs to spaces
     # docker_to_task_runtime()              # tested - add docker to task runtime or replace existing val
     # docker_param_meta()
         # docker_to_task_or_param()         # tested - given a mode, acts on the target with insert
-pull_to_root()
+# pull_to_root()
 # source_modules()                          # tested - add source; module if "modules" var exists, else don't
 # test()
 write_out()                                 # tested - write out

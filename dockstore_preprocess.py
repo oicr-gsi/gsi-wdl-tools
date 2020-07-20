@@ -92,13 +92,16 @@ def var_to_call_inputs_multiline(call, task_var_name = "docker", workflow_var_na
         prepend = " " * num_spaces + task_var_name + " = " + workflow_var_name + ",\n"
         doc.source_lines[line_pos] = prepend + line
 
-    else:                                   # replace old docker var value
-        while task_var_name not in doc.source_lines[line_pos]:   # stops when line contains docker
-            line_pos += 1
-        line = doc.source_lines[line_pos]
-        index1, index2 = find_indices(line = line, target = task_var_name)
-        line = line[:index1] + workflow_var_name + line[index2:]
-        doc.source_lines[line_pos] = line
+    # line_pos at "call task {"
+    else:   # replace old docker var value; know that keys() contains task_var_name somewhere
+        while True:     # stops when line contains docker
+            line_pos += 1   # next line
+            line = doc.source_lines[line_pos]
+            index1, index2 = find_indices(line = line, target = task_var_name)
+            if index1 > -1 and index2 > -1:    # the right line is found
+                line = line[:index1] + workflow_var_name + line[index2:]
+                doc.source_lines[line_pos] = line
+                break
 
 # helper function: add "docker = docker" to a call with a single line input section
 def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_name = "docker"):
@@ -112,7 +115,7 @@ def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_
         index -= (line[index - 1] == ' ')       # move one back if " }"
         line = line[:index] + ", " + task_var_name + " = " + workflow_var_name + line[index:]
 
-    else:                                       # if docker var exists, modify it
+    else:   # knows that inputs section exists and keys contain task_var_name, just have to find it
         index1, index2 = find_indices(line = line, target = task_var_name)
         line = line[:index1] + workflow_var_name + line[index2:]
 
@@ -322,12 +325,12 @@ def write_out():
 
 tabs_to_spaces()                            # tested - convert tabs to spaces
 # docker_runtime()                            # tested - applies the below functions to add docker var to document
-find_indices(line, target)        #
+        # find_indices(line, target)        # tested -  find start and end of variable's assignment
         # find_calls()                      # tested - find all nested calls in a workflow
         # var_to_call_inputs_multiline()    # @@@ add or convert docker for multi-line call
         # var_to_call_inputs_single_line()  # @@@ add or convert docker for single-line call
-        # var_to_workflow_or_task_inputs()  # @@@ add or convert docker for workflow or task inputs
-    # docker_to_task_runtime()              # tested - add docker to task runtime or replace existing val
+    # var_to_workflow_or_task_inputs()      # @@@ add or convert docker for workflow or task inputs
+    # docker_to_task_runtime()              # @@@ add docker to task runtime or replace existing val
         # docker_to_task_or_param()         # tested - given a mode, inserts new value after the target
     # docker_param_meta()                   # not used: can't find .pos of param string
 # pull_to_root()

@@ -38,10 +38,15 @@ def find_indices(line, target):
         index_temp = line[index1:].find(c) + index1
         index2 = index_temp if index_temp > index1 - 1 and index_temp < index2 else index2
     return index1, index2
-            
-while True:
-    line = input("line: ")
-    target = input("target: ")
+           
+test_strings = ["docker = 'x'",
+                "xdocker = 'x'",
+                "dockerx = 'x'",
+                "mound = sand, docker = 3",
+                "_docker_: 3",
+                "okay, docker: ~{3}"]
+           
+for line in test_strings:
+    target = "docker"
     index1, index2 = find_indices(line, target)
-    print(index1, index2)
-    print(line[index1:index2])
+    print(line, line[index1:index2])

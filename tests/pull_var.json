@@ -1,3 +1,4 @@
 {
-	"find_tools": ["modules"]
+	"find_tools": ["modules"],
+	"task2": ["var1", "var2"]
 }

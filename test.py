@@ -30,12 +30,12 @@ def find_indices(line, target):
 
     if '"' in line[index1:]:    # if var assignment is a string, ignore symbols
         index2 = line[index1:].find('"') + index1 + 1
-        index2 = line[index2:].find('"') + index2 + 1
+        index2 = line[index2:].find('"') + index2
         return index1, index2
         
     if "'" in line[index1:]:    # if var assignment is a string, ignore symbols
         index2 = line[index1:].find("'") + index1 + 1
-        index2 = line[index2:].find("'") + index2 + 1
+        index2 = line[index2:].find("'") + index2
         return index1, index2
 
     index2 = len(line) - 1  # initialize at end of line
@@ -45,12 +45,12 @@ def find_indices(line, target):
     return index1, index2
            
 test_strings = ["docker = 'x'",
+                "mound = sand, docker = 3",
+                "okay, docker: ~{3}",
+                "docker1 = 'no', docker2 = 'no', docker = 'yes', docker4 = 'no'",
                 "xdocker = 'x'",
                 "dockerx = 'x'",
-                "mound = sand, docker = 3",
-                "_docker_: 3",
-                "okay, docker: ~{3}",
-                "docker1 = 'no', docker2 = 'no', docker = 'yes', docker4 = 'no'"]
+                "_docker_: 3"]
            
 for line in test_strings:
     target = "docker"

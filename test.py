@@ -1,3 +1,5 @@
+import time
+
 def find_indices(line, target):
     index1 = line.find(target)
 
@@ -15,6 +17,7 @@ def find_indices(line, target):
         if index1 + len(target) < len(line):        # if there are characters behind target
             valid_back = line[index1 + 1] in ":= "
         print(valid_front, valid_back)
+        time.sleep(1)
             
     index1 +=  len(target)      # skip to where the assignment starts
     while line[index1] in " =": # move forward until at start of assignment

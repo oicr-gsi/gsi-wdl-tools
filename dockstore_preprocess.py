@@ -303,19 +303,36 @@ def source_modules():
 
 # TEST FUNCTION
 def test():
-    var_to_workflow_or_task_inputs(body = doc.workflow, var_type="String", var_name="docker", expr = args.docker_image)
+    if not args.pull_json:
+        return
 
+    # get the list of all calls
     call_list = find_calls()
-    for call in call_list:
-        line = doc.source_lines[call.pos.line - 1]
-        if '{' in line and '}' not in line:
-            var_to_call_inputs_multiline(call = call, task_var_name="docker", workflow_var_name="docker")
-        else:
-            var_to_call_inputs_single_line(call = call, task_var_name="docker", workflow_var_name="docker")
 
-    for task in doc.tasks:
-        var_to_workflow_or_task_inputs(body = task, var_type="String", var_name="docker", expr = args.docker_image)
-        docker_to_task_runtime(task, target = "docker")
+    # read from pull_json for "task": ["var1", "var2"]
+    # note: if task or var name doesn't exist, then gets ignored
+    with open(args.pull_json) as f:
+        pull = json.load(f)
+    for task in pull.keys():
+        task_obj = (obj for obj in doc.tasks if obj.name == task)[0]     # the WDL.Tree.Task object
+        print(type(task_obj))
+
+        # relevant_calls = [call for call in call_list if task in call.callee_id] # all calls referencing the task
+        #
+        # for var in pull[task]:
+        #     extended_name = task + '_' + var
+        #     for input in task_obj.inputs:
+        #         if input.name == var:
+        #             var_type = str(input.type)
+        #             expr = str(input.expr)
+        #             break       # stop looking at the next input
+        #
+        #     # add the var and default value to workflow inputs
+        #     var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr = expr)
+        #
+        #     for call in relevant_calls:
+        #         var_to_call_inputs_multiline(call = call, task_var_name=var, workflow_var_name=extended_name)
+        #         var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_name)
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -325,13 +342,13 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 tabs_to_spaces()                            # tested - convert tabs to spaces
-# docker_runtime()                            # tested - applies the below functions to add docker var to document
+# docker_runtime()                            # tested - applies the below functions in the appropriate places
         # find_indices(line, target)        # tested -  find start and end of variable's assignment
         # find_calls()                      # tested - find all nested calls in a workflow
         # var_to_call_inputs_multiline()    # tested -  add or convert docker for multi-line call
         # var_to_call_inputs_single_line()  # tested -  add or convert docker for single-line call
     # var_to_workflow_or_task_inputs()      # tested -  add or convert docker for workflow or task inputs
-    # docker_to_task_runtime()              # @@@ add docker to task runtime or replace existing val
+    # docker_to_task_runtime()              # tested -  add docker to task runtime or replace existing val
         # docker_to_task_or_param()         # tested - given a mode, inserts new value after the target
     # docker_param_meta()                   # not used: can't find .pos of param string
 # pull_to_root()

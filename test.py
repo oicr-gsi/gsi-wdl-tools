@@ -19,9 +19,6 @@ def find_indices(line, target):
         if index1 < len(line):        # if there are characters behind target
             valid_back = line[index1] in ":= "
         
-        print(valid_front, valid_back)
-        time.sleep(0.25)
-        
         if valid_front and valid_back:
             break
             
@@ -56,7 +53,8 @@ test_strings = ["docker = 'x'",
                 "dockerx = 'x'",
                 "_docker_: 3",
                 "{one: 1, docker: 34}",
-                "{one: 1, docker: {bracket}}"]
+                "{one: 1, docker: {bracket}}",
+                "nothing"]
            
 for line in test_strings:
     target = "docker"

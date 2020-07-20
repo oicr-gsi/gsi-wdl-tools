@@ -15,6 +15,7 @@ def find_indices(line, target):
             valid_back = line[index1 + 1] in ":= "
 			
     index1 +=  len(target)      # skip to where the assignment starts
+	print(index1)
     while line[index1] in " =": # move forward until at start of assignment
         index1 += 1
 

@@ -314,22 +314,23 @@ def test():
     with open(args.pull_json) as f:
         pull = json.load(f)
     for task_name in pull.keys():
-        task = [task_obj for task_obj in doc.tasks if task_obj.name == task_name][0]     # the WDL.Tree.Task object
+        task = [task_obj for task_obj in doc.tasks if task_obj.name == task_name]     # the WDL.Tree.Task object
+        if len(task) == 0:  # if no corresponding task found
+            continue        # look at the next task_name in pull
+        task = task[0]      # else set task as the found Task object
         relevant_calls = [call for call in call_list if task_name in call.callee_id] # all calls referencing the task
-        print([call.callee_id for call in relevant_calls])
 
-        #
-        # for var in pull[task]:
-        #     extended_name = task + '_' + var
-        #     for input in task_obj.inputs:
-        #         if input.name == var:
-        #             var_type = str(input.type)
-        #             expr = str(input.expr)
-        #             break       # stop looking at the next input
-        #
-        #     # add the var and default value to workflow inputs
-        #     var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr = expr)
-        #
+        for var in pull[task_name]:      # iterate through list of variables to pull for that task
+            extended_name = task_name + '_' + var   # e.g. task2_var1
+            for input in task.inputs:
+                if input.name == var:   # if such a variable actually exists in that task
+                    var_type = str(input.type)
+                    expr = str(input.expr)
+                    print(extended_name, var_type, expr)
+                    # add the var and default value to workflow inputs
+                    #var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr = expr)
+                    break       # stop looking at the next input
+
         #     for call in relevant_calls:
         #         var_to_call_inputs_multiline(call = call, task_var_name=var, workflow_var_name=extended_name)
         #         var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_name)

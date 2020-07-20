@@ -287,6 +287,7 @@ def pull_to_root():
             var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr = expr)
 
             for call in relevant_calls:
+                # @@@@@@@@@@@@@@ ONLY ADD TO CALL IF NOT IN CALL ALREADY
                 var_to_call_inputs_multiline(call = call, task_var_name=var, workflow_var_name=extended_name)
                 var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_name)
 
@@ -330,6 +331,8 @@ def test():
                     var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr = expr)
                     break       # stop looking at the next input
             for call in relevant_calls:
+                if var in call.inputs.keys():   # skip the call if var in inputs already
+                    continue
                 line = doc.source_lines[call.pos.line - 1]
                 if '{' in line and '}' not in line:
                     var_to_call_inputs_multiline(call = call, task_var_name=var, workflow_var_name=extended_name)

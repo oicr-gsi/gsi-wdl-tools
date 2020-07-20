@@ -13,9 +13,9 @@ def find_indices(line, target):
         valid_back = index1 + len(target) == len(line)
         if index1 + len(target) < len(line):        # if there are characters behind target
             valid_back = line[index1 + 1] in ":= "
-			
+            
     index1 +=  len(target)      # skip to where the assignment starts
-	print(index1)
+    print(index1)
     while line[index1] in " =": # move forward until at start of assignment
         index1 += 1
 
@@ -29,10 +29,10 @@ def find_indices(line, target):
         index_temp = line[index1:].find(c) + index1
         index2 = index_temp if index_temp > index1 - 1 and index_temp < index2 else index2
     return index1, index2
-			
+            
 while True:
-	line = input("line: ")
-	target = input("target: ")
-	index1, index2 = find_indices(line, target)
-	print(index1, index2)
-	print(line[index1:index2])
+    line = input("line: ")
+    target = input("target: ")
+    index1, index2 = find_indices(line, target)
+    print(index1, index2)
+    print(line[index1:index2])

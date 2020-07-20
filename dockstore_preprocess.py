@@ -335,6 +335,7 @@ def test():
                     var_to_call_inputs_multiline(call = call, task_var_name=var, workflow_var_name=extended_name)
                 else:
                     var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_name)
+                    print(doc.source_lines[call.pos.line - 1])
 
 # final outputs to stdout or a file with modified name
 def write_out():

@@ -14,7 +14,7 @@ def find_indices(line, target):
         if index1 + len(target) < len(line):        # if there are characters behind target
             valid_back = line[index1 + 1] in ":= "
 			
-	index1 +=  len(target)      # skip to where the assignment starts
+    index1 +=  len(target)      # skip to where the assignment starts
     while line[index1] in " =": # move forward until at start of assignment
         index1 += 1
 

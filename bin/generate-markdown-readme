@@ -1,16 +1,16 @@
 #!/bin/bash
 set -eu
-
 (
 # go to the root directory of the project
 pushd "$(dirname $0)/.." > /dev/null
 
-# load the project venv
+# get the project venv
 PYTHON="$(pipenv --venv)/bin/python"
+export PYTHONPATH=$(pwd)
 
 # go back to the calling directory
 popd > /dev/null
 
 # call generate_markdown_readme.py
-"$PYTHON" "$(dirname $0)/../generate_markdown_readme.py" $@
+"$PYTHON" "$(dirname $0)/../scripts/generate_markdown_readme.py" $@
 )

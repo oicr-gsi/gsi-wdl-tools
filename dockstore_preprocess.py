@@ -114,7 +114,7 @@ def var_to_call_inputs_multiline(call, task_var_name = "docker", workflow_var_na
 def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_name = "docker"):
     line = doc.source_lines[call.pos.line - 1]
     if not call.inputs and "{" not in line:     # input section doesn't exist; add "input: task_var_name = workflow_var_name"
-        # "{" not in line is for preprocess-added input sections not yet recognized by WDL; prevent duplicate additions
+        index = len(line) - 1                   # if call doesn't have {}, set index to end of line
         line += " { input: " + task_var_name + " = " + workflow_var_name + " }"
 
     elif task_var_name not in call.inputs.keys():    # if input not empty but no docker var: add it

@@ -49,4 +49,5 @@ test_strings = ["docker = 'x'",
 for line in test_strings:
     target = "docker"
     index1, index2 = find_indices(line, target)
+    print(index1, index2)
     print(line + " /// " + line[index1:index2])

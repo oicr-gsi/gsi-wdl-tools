@@ -1,23 +1,29 @@
 import time
 
 def find_indices(line, target):
-    index1 = line.find(target)
+    index1 = 0
 
     valid_front, valid_back = False, False
-    while not valid_front or not valid_back:
+    while True:
         next_index = line[index1:].find(target)
-        if next_index < 0:  # target not in string
+        if next_index < 0:      # target not in string
             return -1, -1
-        index1 += next_index
+        index1 += next_index    # jump to head of found target
         
         valid_front = index1 == 0
         if index1 > 0:                              # if there are characters in front of target
             valid_front = line[index1 - 1] in ", "  # other characters like [a-z][0-9][_$#*] etc. not allowed
-        valid_back = index1 + len(target) == len(line)
-        if index1 + len(target) < len(line):        # if there are characters behind target
-            valid_back = line[index1 + len(target)] in ":= "
+        
+        index1 += len(target)   # jump to tail of found target: doesn't repeatedly find the same word
+        valid_back = index1 == len(line)
+        if index1 < len(line):        # if there are characters behind target
+            valid_back = line[index1] in ":= "
+        
         print(valid_front, valid_back)
         time.sleep(1)
+        
+        if valid_front and valid_back:
+            break
             
     index1 +=  len(target)      # skip to where the assignment starts
     while line[index1] in " =": # move forward until at start of assignment

@@ -20,10 +20,27 @@ def tabs_to_spaces(num_spaces = 8):     # what about multiple tabs, or tab is in
         num_tabs = len(doc.source_lines[index]) - len(line)     # how many tabs were stripped away
         doc.source_lines[index] = " " * num_spaces * num_tabs + line
 
-# find index1 and index2 around a keyword
+# find index1 and index2 around a keyword that exists somewhere in a line
 def find_indices(line, target):
-    index1 = line.find(target) + len(target)
-    while line[index1] in " =":  # move forward until at start of assignment
+    index1 = line.find(target)
+
+    valid_front, valid_back = False, False
+    while not valid_front or not valid_back:
+        next_index = line[index1:].find(target)
+        if next_index < 0:  # target not in string
+            return -1, -1
+        index1 += next_index
+        valid_front = index1 == 0
+        if index1 > 0:                              # if there are characters in front of target
+            valid_front = line[index1 - 1] in ", "  # other characters like [a-z][0-9][_$#*] etc. not allowed
+        valid_back = index1 + len(target) == len(line)
+        if index1 + len(target) < len(line):        # if there are characters behind target
+            valid_back = line[index1 + 1] in ":= "
+
+
+
+    index1 +=  len(target)      # skip to where the assignment starts
+    while line[index1] in " =": # move forward until at start of assignment
         index1 += 1
 
     if '"' in line[index1:]:    # if var assignment is a string, ignore symbols
@@ -108,13 +125,13 @@ def var_to_workflow_or_task_inputs(body, var_type = "String", var_name = "docker
 
     else:   # if inputs section does exist
         docker_in_inputs = False
-        for input in body.inputs:   # replace existing docker var
-            if var_name in input.name:
-                docker_in_inputs = True
+        for input in body.inputs:           # replace existing docker var
+            if var_name == input.name:      # only replace if match name exactly
                 line = doc.source_lines[input.pos.line - 1]
                 index1, index2 = find_indices(line = line, target = var_name)
                 line = line[:index1] + '"' + expr + '"' + line[index2:]
                 doc.source_lines[input.pos.line - 1] = line
+                docker_in_inputs = True
 
         if not docker_in_inputs:            # add new docker var
             line = doc.source_lines[body.inputs[0].pos.line - 1]
@@ -300,7 +317,7 @@ def write_out():
 
 tabs_to_spaces()                            # tested - convert tabs to spaces
 # docker_runtime()                            # tested - applies the below functions to add docker var to document
-        # find_indices(line, target)        # tested - isolate start and end of target's expression, special if string
+find_indices(line, target)        #
         # find_calls()                      # tested - find all nested calls in a workflow
         # var_to_call_inputs_multiline()    # @@@ add or convert docker for multi-line call
         # var_to_call_inputs_single_line()  # @@@ add or convert docker for single-line call

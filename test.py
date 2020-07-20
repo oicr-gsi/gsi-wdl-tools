@@ -55,7 +55,8 @@ test_strings = ["docker = 'x'",
                 "xdocker = 'x'",
                 "dockerx = 'x'",
                 "_docker_: 3",
-                "{one: 1, docker: 34}"]
+                "{one: 1, docker: 34}",
+                "{one: 1, docker: {bracket}}"]
            
 for line in test_strings:
     target = "docker"

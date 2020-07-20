@@ -106,7 +106,7 @@ def var_to_call_inputs_multiline(call, task_var_name = "docker", workflow_var_na
 # helper function: add "docker = docker" to a call with a single line input section
 def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_name = "docker"):
     line = doc.source_lines[call.pos.line - 1]
-    if not call.inputs:     # if input section empty, add "input: docker"
+    if not call.inputs and "{" not in line:     # if input section empty, add "input: docker"
         index = len(line) - 1                   # if call doesn't have {}, set index to end of line
         line += " { input: " + task_var_name + " = " + workflow_var_name + " }"
 
@@ -335,7 +335,6 @@ def test():
                     var_to_call_inputs_multiline(call = call, task_var_name=var, workflow_var_name=extended_name)
                 else:
                     var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_name)
-                    print(doc.source_lines[call.pos.line - 1])
 
 # final outputs to stdout or a file with modified name
 def write_out():

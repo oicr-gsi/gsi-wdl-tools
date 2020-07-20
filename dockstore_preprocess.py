@@ -315,6 +315,7 @@ def test():
 
     for task in doc.tasks:
         var_to_workflow_or_task_inputs(body = task, var_type="String", var_name="docker", expr = args.docker_image)
+        docker_to_task_runtime(task, target = "docker")
 
 # final outputs to stdout or a file with modified name
 def write_out():
@@ -327,9 +328,9 @@ tabs_to_spaces()                            # tested - convert tabs to spaces
 # docker_runtime()                            # tested - applies the below functions to add docker var to document
         # find_indices(line, target)        # tested -  find start and end of variable's assignment
         # find_calls()                      # tested - find all nested calls in a workflow
-        # var_to_call_inputs_multiline()    # @@@ add or convert docker for multi-line call
-        # var_to_call_inputs_single_line()  # @@@ add or convert docker for single-line call
-    # var_to_workflow_or_task_inputs()      # @@@ add or convert docker for workflow or task inputs
+        # var_to_call_inputs_multiline()    # tested -  add or convert docker for multi-line call
+        # var_to_call_inputs_single_line()  # tested -  add or convert docker for single-line call
+    # var_to_workflow_or_task_inputs()      # tested -  add or convert docker for workflow or task inputs
     # docker_to_task_runtime()              # @@@ add docker to task runtime or replace existing val
         # docker_to_task_or_param()         # tested - given a mode, inserts new value after the target
     # docker_param_meta()                   # not used: can't find .pos of param string

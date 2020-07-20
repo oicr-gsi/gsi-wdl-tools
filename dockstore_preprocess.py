@@ -326,9 +326,8 @@ def test():
                 if input.name == var:   # if such a variable actually exists in that task
                     var_type = str(input.type)
                     expr = str(input.expr)
-                    print(extended_name, var_type, expr)
                     # add the var and default value to workflow inputs
-                    #var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr = expr)
+                    var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr = expr)
                     break       # stop looking at the next input
 
         #     for call in relevant_calls:

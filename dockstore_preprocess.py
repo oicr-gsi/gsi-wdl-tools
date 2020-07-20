@@ -315,7 +315,7 @@ def test():
         pull = json.load(f)
     for task_name in pull.keys():
         task = [task_obj for task_obj in doc.tasks if task_obj.name == task_name][0]     # the WDL.Tree.Task object
-        relevant_calls = [call for call in call_list if task_name == call.callee_id] # all calls referencing the task
+        relevant_calls = [call for call in call_list if task_name in call.callee_id] # all calls referencing the task
         print([call.callee_id for call in relevant_calls])
 
         #

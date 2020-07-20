@@ -15,7 +15,7 @@ def find_indices(line, target):
             valid_front = line[index1 - 1] in ", "  # other characters like [a-z][0-9][_$#*] etc. not allowed
         valid_back = index1 + len(target) == len(line)
         if index1 + len(target) < len(line):        # if there are characters behind target
-            valid_back = line[index1 + 1] in ":= "
+            valid_back = line[index1 + len(target)] in ":= "
         print(valid_front, valid_back)
         time.sleep(1)
             

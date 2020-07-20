@@ -20,7 +20,7 @@ def find_indices(line, target):
             valid_back = line[index1] in ":= "
         
         print(valid_front, valid_back)
-        time.sleep(1)
+        time.sleep(0.25)
         
         if valid_front and valid_back:
             break
@@ -41,7 +41,7 @@ def find_indices(line, target):
     index2 = len(line) - 1  # initialize at end of line
     for c in "} ,":  # value ends in ,/ /} whichever is smallest but must > -1
         index_temp = line[index1:].find(c) + index1
-        index2 = index_temp if index_temp > index1 - 1 and index_temp < index2 else index2
+        index2 = index_temp if index_temp > -1 + index1 and index_temp < index2 else index2
     return index1, index2
            
 test_strings = ["docker = 'x'",
@@ -49,13 +49,14 @@ test_strings = ["docker = 'x'",
                 "dockerx = 'x'",
                 "mound = sand, docker = 3",
                 "_docker_: 3",
-                "okay, docker: ~{3}"]
+                "okay, docker: ~{3}",
+                "docker1 = 'no', docker2 = 'no', docker = 'yes', docker4 = 'no'"]
            
 for line in test_strings:
     target = "docker"
     index1, index2 = find_indices(line, target)
     print(index1, index2)
-    print(line + " /// " + line[index1:index2])
+    print(line + " /// " + line[index1:index2 + 1])
     
 # put items after, similar dockers on same line
     

@@ -11,91 +11,95 @@ parser.add_argument("--docker-image", required=False)
 parser.add_argument("--pull-json", required=False)
 args = parser.parse_args()
 
-doc = WDL.load(args.input_wdl_path)     # loads the entire document
+# loads the file as a WDL.Tree.Document object
+doc = WDL.load(args.input_wdl_path)
 
-# converts all tabs to spaces for compatibility
-def tabs_to_spaces(num_spaces = 8):     # what about multiple tabs, or tab is in a string?
+# converts all tabs to spaces for run compatibility
+    # num_spaces: number of spaces to each tab
+def tabs_to_spaces(num_spaces = 8):
     for index in range(len(doc.source_lines)):
-        line = doc.source_lines[index].lstrip('\t')     # strips leading tabs
-        num_tabs = len(doc.source_lines[index]) - len(line)     # how many tabs were stripped away
+        line = doc.source_lines[index].lstrip('\t')
+        num_tabs = len(doc.source_lines[index]) - len(line)
         doc.source_lines[index] = " " * num_spaces * num_tabs + line
 
 # find index1 and index2 around a keyword that exists somewhere in a line
+    # line: the string that holds the keyword
+    # target: the keyword in the line
+    # index1: the start of the keyword
+    # index2: the end of the keyword
 def find_indices(line, target):
     index1 = 0
     valid_front, valid_back = False, False
     while True:
         next_index = line[index1:].find(target)
-        if next_index < 0:  # target not in string
+        if next_index < 0:          # exit if target not in string
             return -1, -1
-        index1 += next_index  # jump to head of found target
+        index1 += next_index        # jump to the next match found
 
         valid_front = index1 == 0
-        if index1 > 0:  # if there are characters in front of target
-            valid_front = line[index1 - 1] in ", "  # other characters like [a-z][0-9][_$#*] etc. not allowed
-        index1 += len(target)  # jump to tail of found target: doesn't repeatedly find the same word
+        if index1 > 0:              # if there are characters in front of target
+            valid_front = line[index1 - 1] in ", "  # only selected characters allowed
+        index1 += len(target)       # jump to end of the found target
         valid_back = index1 == len(line)
-        if index1 < len(line):  # if there are characters behind target
-            valid_back = line[index1] in ":= "
+        if index1 < len(line):      # if there are characters behind target
+            valid_back = line[index1] in ":= "      # only selected characters allowed
         if valid_front and valid_back:
             break
-
-    while line[index1] in " =:":  # move forward until at start of assignment
+    while line[index1] in " =:":    # move forward until at start of value assignment
         index1 += 1
-    if '"' in line[index1:]:  # if var assignment is a string, ignore symbols
+    if '"' in line[index1:]:        # if var assignment is a string, ignore symbols
         index2 = line[index1:].find('"') + index1 + 1
         index2 = line[index2:].find('"') + index2 + 1
         return index1, index2
-    if "'" in line[index1:]:  # if var assignment is a string, ignore symbols
+    if "'" in line[index1:]:        # if var assignment is a string or char, ignore symbols
         index2 = line[index1:].find("'") + index1 + 1
         index2 = line[index2:].find("'") + index2 + 1
         return index1, index2
-    if "{" in line[index1:]:  # if var assignment contains a set, ignore brackets
+    if "{" in line[index1:]:        # if var assignment contains a set, ignore brackets
         index2 = line[index1:].find("}") + index1 + 1
         return index1, index2
-    index2 = len(line)  # initialize at end of line
-    for c in "} ,":  # value ends in ,/ /} whichever is smallest but must > -1
+    index2 = len(line)
+    for c in "} ,":                 # assignment ends at special characters
         index_temp = line[index1:].find(c) + index1
         index2 = index_temp if index_temp > -1 + index1 and index_temp < index2 else index2
     return index1, index2
 
 # find all nested calls within a workflow
+    # call_list: list of all WDL.Tree.Call objects
 def find_calls():
-    # change inputs for calls within scatters and conditionals
-    call_list = []      # list of call objects found
-    todo_bodies = []     # list of scatters and conditions to search in
-    for body in doc.workflow.body:      # tested - able to delegate multi- and single insert
+    call_list = []
+    todo_bodies = []                        # list of scatters and conditionals to search in
+    for body in doc.workflow.body:
         if isinstance(body, WDL.Tree.Call):
             call_list.append(body)
         if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
             todo_bodies.append(body)
-
-    while todo_bodies:
-        body = todo_bodies[0]           # pop the first element
+    while todo_bodies:                      # breadth-first traversal until todos are done
+        body = todo_bodies[0]
         todo_bodies = todo_bodies[1:]
 
         if isinstance(body, WDL.Tree.Call):
             call_list.append(body)
         if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
-            todo_bodies.extend(body.body)       # add sub-content of the scatter or conditional to todo
-
+            todo_bodies.extend(body.body)   # add sub-content of the scatter or conditional to todo
     return call_list
 
-# helper function: add "docker = docker" to a call with a multi-line input section
+# helper function: add "task_var_name = workflow_var_name" to a call with multi-line inputs
+    # call: the WDL.Tree.Call object
+    # task_var_name: the variable name within the called task
+    # workflow_var_name: the variable name within the workflow
 def var_to_call_inputs_multiline(call, task_var_name = "docker", workflow_var_name = "docker"):
-    # either multi-line has docker or hasn't, but will not be empty (that's single line)
-    line_pos = call.pos.line - 1
-    if task_var_name not in call.inputs.keys():  # add docker as new var
+    # multi-line inputs will never be empty
+    line_pos = call.pos.line - 1                # line_pos at "call task {"
+    if task_var_name not in call.inputs.keys(): # doesn't exist; add docker as new var
         line_pos += 2 if "input:" in doc.source_lines[line_pos + 1] else 1   # first line with input vars
         line = doc.source_lines[line_pos]
         num_spaces = len(line) - len(line.lstrip(' '))
         prepend = " " * num_spaces + task_var_name + " = " + workflow_var_name + ",\n"
         doc.source_lines[line_pos] = prepend + line
-
-    # line_pos at "call task {"
-    else:   # replace old docker var value; know that keys() contains task_var_name somewhere
-        while True:     # stops when line contains docker
-            line_pos += 1   # next line
+    else:                   # know that keys() contains task_var_name somewhere; replace old docker var value
+        while True:         # stops when line contains docker
+            line_pos += 1
             line = doc.source_lines[line_pos]
             index1, index2 = find_indices(line = line, target = task_var_name)
             if index1 > -1 and index2 > -1:    # the right line is found
@@ -104,10 +108,13 @@ def var_to_call_inputs_multiline(call, task_var_name = "docker", workflow_var_na
                 break
 
 # helper function: add "docker = docker" to a call with a single line input section
+    # call: the WDL.Tree.Call object
+    # task_var_name: the variable name within the called task
+    # workflow_var_name: the variable name within the workflow
 def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_name = "docker"):
     line = doc.source_lines[call.pos.line - 1]
-    if not call.inputs and "{" not in line:     # if input section empty, add "input: docker"
-        index = len(line) - 1                   # if call doesn't have {}, set index to end of line
+    if not call.inputs and "{" not in line:     # input section doesn't exist; add "input: task_var_name = workflow_var_name"
+        # "{" not in line is for preprocess-added input sections not yet recognized by WDL; prevent duplicate additions
         line += " { input: " + task_var_name + " = " + workflow_var_name + " }"
 
     elif task_var_name not in call.inputs.keys():    # if input not empty but no docker var: add it

@@ -169,13 +169,11 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
 def docker_to_task_or_param(body, mode, index, insert, target = "docker", section = "runtime"):
     if mode == "section":
         line = doc.source_lines[index]
-        print(line)
         num_spaces = len(line) - len(line.lstrip(' '))
         line = ' ' * num_spaces + section + ' {\n' + \
                ' ' * num_spaces * 2 + target + ': ' + insert + '\n' + \
                ' ' * num_spaces + '}\n\n' + line
         doc.source_lines[index] = line
-        print(line + "\n")
 
     if mode == "replace":
         line = doc.source_lines[index]

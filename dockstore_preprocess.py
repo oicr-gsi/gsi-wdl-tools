@@ -329,10 +329,12 @@ def test():
                     # add the var and default value to workflow inputs
                     var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr = expr)
                     break       # stop looking at the next input
-
-        #     for call in relevant_calls:
-        #         var_to_call_inputs_multiline(call = call, task_var_name=var, workflow_var_name=extended_name)
-        #         var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_name)
+            for call in relevant_calls:
+                line = doc.source_lines[call.pos.line - 1]
+                if '{' in line and '}' not in line:
+                    var_to_call_inputs_multiline(call = call, task_var_name=var, workflow_var_name=extended_name)
+                else:
+                    var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_nam)
 
 # final outputs to stdout or a file with modified name
 def write_out():

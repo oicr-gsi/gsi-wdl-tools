@@ -313,9 +313,9 @@ def test():
     # note: if task or var name doesn't exist, then gets ignored
     with open(args.pull_json) as f:
         pull = json.load(f)
-    for task in pull.keys():
-        task_obj = (obj for obj in list(doc.tasks) if obj.name == task)     # the WDL.Tree.Task object
-        print(type(task_obj))
+    for task_name in pull.keys():
+        task = task_obj for task_obj in doc.tasks if task_obj.name == task_name     # the WDL.Tree.Task object
+        print(task)
 
         # relevant_calls = [call for call in call_list if task in call.callee_id] # all calls referencing the task
         #

@@ -25,7 +25,7 @@ def find_indices(line, target):
         if valid_front and valid_back:
             break
             
-    while line[index1] in " =": # move forward until at start of assignment
+    while line[index1] in " =:": # move forward until at start of assignment
         index1 += 1
 
     if '"' in line[index1:]:    # if var assignment is a string, ignore symbols
@@ -56,3 +56,9 @@ for line in test_strings:
     index1, index2 = find_indices(line, target)
     print(index1, index2)
     print(line + " /// " + line[index1:index2])
+    
+# put items after, similar dockers on same line
+    
+    
+    
+    

@@ -32,6 +32,11 @@ def find_indices(line, target):
         index2 = line[index1:].find('"') + index1 + 1
         index2 = line[index2:].find('"') + index2 + 1
         return index1, index2
+        
+    if "'" in line[index1:]:    # if var assignment is a string, ignore symbols
+        index2 = line[index1:].find("'") + index1 + 1
+        index2 = line[index2:].find("'") + index2 + 1
+        return index1, index2
 
     index2 = len(line) - 1  # initialize at end of line
     for c in "} ,":  # value ends in ,/ /} whichever is smallest but must > -1

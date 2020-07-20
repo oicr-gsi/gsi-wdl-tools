@@ -20,6 +20,10 @@ class Input:
     description: str
 
 
+class ValidationError(Exception):
+    pass
+
+
 class WorkflowInfo:
 
     def __init__(self, path):
@@ -46,7 +50,6 @@ class WorkflowInfo:
 
         outputs = []
         for output in self.doc.workflow.effective_outputs:
-
             name = output.name
             wdl_type = str(output.value)
             if isinstance(output, str):
@@ -60,6 +63,8 @@ class WorkflowInfo:
                     description = output_descriptions.get(output_file_name)
             else:
                 raise Exception('Unsupported input type')
+            if not description:
+                raise Exception(f"output description is missing for {name}")
             outputs.append(Output(name=name, wdl_type=wdl_type, description=description))
         return outputs
 
@@ -97,13 +102,15 @@ class WorkflowInfo:
                 optional = True
             else:
                 optional = False
+            if param.value.type.optional and default != "None":
+                raise ValidationError(f"Optional with default: {wdl_type} {name} = {default}")
             description = param_descriptions.get(name, '')
             if not description and len(name.split('.')) == 2:
                 # this is an aliased call parameter, map call name to task name and get the task's description
                 (call_name, param_name) = name.split('.')
-                description = param_descriptions.get(f"{call_to_task.get(call_name,'missing')}.{param_name}",'')
+                description = param_descriptions.get(f"{call_to_task.get(call_name, 'missing')}.{param_name}", '')
             if not description:
-                raise Exception(f"parameter_meta description is missing for {name}")
+                raise ValidationError(f"parameter_meta description is missing for {name}")
             input_param = Input(name=name, wdl_type=wdl_type, optional=optional, default=default,
                                 description=description)
             if '.' not in input_param.name:

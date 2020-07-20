@@ -30,15 +30,15 @@ def find_indices(line, target):
 
     if '"' in line[index1:]:    # if var assignment is a string, ignore symbols
         index2 = line[index1:].find('"') + index1 + 1
-        index2 = line[index2:].find('"') + index2
+        index2 = line[index2:].find('"') + index2 + 1
         return index1, index2
         
     if "'" in line[index1:]:    # if var assignment is a string, ignore symbols
         index2 = line[index1:].find("'") + index1 + 1
-        index2 = line[index2:].find("'") + index2
+        index2 = line[index2:].find("'") + index2 + 1
         return index1, index2
 
-    index2 = len(line) - 1  # initialize at end of line
+    index2 = len(line)  # initialize at end of line
     for c in "} ,":  # value ends in ,/ /} whichever is smallest but must > -1
         index_temp = line[index1:].find(c) + index1
         index2 = index_temp if index_temp > -1 + index1 and index_temp < index2 else index2
@@ -56,7 +56,7 @@ for line in test_strings:
     target = "docker"
     index1, index2 = find_indices(line, target)
     print(index1, index2)
-    print(line + " /// " + line[index1:index2 + 1])
+    print(line + " /// " + line[index1:index2])
     
 # put items after, similar dockers on same line
     

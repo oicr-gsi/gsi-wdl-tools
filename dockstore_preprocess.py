@@ -334,7 +334,7 @@ def test():
                 if '{' in line and '}' not in line:
                     var_to_call_inputs_multiline(call = call, task_var_name=var, workflow_var_name=extended_name)
                 else:
-                    var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_nam)
+                    var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_name)
 
 # final outputs to stdout or a file with modified name
 def write_out():

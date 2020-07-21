@@ -98,7 +98,7 @@ def var_to_call_inputs_multiline(call, task_var_name = "docker", workflow_var_na
         num_spaces = len(next_line) - len(next_line.lstrip(' '))
         if '=' in line:     # if "inputs:" and var assigment on same line, insert in-between
             index = line.find("input:") + len("input:")
-            index += 1 if line[index] = ' ' else 0
+            index += 1 if line[index] == ' ' else 0
             new_line = line[:index] + "\n" + " " * num_spaces + task_var_name + " = " + workflow_var_name + ",\n" + " " * num_spaces + line[index:]
             doc.source_lines[line_pos] = new_line
         else:               # go to the next line and prepend new var before assignment

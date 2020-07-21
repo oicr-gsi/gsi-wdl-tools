@@ -139,14 +139,14 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
         line = doc.source_lines[body.pos.line - 1]
         line += '\n' + \
                 ' ' * num_spaces + 'input {\n' + \
-                ' ' * num_spaces * 2 + var_type + ' ' + var_name + (' = "' + expr) * (expr != None) + '"\n' + \
+                ' ' * num_spaces * 2 + var_type + ' ' + var_name + (' = "' + expr) * (expr != "None") + '"\n' + \
                 ' ' * num_spaces + '}\n'
         doc.source_lines[body.pos.line - 1] = line
 
     else:                   # input section exists but variable doesn't; add new variable
         docker_in_inputs = False
         for input in body.inputs:           # replace existing docker var if new expr is not empty
-            if var_name == input.name and expr != None:      # only replace if match name exactly
+            if var_name == input.name and expr != "None":      # only replace if match name exactly
                 line = doc.source_lines[input.pos.line - 1]
                 index1, index2 = find_indices(line = line, target = var_name)
                 line = line[:index1] + '"' + expr + '"' + line[index2:]
@@ -156,7 +156,7 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
         if not docker_in_inputs:            # add new docker var
             line = doc.source_lines[body.inputs[0].pos.line - 1]
             num_spaces = len(line) - len(line.lstrip(' '))
-            line = ' ' * num_spaces + var_type + ' ' + var_name + (' = "' + expr) * (expr != None) + '"\n' + line
+            line = ' ' * num_spaces + var_type + ' ' + var_name + (' = "' + expr) * (expr != "None") + '"\n' + line
             doc.source_lines[body.inputs[0].pos.line - 1] = line
 
 # helper - add docker to runtime or param meta
@@ -292,7 +292,6 @@ def pull_to_root():
                 if input.name == var:           # if pulled variable exists
                     var_type = str(input.type).strip('"')
                     expr = str(input.expr).strip('"')
-                    print(expr == None, expr == "None")
                     # add the var and default value to workflow inputs
                     var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr = expr)
                     break

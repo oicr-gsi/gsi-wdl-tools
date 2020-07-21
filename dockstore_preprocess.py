@@ -92,7 +92,7 @@ def var_to_call_inputs_multiline(call, task_var_name = "docker", workflow_var_na
     # multi-line inputs will never be empty
     line_pos = call.pos.line - 1                # line_pos at "call task {"
     if task_var_name not in call.inputs.keys(): # doesn't exist; add docker as new var
-        line_pos += 1 if "input:" in doc.source_lines[line_pos + 1]
+        line_pos += 1 if "input:" in doc.source_lines[line_pos + 1] else 0  # go to the line with "input:"
         line = doc.source_lines[line_pos]
         next_line = doc.source_lines[line_pos + 1]
         num_spaces = len(next_line) - len(next_line.lstrip(' '))

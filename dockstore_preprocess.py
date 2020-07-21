@@ -139,7 +139,7 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
         line = doc.source_lines[body.pos.line - 1]
         line += '\n' + \
                 ' ' * num_spaces + 'input {\n' + \
-                ' ' * num_spaces * 2 + var_type + ' ' + var_name + (' = "' + expr) * (expr != "None") + '"\n' + \
+                ' ' * num_spaces * 2 + var_type + ' ' + var_name + (' = "' + expr + '"') * (expr != "None") + '\n' + \
                 ' ' * num_spaces + '}\n'
         doc.source_lines[body.pos.line - 1] = line
 
@@ -156,7 +156,7 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
         if not docker_in_inputs:            # add new docker var
             line = doc.source_lines[body.inputs[0].pos.line - 1]
             num_spaces = len(line) - len(line.lstrip(' '))
-            line = ' ' * num_spaces + var_type + ' ' + var_name + (' = "' + expr) * (expr != "None") + '"\n' + line
+            line = ' ' * num_spaces + var_type + ' ' + var_name + (' = "' + expr + '"') * (expr != "None") + '\n' + line
             doc.source_lines[body.inputs[0].pos.line - 1] = line
 
 # helper - add docker to runtime or param meta

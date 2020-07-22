@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument("--input-wdl-path", metavar = 'w', required=True, help = "source wdl path")
 parser.add_argument("--docker-image", metavar = 'i', required=False, help = "image name and tag")
 parser.add_argument("--pull-json", metavar = 'p', required=False, help = "path to json containing which variables to pull")
-parser.add_argument("--dockstore", metavar='d', required = False, default = False, help="whether to activate functions for dockstore")
+parser.add_argument("--dockstore", metavar='d', required = False, help="whether to activate functions for dockstore")
 
 args = parser.parse_args()
 

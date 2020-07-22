@@ -338,6 +338,7 @@ def write_out():
 tabs_to_spaces()                            # convert tabs to spaces
 pull_to_root()                              # pull all task variables to the workflow that calls them
 if args.dockstore:
+    print("dockstore mode activated")
     source_modules()                            # add source; module if "modules" var exists, else don't
     docker_runtime()                            # applies the below functions in the appropriate places
             # find_indices(line, target)        # find start and end of variable's assignment

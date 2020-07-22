@@ -6,9 +6,11 @@ import WDL
 import json
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("--input-wdl-path", required=True)
-parser.add_argument("--docker-image", required=False)
-parser.add_argument("--pull-json", required=False)
+parser.add_argument("--input-wdl-path", metavar = 'w', required=True, help = "source wdl path")
+parser.add_argument("--docker-image", metavar = 'i', required=False, help = "image name and tag")
+parser.add_argument("--pull-json", metavar = 'p', required=False, help = "path to json containing which variables to pull")
+parser.add_argument("--dockstore", metavar='d', required = False, help="whether to activate functions for dockstore")
+
 args = parser.parse_args()
 
 # loads the file as a WDL.Tree.Document object
@@ -328,20 +330,22 @@ def source_modules():
 # caller - final outputs to stdout or a file with modified name
 def write_out():
     name_index = args.input_wdl_path.rfind('/')
-    output_path = args.input_wdl_path[:name_index + 1] + "dockstore_" + args.input_wdl_path[name_index + 1:]
+    prepend = "dockstore_" if args.dockstore else "pull_"
+    output_path = args.input_wdl_path[:name_index + 1] + prepend + args.input_wdl_path[name_index + 1:]
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
 tabs_to_spaces()                            # convert tabs to spaces
-docker_runtime()                            # applies the below functions in the appropriate places
-        # find_indices(line, target)        # find start and end of variable's assignment
-        # find_calls()                      # find all nested calls in a workflow
-        # var_to_call_inputs_multiline()    # add or convert docker for multi-line call
-        # var_to_call_inputs_single_line()  # add or convert docker for single-line call
-    # var_to_workflow_or_task_inputs()      # add or convert docker for workflow or task inputs
-    # docker_to_task_runtime()              # add docker to task runtime or replace existing val
-        # docker_to_task_or_param()         # given a mode, inserts new value after the target
-    # docker_param_meta()                   # not used: can't find .pos of param string
 pull_to_root()                              # pull all task variables to the workflow that calls them
-source_modules()                            # add source; module if "modules" var exists, else don't
+if args.dockstore:
+    source_modules()                            # add source; module if "modules" var exists, else don't
+    docker_runtime()                            # applies the below functions in the appropriate places
+            # find_indices(line, target)        # find start and end of variable's assignment
+            # find_calls()                      # find all nested calls in a workflow
+            # var_to_call_inputs_multiline()    # add or convert docker for multi-line call
+            # var_to_call_inputs_single_line()  # add or convert docker for single-line call
+        # var_to_workflow_or_task_inputs()      # add or convert docker for workflow or task inputs
+        # docker_to_task_runtime()              # add docker to task runtime or replace existing val
+            # docker_to_task_or_param()         # given a mode, inserts new value after the target
+        # docker_param_meta()                   # not used: can't find .pos of param string
 write_out()                                 # write out to a new wdl file

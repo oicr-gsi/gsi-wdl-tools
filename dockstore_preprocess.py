@@ -328,6 +328,7 @@ def pull_to_root_all():
             extended_name = task.name + '_' + input.name
             var_type = str(input.type).strip('"')
             expr = str(input.expr).strip('"')
+            print(extended_name, expr, expr == None)
             var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr=expr)
             for call in relevant_calls:
                 if input.name in call.inputs.keys():    # skip the call if var in inputs already
@@ -357,7 +358,6 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-print(None == "None")
 tabs_to_spaces()                            # convert tabs to spaces
 pull_to_root()                              # pull json-specified task variables to the workflow that calls them
 pull_to_root_all()                          # pull all task variables to the workflow that calls them

@@ -327,6 +327,7 @@ def pull_to_root_all():
             extended_name = task.name + '_' + input.name
             var_type = str(input.type).strip('"')
             expr = str(input.expr).strip('"')
+            print(task.name, input.name, extended_name)
             var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr=expr)
         relevant_calls = [call for call in call_list if task.name in call.callee.name]
         for call in relevant_calls:
@@ -336,6 +337,7 @@ def pull_to_root_all():
             if '{' in line and '}' not in line:
                 var_to_call_inputs_multiline(call=call, task_var_name=input.name, workflow_var_name=extended_name)
             else:
+                print("submitting: " + call.name, input.name, extended_name)
                 var_to_call_inputs_single_line(call=call, task_var_name=input.name, workflow_var_name=extended_name)
 
 # caller - source .bashrc and load required modules for each task
@@ -358,7 +360,7 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 #tabs_to_spaces()                            # convert tabs to spaces
-pull_to_root()                              # @@@@@ pull json-specified task variables to the workflow that calls them
+pull_to_root()                              # pull json-specified task variables to the workflow that calls them
 pull_to_root_all()                          # @@@@@ pull all task variables to the workflow that calls them
 #if args.dockstore:                      # replaces modifications to cromwell.config for container & module load
 #    source_modules()                        # add source; module if "modules" var exists, else don't

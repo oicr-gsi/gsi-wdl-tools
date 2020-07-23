@@ -318,7 +318,7 @@ def pull_to_root():
                     var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_name)
 
 # caller - pull all task variables to the workflow that calls them
-def pull_to_root_all()
+def pull_to_root_all():
     if args.pull_json or not args.pull_all:     # only activate if pull_all is the only input
         return
     call_list = find_calls()    # get the list of all calls

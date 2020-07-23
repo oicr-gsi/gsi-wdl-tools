@@ -6,10 +6,11 @@ import WDL
 import json
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("--input-wdl-path", metavar = 'w', required=True, help = "source wdl path")
-parser.add_argument("--docker-image", metavar = 'i', required=False, help = "image name and tag")
-parser.add_argument("--pull-json", metavar = 'p', required=False, help = "path to json containing which variables to pull")
-parser.add_argument("--dockstore", metavar='d', required = False, help="whether to activate functions for dockstore")
+parser.add_argument("--input-wdl-path", metavar = '-w', required = True, help = "source wdl path")
+parser.add_argument("--docker-image", metavar = '-i', required = False, help = "image name and tag")
+parser.add_argument("--pull-json", metavar = '-j', required = False, help = "path to json containing which variables to pull")
+parser.add_argument("--pull-all", metavar = '-p', required = False, help = "whether to pull all variables")
+parser.add_argument("--dockstore", metavar = '-d', required = False, help = "whether to activate functions for dockstore")
 
 args = parser.parse_args()
 
@@ -282,10 +283,10 @@ def docker_runtime():
         docker_to_task_runtime(task, target = "docker")
         # docker_param_meta(task, target = "docker")        # add docker parameter meta to tasks
 
-# caller - pull all task variables to the workflow that calls them
+# caller - pull json-specified task variables to the workflow that calls them
 def pull_to_root():
     # exit if no json file provided
-    if not args.pull_json:
+    if args.pull_all or not args.pull_json:     # only activate if pull_json is the only input
         return
     call_list = find_calls()    # get the list of all calls
     # read from pull_json for "task": ["var1", "var2"]
@@ -316,6 +317,25 @@ def pull_to_root():
                 else:
                     var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_name)
 
+# caller - pull all task variables to the workflow that calls them
+def pull_to_root_all()
+    if args.pull_json or not args.pull_all:     # only activate if pull_all is the only input
+        return
+    call_list = find_calls()    # get the list of all calls
+    # for each task, find relevant_calls
+    for task in doc.tasks:
+        relevant_calls = [call for call in call_list if task.name in call.callee.name]
+
+
+    # for each variable in each task, extend name
+        # var_to_workflow_or_task_inputs; break
+        # for each relevant_call: copy the above
+
+def test():
+    call_list = find_calls()
+    for call in call_list:
+        print(call.name, call.callee.name)
+
 # caller - source .bashrc and load required modules for each task
 def source_modules():
     for task in doc.tasks or []:
@@ -335,11 +355,12 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-tabs_to_spaces()                            # convert tabs to spaces
-pull_to_root()                              # pull all task variables to the workflow that calls them
-if args.dockstore:                      # replaces modifications to cromwell.config for container & module load
-    source_modules()                        # add source; module if "modules" var exists, else don't
-    docker_runtime()                        # applies the below functions in the appropriate places
+#tabs_to_spaces()                            # convert tabs to spaces
+#pull_to_root()                              # pull json-specified task variables to the workflow that calls them
+#pull_to_root_all()                          # @@@@@ pull all task variables to the workflow that calls them
+#if args.dockstore:                      # replaces modifications to cromwell.config for container & module load
+#    source_modules()                        # add source; module if "modules" var exists, else don't
+#    docker_runtime()                        # applies the below functions in the appropriate places
             # find_indices(line, target)        # find start and end of variable's assignment
             # find_calls()                      # find all nested calls in a workflow
             # var_to_call_inputs_multiline()    # add or convert docker for multi-line call
@@ -348,4 +369,5 @@ if args.dockstore:                      # replaces modifications to cromwell.con
         # docker_to_task_runtime()              # add docker to task runtime or replace existing val
             # docker_to_task_or_param()         # given a mode, inserts new value after the target
         # docker_param_meta()                   # not used: can't find .pos of param string
+test()
 write_out()                                 # write out to a new wdl file

@@ -8,8 +8,8 @@ import json
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("-w", "--input-wdl-path", required = True, help = "source wdl path")
 parser.add_argument("-i", "--docker-image", required = False, help = "image name and tag")
-parser.add_argument("-j", "--pull-json", required = False, help = "path to json containing which variables to pull")
-parser.add_argument("-p", "--pull-all", required = False, type=bool, help = "whether to pull all variables")
+parser.add_argument("-j", "--pull-json", required = False, help = "path to json containing which variables to pull; don't specify --pull-all at the same time")
+parser.add_argument("-p", "--pull-all", required = False, type=bool, help = "whether to pull all variables; don't specify --pull-json at the same time")
 parser.add_argument("-d", "--dockstore", required = False, type=bool, help = "whether to activate functions for dockstore")
 
 args = parser.parse_args()

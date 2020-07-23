@@ -334,7 +334,7 @@ def pull_to_root_all():
 def test():
     call_list = find_calls()
     for call in call_list:
-        print(call.name, call.callee.name)
+        print(call.name, call.callee.name, call.callee_id)
 
 # caller - source .bashrc and load required modules for each task
 def source_modules():

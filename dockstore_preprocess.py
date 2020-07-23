@@ -325,7 +325,7 @@ def pull_to_root_all():
     for task in doc.tasks:                          # for each task, find relevant_calls
         for input in task.inputs:
             extended_name = task.name + '_' + input.name
-            input_type = str(input.type).strip('"')
+            var_type = str(input.type).strip('"')
             expr = str(input.expr).strip('"')
             var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr=expr)
         relevant_calls = [call for call in call_list if task.name in call.callee.name]

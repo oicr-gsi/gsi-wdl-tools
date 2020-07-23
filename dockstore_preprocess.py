@@ -286,7 +286,7 @@ def docker_runtime():
 # caller - pull json-specified task variables to the workflow that calls them
 def pull_to_root():
     # exit if no json file provided
-    if args.pull_all or not args.pull_json:     # only activate if pull_json is the only input
+    if args.pull_all and not args.pull_json:     # only activate if pull_json is the only input
         return
     call_list = find_calls()    # get the list of all calls
     # read from pull_json for "task": ["var1", "var2"]
@@ -319,7 +319,7 @@ def pull_to_root():
 
 # caller - pull all task variables to the workflow that calls them
 def pull_to_root_all():
-    if args.pull_json or not args.pull_all:         # only activate if pull_all is the only input
+    if args.pull_json and not args.pull_all:         # only activate if pull_all is the only input
         return
     call_list = find_calls()                        # get the list of all calls
     for task in doc.tasks:                          # for each task, find relevant_calls

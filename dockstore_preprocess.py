@@ -332,6 +332,7 @@ def pull_to_root_all():
         relevant_calls = [call for call in call_list if task.name in call.callee.name]
         for call in relevant_calls:
             if input.name in call.inputs.keys():    # skip the call if var in inputs already
+                print("skipped: " + input.name, " / ".join(call.inputs.keys()))
                 continue
             line = doc.source_lines[call.pos.line - 1]
             if '{' in line and '}' not in line:

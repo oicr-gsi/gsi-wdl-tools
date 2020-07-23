@@ -319,27 +319,27 @@ def pull_to_root():
 
 # caller - pull all task variables to the workflow that calls them
 def pull_to_root_all():
-    if args.pull_json or not args.pull_all:         # only activate if pull_all is the only input
+    if args.pull_json or not args.pull_all:     # only activate if pull_all is the only input
         return
-    call_list = find_calls()                        # get the list of all calls
-    for task in doc.tasks:                          # for each task, find relevant_calls
+    call_list = find_calls()                    # get the list of all calls
+    for task in doc.tasks:                      # for each task, find relevant_calls
+        relevant_calls = [call for call in call_list if task.name in call.callee.name]
         for input in task.inputs:
             extended_name = task.name + '_' + input.name
             var_type = str(input.type).strip('"')
             expr = str(input.expr).strip('"')
             print(task.name, input.name, extended_name)
             var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr=expr)
-        relevant_calls = [call for call in call_list if task.name in call.callee.name]
-        for call in relevant_calls:
-            if input.name in call.inputs.keys():    # skip the call if var in inputs already
-                print("skipped: " + call.name, input.name, " / ".join(call.inputs.keys()))
-                continue
-            line = doc.source_lines[call.pos.line - 1]
-            if '{' in line and '}' not in line:
-                var_to_call_inputs_multiline(call=call, task_var_name=input.name, workflow_var_name=extended_name)
-            else:
+            for call in relevant_calls:
+                if input.name in call.inputs.keys():    # skip the call if var in inputs already
+                    print("skipped: " + call.name, input.name, " / ".join(call.inputs.keys()))
+                    continue
+                line = doc.source_lines[call.pos.line - 1]
                 print("submitting: " + call.name, input.name, extended_name)
-                var_to_call_inputs_single_line(call=call, task_var_name=input.name, workflow_var_name=extended_name)
+                if '{' in line and '}' not in line:
+                    var_to_call_inputs_multiline(call=call, task_var_name=input.name, workflow_var_name=extended_name)
+                else:
+                    var_to_call_inputs_single_line(call=call, task_var_name=input.name, workflow_var_name=extended_name)
 
 # caller - source .bashrc and load required modules for each task
 def source_modules():

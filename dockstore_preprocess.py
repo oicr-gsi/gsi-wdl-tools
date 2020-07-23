@@ -319,23 +319,24 @@ def pull_to_root():
 
 # caller - pull all task variables to the workflow that calls them
 def pull_to_root_all():
-    if args.pull_json or not args.pull_all:     # only activate if pull_all is the only input
+    if args.pull_json or not args.pull_all:         # only activate if pull_all is the only input
         return
-    call_list = find_calls()    # get the list of all calls
-    # for each task, find relevant_calls
-    for task in doc.tasks:
+    call_list = find_calls()                        # get the list of all calls
+    for task in doc.tasks:                          # for each task, find relevant_calls
+        for input in task.inputs:
+            extended_name = task.name + '_' + input.name
+            input_type = str(input.type).strip('"')
+            expr = str(input.expr).strip('"')
+            var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr=expr)
         relevant_calls = [call for call in call_list if task.name in call.callee.name]
-        print(task.name, " / ".join([call.callee.name for call in relevant_calls]))
-
-    # for each variable in each task, extend name
-        # var_to_workflow_or_task_inputs; break
-        # for each relevant_call: copy the above
-
-def test():
-    call_list = find_calls()
-    for task in doc.tasks:
-        relevant_calls = [call for call in call_list if task.name in call.callee.name]
-        print(task.name, " / ".join([call.callee.name for call in relevant_calls]))
+        for call in relevant_calls:
+            if input.name in call.inputs.keys():    # skip the call if var in inputs already
+                continue
+            line = doc.source_lines[call.pos.line - 1]
+            if '{' in line and '}' not in line:
+                var_to_call_inputs_multiline(call=call, task_var_name=var, workflow_var_name=extended_name)
+            else:
+                var_to_call_inputs_single_line(call=call, task_var_name=var, workflow_var_name=extended_name)
 
 # caller - source .bashrc and load required modules for each task
 def source_modules():
@@ -357,8 +358,8 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 #tabs_to_spaces()                            # convert tabs to spaces
-#pull_to_root()                              # @@@@@ pull json-specified task variables to the workflow that calls them
-#pull_to_root_all()                          # @@@@@ pull all task variables to the workflow that calls them
+pull_to_root()                              # @@@@@ pull json-specified task variables to the workflow that calls them
+pull_to_root_all()                          # @@@@@ pull all task variables to the workflow that calls them
 #if args.dockstore:                      # replaces modifications to cromwell.config for container & module load
 #    source_modules()                        # add source; module if "modules" var exists, else don't
 #    docker_runtime()                        # applies the below functions in the appropriate places
@@ -370,5 +371,4 @@ def write_out():
         # docker_to_task_runtime()              # add docker to task runtime or replace existing val
             # docker_to_task_or_param()         # given a mode, inserts new value after the target
         # docker_param_meta()                   # not used: can't find .pos of param string
-test()
 write_out()                                 # write out to a new wdl file

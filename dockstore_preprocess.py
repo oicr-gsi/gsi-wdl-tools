@@ -337,9 +337,9 @@ def write_out():
 
 tabs_to_spaces()                            # convert tabs to spaces
 pull_to_root()                              # pull all task variables to the workflow that calls them
-if args.dockstore:
-    source_modules()                            # add source; module if "modules" var exists, else don't
-    docker_runtime()                            # applies the below functions in the appropriate places
+if args.dockstore:                      # replaces modifications to cromwell.config for container & module load
+    source_modules()                        # add source; module if "modules" var exists, else don't
+    docker_runtime()                        # applies the below functions in the appropriate places
             # find_indices(line, target)        # find start and end of variable's assignment
             # find_calls()                      # find all nested calls in a workflow
             # var_to_call_inputs_multiline()    # add or convert docker for multi-line call

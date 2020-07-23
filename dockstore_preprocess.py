@@ -357,6 +357,7 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
+print(None == "None")
 tabs_to_spaces()                            # convert tabs to spaces
 pull_to_root()                              # pull json-specified task variables to the workflow that calls them
 pull_to_root_all()                          # pull all task variables to the workflow that calls them

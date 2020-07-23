@@ -298,7 +298,7 @@ def pull_to_root():
         if len(task) == 0:      # if no corresponding task found
             continue            # look at the next task_name in pull
         task = task[0]          # else set task as the found Task object
-        relevant_calls = [call for call in call_list if task_name in call.callee_id] # all calls referencing the task
+        relevant_calls = [call for call in call_list if task_name == call.callee.name] # all calls referencing the task
         for var in pull[task_name]:             # iterate through list of variables to pull for that task
             extended_name = task_name + '_' + var
             for input in task.inputs:
@@ -325,7 +325,7 @@ def pull_to_root_all():
     # for each task, find relevant_calls
     for task in doc.tasks:
         relevant_calls = [call for call in call_list if task.name in call.callee.name]
-
+        print(task.name, " / ".join([call.callee.name for call in relevant_calls]))
 
     # for each variable in each task, extend name
         # var_to_workflow_or_task_inputs; break
@@ -333,8 +333,9 @@ def pull_to_root_all():
 
 def test():
     call_list = find_calls()
-    for call in call_list:
-        print(call.name, call.callee.name, call.callee_id)
+    for task in doc.tasks:
+        relevant_calls = [call for call in call_list if task.name in call.callee.name]
+        print(task.name, " / ".join([call.callee.name for call in relevant_calls]))
 
 # caller - source .bashrc and load required modules for each task
 def source_modules():
@@ -356,7 +357,7 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 #tabs_to_spaces()                            # convert tabs to spaces
-#pull_to_root()                              # pull json-specified task variables to the workflow that calls them
+#pull_to_root()                              # @@@@@ pull json-specified task variables to the workflow that calls them
 #pull_to_root_all()                          # @@@@@ pull all task variables to the workflow that calls them
 #if args.dockstore:                      # replaces modifications to cromwell.config for container & module load
 #    source_modules()                        # add source; module if "modules" var exists, else don't

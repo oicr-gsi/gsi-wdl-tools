@@ -6,11 +6,11 @@ import WDL
 import json
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("--input-wdl-path", metavar = '-w', required = True, help = "source wdl path")
-parser.add_argument("--docker-image", metavar = '-i', required = False, help = "image name and tag")
-parser.add_argument("--pull-json", metavar = '-j', required = False, help = "path to json containing which variables to pull")
-parser.add_argument("--pull-all", metavar = '-p', required = False, help = "whether to pull all variables")
-parser.add_argument("--dockstore", metavar = '-d', required = False, help = "whether to activate functions for dockstore")
+parser.add_argument("-w", "--input-wdl-path", required = True, help = "source wdl path")
+parser.add_argument("-i", "--docker-image", required = False, help = "image name and tag")
+parser.add_argument("-j", "--pull-json", required = False, help = "path to json containing which variables to pull")
+parser.add_argument("-p", "--pull-all", required = False, type=bool, help = "whether to pull all variables")
+parser.add_argument("-d", "--dockstore", required = False, type=bool, help = "whether to activate functions for dockstore")
 
 args = parser.parse_args()
 

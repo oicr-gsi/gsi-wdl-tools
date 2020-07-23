@@ -334,9 +334,9 @@ def pull_to_root_all():
                 continue
             line = doc.source_lines[call.pos.line - 1]
             if '{' in line and '}' not in line:
-                var_to_call_inputs_multiline(call=call, task_var_name=var, workflow_var_name=extended_name)
+                var_to_call_inputs_multiline(call=call, task_var_name=input.name, workflow_var_name=extended_name)
             else:
-                var_to_call_inputs_single_line(call=call, task_var_name=var, workflow_var_name=extended_name)
+                var_to_call_inputs_single_line(call=call, task_var_name=input.name, workflow_var_name=extended_name)
 
 # caller - source .bashrc and load required modules for each task
 def source_modules():

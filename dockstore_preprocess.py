@@ -148,6 +148,7 @@ def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_
     # expr: the value assigned to the variable
     # num_spaces: the indentation for adding a new inputs block
 def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 4):    # where body is a workflow or task
+    print(var_type)
     if var_type == "str":
         expr = '"' + expr + '"'
     if var_type == "char":
@@ -341,7 +342,6 @@ def pull_to_root_all():
             extended_name = task.name + '_' + input.name
             var_type = str(input.type).strip('"')
             expr = str(input.expr)
-            print(expr, type(expr))
             var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr=expr)
             for call in relevant_calls:
                 if input.name in call.inputs.keys():    # skip the call if var in inputs already

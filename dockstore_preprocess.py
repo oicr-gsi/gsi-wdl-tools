@@ -351,23 +351,6 @@ def pull_to_root_all():
         else:
             var_to_call_inputs_single_line(call = call, task_var_name=str(input.name), workflow_var_name=extended_name)
 
-    # call_list = find_calls()                    # get the list of all calls
-    # for task in doc.tasks:                      # for each task, find relevant_calls
-    #     relevant_calls = [call for call in call_list if task.name in call.callee.name]
-    #     for input in task.inputs:
-    #         extended_name = task.name + '_' + input.name
-    #         var_type = str(input.type).strip('"')
-    #         expr = str(input.expr).strip('"')
-    #         var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr=expr)
-    #         for call in relevant_calls:
-    #             if input.name in call.inputs.keys():    # skip the call if var in inputs already
-    #                 continue
-    #             line = doc.source_lines[call.pos.line - 1]
-    #             if '{' in line and '}' not in line:
-    #                 var_to_call_inputs_multiline(call=call, task_var_name=input.name, workflow_var_name=extended_name)
-    #             else:
-    #                 var_to_call_inputs_single_line(call=call, task_var_name=input.name, workflow_var_name=extended_name)
-
 # caller - source .bashrc and load required modules for each task
 def source_modules():
     for task in doc.tasks or []:
@@ -387,12 +370,12 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-#tabs_to_spaces()                            # convert tabs to spaces
+tabs_to_spaces()                            # convert tabs to spaces
 pull_to_root()                              # pull json-specified task variables to the workflow that calls them
 pull_to_root_all()                          # pull all task variables to the workflow that calls them
-#if args.dockstore:
-    #source_modules()                        # add source; module if "modules" var exists, else don't
-    #docker_runtime()                        # applies the below functions in the appropriate places
+if args.dockstore:
+    source_modules()                        # add source; module if "modules" var exists, else don't
+    docker_runtime()                        # applies the below functions in the appropriate places
             # find_indices(line, target)        # find start and end of variable's assignment
             # find_calls()                      # find all nested calls in a workflow
             # var_to_call_inputs_multiline()    # add or convert docker for multi-line call

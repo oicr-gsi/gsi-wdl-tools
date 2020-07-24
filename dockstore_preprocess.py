@@ -328,7 +328,7 @@ def pull_to_root():
 # helper - tests whether a var's default expr involves calling another variable
     # expr: the variable expression to evaluate
 def var_gets(expr):
-    print("received expression: " + str(expr) + " of type " + type(expr))
+    print("received expression: " + str(expr) + " of type " + str(type(expr)))
     if isinstance(expr, WDL.Expr.Get):
         print("    type Get")
         return True

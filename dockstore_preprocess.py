@@ -339,6 +339,7 @@ def pull_to_root_all():
         input = item.value
         extended_name = call_name + "_" + str(input.name)
         var_type = str(input.type)
+        print(type(input.expr))
         expr = str(input.expr)
         var_to_workflow_or_task_inputs(body=doc.workflow, var_type = var_type, var_name=extended_name, expr = expr)
         call = [call for call in call_list if str(call_name) == str(call.name)][0]   # call names are unique, so only one call matches

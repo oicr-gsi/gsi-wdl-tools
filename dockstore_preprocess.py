@@ -148,6 +148,10 @@ def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_
     # expr: the value assigned to the variable
     # num_spaces: the indentation for adding a new inputs block
 def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 4):    # where body is a workflow or task
+    if var_type == "str":
+        expr = '"' + expr + '"'
+    if var_type == "char":
+        expr = "'" + expr + "'"
     if not body.inputs:     # no input section; add new section
         line = doc.source_lines[body.pos.line - 1]
         if expr != "None":      # if default expr needs to be pulled

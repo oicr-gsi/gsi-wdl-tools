@@ -332,22 +332,22 @@ def pull_to_root():
 def pull_to_root_all():
     if args.pull_json or not args.pull_all:     # only activate if pull_all is the only input
         return
-
     call_list = find_calls()                    # get the list of all calls
     for item in doc.workflow.available_inputs or []:
         sep_index = item.name.find('.')
         if(sep_index < 0):                      # if variable is already workflow-level (var instead of task.var)
             continue                            # skip to the next variable
         call_name = item.name[:sep_index]       # call name may be different from task name
-        relevant_calls = [call for call in call_list if call_name in call.name]
-
-
-        # use item.value to get the task-level default values (type, name, expr)
-        # extended_name is call_name_name
-
         input = item.value
-
-
+        extended_name = call_name + "_" + input.name
+        var_to_workflow_or_task_inputs(body=doc.workflow, var_type=input.type, var_name=extended_name, expr = input.expr)
+        call = [call for call in call_list if call_name in call.name][0]   # call names are unique, so only one call matches
+        # know that input is not in the call section already
+        line = doc.source_lines[call.pos.line - 1]
+        if '{' in line and '}' not in line:
+            var_to_call_inputs_multiline(call = call, task_var_name=var, workflow_var_name=extended_name)
+        else:
+            var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_name)
 
     # call_list = find_calls()                    # get the list of all calls
     # for task in doc.tasks:                      # for each task, find relevant_calls
@@ -365,16 +365,6 @@ def pull_to_root_all():
     #                 var_to_call_inputs_multiline(call=call, task_var_name=input.name, workflow_var_name=extended_name)
     #             else:
     #                 var_to_call_inputs_single_line(call=call, task_var_name=input.name, workflow_var_name=extended_name)
-
-def test():
-    call_list = find_calls()                    # get the list of all calls
-    for item in doc.workflow.available_inputs or []:
-        sep_index = item.name.find('.')
-        if(sep_index < 0):                      # if variable is already workflow-level (var instead of task.var)
-            continue                            # skip to the next variable
-        call_name = item.name[:sep_index]       # call name may be different from task name
-        relevant_calls = [call for call in call_list if call_name in call.name]
-        print(item.name, call_name, " /// ", " / ".join(call.name for call in relevant_calls))
 
 # caller - source .bashrc and load required modules for each task
 def source_modules():
@@ -396,8 +386,8 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 #tabs_to_spaces()                            # convert tabs to spaces
-#pull_to_root()                              # pull json-specified task variables to the workflow that calls them
-#pull_to_root_all()                          # pull all task variables to the workflow that calls them
+pull_to_root()                              # pull json-specified task variables to the workflow that calls them
+pull_to_root_all()                          # pull all task variables to the workflow that calls them
 #if args.dockstore:
     #source_modules()                        # add source; module if "modules" var exists, else don't
     #docker_runtime()                        # applies the below functions in the appropriate places
@@ -409,5 +399,4 @@ def write_out():
         # docker_to_task_runtime()              # add docker to task runtime or replace existing val
             # docker_to_task_or_param()         # given a mode, inserts new value after the target
         # docker_param_meta()                   # not used: can't find .pos of param string
-test()
 #write_out()                                 # write out to a new wdl file

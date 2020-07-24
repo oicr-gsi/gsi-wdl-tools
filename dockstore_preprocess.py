@@ -315,7 +315,7 @@ def pull_to_root():
             for input in task.inputs:
                 if input.name == var:           # if pulled variable exists
                     var_type = str(input.type).strip('"')
-                    expr = str(input.expr)
+                    expr = str(input.expr).strip('"')
                     # add the var and default value to workflow inputs
                     var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr = expr)
                     break
@@ -338,7 +338,7 @@ def pull_to_root_all():
         for input in task.inputs:
             extended_name = task.name + '_' + input.name
             var_type = str(input.type).strip('"')
-            expr = str(input.expr)
+            expr = str(input.expr).strip('"')
             var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr=expr)
             for call in relevant_calls:
                 if input.name in call.inputs.keys():    # skip the call if var in inputs already

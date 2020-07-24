@@ -148,6 +148,12 @@ def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_
     # expr: the value assigned to the variable
     # num_spaces: the indentation for adding a new inputs block
 def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 4):    # where body is a workflow or task
+    # Note: for variables with a blank default expression:
+        # Option 1: it requires a task-level input from json - value will be replaced
+        # Option 2: it takes input from another task's output - variable will never be used
+    # Can't just make those vars optional ('?') because type incompatibility
+    # Implement type-specific placeholders instead
+
     if (var_type == "String" or var_type == "File") and expr != "None":
         expr = '"' + expr + '"'
     if not body.inputs:     # no input section; add new section
@@ -160,27 +166,27 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
         else:                   # if doesn't have a default expr, make input optional
             line += '\n' + \
                     ' ' * num_spaces + 'input {\n' + \
-                    ' ' * num_spaces * 2 + var_type + '? ' + var_name + '\n' + \
+                    ' ' * num_spaces * 2 + var_type + ' ' + var_name + '\n' + \
                     ' ' * num_spaces + '}\n'
         doc.source_lines[body.pos.line - 1] = line
 
     else:                   # input section exists but variable doesn't; add new variable
-        docker_in_inputs = False
-        for input in body.inputs:           # replace existing docker var if new expr is not empty
+        var_in_inputs = False
+        for input in body.inputs:       # replace existing docker var if new expr is not empty
             if var_name == input.name and expr != "None":     # only replace if match name and have a value
                 line = doc.source_lines[input.pos.line - 1]
                 index1, index2 = find_indices(line = line, target = var_name)
                 line = line[:index1] + expr + line[index2:]
                 doc.source_lines[input.pos.line - 1] = line
-                docker_in_inputs = True
+                var_in_inputs = True
 
-        if not docker_in_inputs:            # add new docker var
+        if not var_in_inputs:           # add new docker var
             line = doc.source_lines[body.inputs[0].pos.line - 1]
             num_spaces = len(line) - len(line.lstrip(' '))
             if expr != "None":  # if default expr needs to be pulled
                 line = ' ' * num_spaces + var_type + ' ' + var_name + ' = ' + expr + '\n' + line
             else:               # if doesn't have a default expr, make input optional
-                line = ' ' * num_spaces + var_type + '? ' + var_name + '\n' + line
+                line = ' ' * num_spaces + var_type + ' ' + var_name + '\n' + line
             doc.source_lines[body.inputs[0].pos.line - 1] = line
 
 # helper - add docker to runtime or param meta

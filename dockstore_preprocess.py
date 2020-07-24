@@ -374,7 +374,7 @@ def test():
             continue                            # skip to the next variable
         call_name = item.name[:sep_index]       # call name may be different from task name
         relevant_calls = [call for call in call_list if call_name in call.name]
-        print(item.name, call_name, " /// ", " / ",join(call.name for call in relevant_calls))
+        print(item.name, call_name, " /// ", " / ".join(call.name for call in relevant_calls))
 
 # caller - source .bashrc and load required modules for each task
 def source_modules():

@@ -391,4 +391,5 @@ def write_out():
         # docker_to_task_runtime()              # add docker to task runtime or replace existing val
             # docker_to_task_or_param()         # given a mode, inserts new value after the target
         # docker_param_meta()                   # not used: can't find .pos of param string
+test()
 #write_out()                                 # write out to a new wdl file

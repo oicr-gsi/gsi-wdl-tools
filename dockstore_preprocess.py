@@ -342,7 +342,7 @@ def pull_to_root_all():
         extended_name = call_name + "_" + input.name
         var_to_workflow_or_task_inputs(body=doc.workflow, var_type=input.type, var_name=extended_name, expr = input.expr)
         call = [call for call in call_list if call_name in call.name][0]   # call names are unique, so only one call matches
-        # know that input is not in the call section already
+        # know that input is not in the call inputs already (else wouldn't be part of available_inputs)
         line = doc.source_lines[call.pos.line - 1]
         if '{' in line and '}' not in line:
             var_to_call_inputs_multiline(call = call, task_var_name=var, workflow_var_name=extended_name)
@@ -399,4 +399,4 @@ pull_to_root_all()                          # pull all task variables to the wor
         # docker_to_task_runtime()              # add docker to task runtime or replace existing val
             # docker_to_task_or_param()         # given a mode, inserts new value after the target
         # docker_param_meta()                   # not used: can't find .pos of param string
-#write_out()                                 # write out to a new wdl file
+write_out()                                 # write out to a new wdl file

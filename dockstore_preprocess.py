@@ -150,7 +150,7 @@ def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_
 def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 4):    # where body is a workflow or task
     if not body.inputs:     # no input section; add new section
         line = doc.source_lines[body.pos.line - 1]
-        if expr != None:      # if default expr needs to be pulled
+        if expr != "None":      # if default expr needs to be pulled
             line += '\n' + \
                     ' ' * num_spaces + 'input {\n' + \
                     ' ' * num_spaces * 2 + var_type + ' ' + var_name + ' = ' + expr + '\n' + \
@@ -165,8 +165,7 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
     else:                   # input section exists but variable doesn't; add new variable
         docker_in_inputs = False
         for input in body.inputs:           # replace existing docker var if new expr is not empty
-            print(var_name, input.name, var_name == input.name, "\n    ", expr, expr == "None")
-            if var_name == input.name and expr != None:     # only replace if match name and have a value
+            if var_name == input.name and expr != "None":     # only replace if match name and have a value
                 line = doc.source_lines[input.pos.line - 1]
                 index1, index2 = find_indices(line = line, target = var_name)
                 line = line[:index1] + expr + line[index2:]
@@ -176,7 +175,7 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
         if not docker_in_inputs:            # add new docker var
             line = doc.source_lines[body.inputs[0].pos.line - 1]
             num_spaces = len(line) - len(line.lstrip(' '))
-            if expr != None:  # if default expr needs to be pulled
+            if expr != "None":  # if default expr needs to be pulled
                 line = ' ' * num_spaces + var_type + ' ' + var_name + ' = ' + expr + '\n' + line
             else:               # if doesn't have a default expr
                 line = ' ' * num_spaces + var_type + ' ' + var_name + ' = None\n' + line

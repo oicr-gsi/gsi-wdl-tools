@@ -165,7 +165,7 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
     else:                   # input section exists but variable doesn't; add new variable
         docker_in_inputs = False
         for input in body.inputs:           # replace existing docker var if new expr is not empty
-            print(var_name, var_name, input.name, var_name == input.name, "\n", expr, expr == None, type(expr))
+            print(var_name, var_name, input.name, var_name == input.name, "\n    ", expr, expr == None, type(expr))
             if var_name == input.name and expr != None:     # only replace if match name and have a value
                 line = doc.source_lines[input.pos.line - 1]
                 index1, index2 = find_indices(line = line, target = var_name)

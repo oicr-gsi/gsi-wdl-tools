@@ -341,7 +341,7 @@ def var_gets(expr):
             return True
         if isinstance(item, WDL.Expr.Apply):
             print("    type Apply")
-            tree.append(expr.arguments)
+            tree.extend(expr.arguments)
             print(len(tree))
             # for expr in tree:
             #     for arg in expr.arguments:

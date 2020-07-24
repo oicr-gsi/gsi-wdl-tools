@@ -148,8 +148,6 @@ def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_
     # expr: the value assigned to the variable
     # num_spaces: the indentation for adding a new inputs block
 def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 4):    # where body is a workflow or task
-    if (var_type == "String" or var_type == "File") and expr != "None":
-        expr = '"' + expr + '"'
     if not body.inputs:     # no input section; add new section
         line = doc.source_lines[body.pos.line - 1]
         if expr != "None":      # if default expr needs to be pulled
@@ -314,8 +312,8 @@ def pull_to_root():
             extended_name = task_name + '_' + var
             for input in task.inputs:
                 if input.name == var:           # if pulled variable exists
-                    var_type = str(input.type).strip('"')
-                    expr = str(input.expr).strip('"')
+                    var_type = str(input.type)
+                    expr = str(input.expr)
                     # add the var and default value to workflow inputs
                     var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr = expr)
                     break
@@ -340,8 +338,8 @@ def pull_to_root_all():
         call_name = item.name[:sep_index]       # call name may be different from task name
         input = item.value
         extended_name = call_name + "_" + str(input.name)
-        var_type = str(input.type).strip('"')
-        expr = str(input.expr).strip('"')
+        var_type = str(input.type)
+        expr = str(input.expr)
         var_to_workflow_or_task_inputs(body=doc.workflow, var_type = var_type, var_name=extended_name, expr = expr)
         call = [call for call in call_list if str(call_name) == str(call.name)][0]   # call names are unique, so only one call matches
         # know that input is not in the call inputs already (else wouldn't be part of available_inputs)

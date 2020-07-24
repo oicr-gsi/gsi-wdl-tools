@@ -366,6 +366,9 @@ def source_modules():
                 prepend = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 20; "} \n\n'
                 doc.source_lines[pos] = prepend + doc.source_lines[pos]
 
+def test():
+    print(doc.workflow.required_inputs)
+
 # caller - final outputs to stdout or a file with modified name
 def write_out():
     name_index = args.input_wdl_path.rfind('/')
@@ -374,12 +377,12 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-tabs_to_spaces()                            # convert tabs to spaces
-pull_to_root()                              # pull json-specified task variables to the workflow that calls them
-pull_to_root_all()                          # pull all task variables to the workflow that calls them
-if args.dockstore:
-    source_modules()                        # add source; module if "modules" var exists, else don't
-    docker_runtime()                        # applies the below functions in the appropriate places
+#tabs_to_spaces()                            # convert tabs to spaces
+#pull_to_root()                              # pull json-specified task variables to the workflow that calls them
+#pull_to_root_all()                          # pull all task variables to the workflow that calls them
+#if args.dockstore:
+    #source_modules()                        # add source; module if "modules" var exists, else don't
+    #docker_runtime()                        # applies the below functions in the appropriate places
             # find_indices(line, target)        # find start and end of variable's assignment
             # find_calls()                      # find all nested calls in a workflow
             # var_to_call_inputs_multiline()    # add or convert docker for multi-line call
@@ -388,4 +391,4 @@ if args.dockstore:
         # docker_to_task_runtime()              # add docker to task runtime or replace existing val
             # docker_to_task_or_param()         # given a mode, inserts new value after the target
         # docker_param_meta()                   # not used: can't find .pos of param string
-write_out()                                 # write out to a new wdl file
+#write_out()                                 # write out to a new wdl file

@@ -340,7 +340,10 @@ def pull_to_root_all():
         extended_name = call_name + "_" + str(input.name)
         var_type = str(input.type)
         expr = str(input.expr)
-        print(expr, " /// ", input.expr.arguments)
+
+        if isinstance(input.expr, WDL.Expr.Apply):
+            print(expr, " /// ", input.expr.arguments)
+
         var_to_workflow_or_task_inputs(body=doc.workflow, var_type = var_type, var_name=extended_name, expr = expr)
         call = [call for call in call_list if str(call_name) == str(call.name)][0]   # call names are unique, so only one call matches
         # know that input is not in the call inputs already (else wouldn't be part of available_inputs)

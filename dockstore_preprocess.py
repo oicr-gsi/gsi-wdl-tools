@@ -345,9 +345,9 @@ def pull_to_root_all():
         # know that input is not in the call inputs already (else wouldn't be part of available_inputs)
         line = doc.source_lines[call.pos.line - 1]
         if '{' in line and '}' not in line:
-            var_to_call_inputs_multiline(call = call, task_var_name=var, workflow_var_name=extended_name)
+            var_to_call_inputs_multiline(call = call, task_var_name=str(input.name), workflow_var_name=extended_name)
         else:
-            var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_name)
+            var_to_call_inputs_single_line(call = call, task_var_name=str(input.name), workflow_var_name=extended_name)
 
     # call_list = find_calls()                    # get the list of all calls
     # for task in doc.tasks:                      # for each task, find relevant_calls

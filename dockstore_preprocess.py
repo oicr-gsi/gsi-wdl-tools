@@ -350,8 +350,9 @@ def pull_to_root_all():
                     var_to_call_inputs_single_line(call=call, task_var_name=input.name, workflow_var_name=extended_name)
 
 def test():
-    for input in doc.workflow.available_inputs:
-        print(str(input.name), type(input.value))
+    for item in doc.workflow.available_inputs:
+        input = item.value
+        print(str(input.type), str(input.name), str(input.expr))
 
 # caller - source .bashrc and load required modules for each task
 def source_modules():

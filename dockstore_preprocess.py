@@ -343,7 +343,7 @@ def pull_to_root_all():
         var_type = str(input.type).strip('"')
         expr = str(input.expr).strip('"')
         var_to_workflow_or_task_inputs(body=doc.workflow, var_type = var_type, var_name=extended_name, expr = expr)
-        call = [call for call in call_list if call_name in call.name][0]   # call names are unique, so only one call matches
+        call = [call for call in call_list if str(call_name) == str(call.name)][0]   # call names are unique, so only one call matches
         # know that input is not in the call inputs already (else wouldn't be part of available_inputs)
         line = doc.source_lines[call.pos.line - 1]
         if '{' in line and '}' not in line:

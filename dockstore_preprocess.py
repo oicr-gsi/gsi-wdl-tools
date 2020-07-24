@@ -340,7 +340,9 @@ def pull_to_root_all():
         call_name = item.name[:sep_index]       # call name may be different from task name
         input = item.value
         extended_name = call_name + "_" + str(input.name)
-        var_to_workflow_or_task_inputs(body=doc.workflow, var_type=str(input.type), var_name=extended_name, expr = str(input.expr))
+        var_type = str(input.type).strip('"')
+        expr = str(input.expr).strip('"')
+        var_to_workflow_or_task_inputs(body=doc.workflow, var_type = var_type, var_name=extended_name, expr = expr)
         call = [call for call in call_list if call_name in call.name][0]   # call names are unique, so only one call matches
         # know that input is not in the call inputs already (else wouldn't be part of available_inputs)
         line = doc.source_lines[call.pos.line - 1]

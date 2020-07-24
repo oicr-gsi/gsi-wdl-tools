@@ -175,6 +175,7 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
         if not docker_in_inputs:            # add new docker var
             line = doc.source_lines[body.inputs[0].pos.line - 1]
             num_spaces = len(line) - len(line.lstrip(' '))
+            print(expr, expr == "None")
             if expr != "None":  # if default expr needs to be pulled
                 line = ' ' * num_spaces + var_type + ' ' + var_name + ' = ' + expr + '\n' + line
             else:               # if doesn't have a default expr

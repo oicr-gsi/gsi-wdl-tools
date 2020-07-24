@@ -367,7 +367,7 @@ def source_modules():
                 doc.source_lines[pos] = prepend + doc.source_lines[pos]
 
 def test():
-    print(doc.workflow.required_inputs)
+    print(",".join(str(b.name) for b in doc.workflow.required_inputs))
 
 # caller - final outputs to stdout or a file with modified name
 def write_out():

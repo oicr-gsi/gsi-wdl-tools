@@ -150,10 +150,16 @@ def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_
 def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 4):    # where body is a workflow or task
     if not body.inputs:     # no input section; add new section
         line = doc.source_lines[body.pos.line - 1]
-        line += '\n' + \
-                ' ' * num_spaces + 'input {\n' + \
-                ' ' * num_spaces * 2 + var_type + ' ' + var_name + (' = "' + expr + '"') * (expr != "None") + '\n' + \
-                ' ' * num_spaces + '}\n'
+        if expr != "None":      # if default expr needs to be pulled
+            line += '\n' + \
+                    ' ' * num_spaces + 'input {\n' + \
+                    ' ' * num_spaces * 2 + var_type + ' ' + var_name + ' = "' + expr + '"' + '\n' + \
+                    ' ' * num_spaces + '}\n'
+        else:                   # if doesn't have a default expr
+            line += '\n' + \
+                    ' ' * num_spaces + 'input {\n' + \
+                    ' ' * num_spaces * 2 + var_type + ' ' + var_name + ' = None' + '\n' + \
+                    ' ' * num_spaces + '}\n'
         doc.source_lines[body.pos.line - 1] = line
 
     else:                   # input section exists but variable doesn't; add new variable
@@ -169,7 +175,10 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
         if not docker_in_inputs:            # add new docker var
             line = doc.source_lines[body.inputs[0].pos.line - 1]
             num_spaces = len(line) - len(line.lstrip(' '))
-            line = ' ' * num_spaces + var_type + ' ' + var_name + (' = "' + expr + '"') * (expr != "None") + '\n' + line
+            if expr != "None":  # if default expr needs to be pulled
+                line = ' ' * num_spaces + var_type + ' ' + var_name + ' = "' + expr + '"\n' + line
+            else:               # if doesn't have a default expr
+                line = ' ' * num_spaces + var_type + ' ' + var_name + ' = None\n' + line
             doc.source_lines[body.inputs[0].pos.line - 1] = line
 
 # helper - add docker to runtime or param meta
@@ -328,7 +337,6 @@ def pull_to_root_all():
             extended_name = task.name + '_' + input.name
             var_type = str(input.type).strip('"')
             expr = str(input.expr).strip('"')
-            print(extended_name, expr, expr == None)
             var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr=expr)
             for call in relevant_calls:
                 if input.name in call.inputs.keys():    # skip the call if var in inputs already

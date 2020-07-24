@@ -332,27 +332,47 @@ def pull_to_root():
 def pull_to_root_all():
     if args.pull_json or not args.pull_all:     # only activate if pull_all is the only input
         return
-    call_list = find_calls()                    # get the list of all calls
-    for task in doc.tasks:                      # for each task, find relevant_calls
-        relevant_calls = [call for call in call_list if task.name in call.callee.name]
-        for input in task.inputs:
-            extended_name = task.name + '_' + input.name
-            var_type = str(input.type).strip('"')
-            expr = str(input.expr).strip('"')
-            var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr=expr)
-            for call in relevant_calls:
-                if input.name in call.inputs.keys():    # skip the call if var in inputs already
-                    continue
-                line = doc.source_lines[call.pos.line - 1]
-                if '{' in line and '}' not in line:
-                    var_to_call_inputs_multiline(call=call, task_var_name=input.name, workflow_var_name=extended_name)
-                else:
-                    var_to_call_inputs_single_line(call=call, task_var_name=input.name, workflow_var_name=extended_name)
+
+    for item in doc.workflow.available_inputs or []:
+        sep_index = item.name.find('.')
+        if(sep_index < 0):                      # if variable is already workflow-level (var instead of task.var)
+            continue                            # skip to the next variable
+        call_name = item.name[:sep_index]       # call name may be different from task name
+        relevant_calls = [call for call in call_list if call_name in call.name]
+
+
+        # use item.value to get the task-level default values (type, name, expr)
+        # extended_name is call_name_name
+
+        input = item.value
+
+
+
+    # call_list = find_calls()                    # get the list of all calls
+    # for task in doc.tasks:                      # for each task, find relevant_calls
+    #     relevant_calls = [call for call in call_list if task.name in call.callee.name]
+    #     for input in task.inputs:
+    #         extended_name = task.name + '_' + input.name
+    #         var_type = str(input.type).strip('"')
+    #         expr = str(input.expr).strip('"')
+    #         var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr=expr)
+    #         for call in relevant_calls:
+    #             if input.name in call.inputs.keys():    # skip the call if var in inputs already
+    #                 continue
+    #             line = doc.source_lines[call.pos.line - 1]
+    #             if '{' in line and '}' not in line:
+    #                 var_to_call_inputs_multiline(call=call, task_var_name=input.name, workflow_var_name=extended_name)
+    #             else:
+    #                 var_to_call_inputs_single_line(call=call, task_var_name=input.name, workflow_var_name=extended_name)
 
 def test():
-    for item in doc.workflow.available_inputs:
-        input = item.value
-        print(str(input.type), str(input.name), str(input.expr))
+    for item in doc.workflow.available_inputs or []:
+        sep_index = item.name.find('.')
+        if(sep_index < 0):                      # if variable is already workflow-level (var instead of task.var)
+            continue                            # skip to the next variable
+        call_name = item.name[:sep_index]       # call name may be different from task name
+        relevant_calls = [call for call in call_list if call_name in call.name]
+        print(item.name, call_name, " /// ", " / ",join(call.name for call in relevant_calls))
 
 # caller - source .bashrc and load required modules for each task
 def source_modules():

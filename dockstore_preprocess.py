@@ -148,7 +148,7 @@ def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_
     # expr: the value assigned to the variable
     # num_spaces: the indentation for adding a new inputs block
 def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 4):    # where body is a workflow or task
-    if var_type == "String" and expr != "None":
+    if (var_type == "String" or var_type == "File") and expr != "None":
         expr = '"' + expr + '"'
     if not body.inputs:     # no input section; add new section
         line = doc.source_lines[body.pos.line - 1]
@@ -157,10 +157,10 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
                     ' ' * num_spaces + 'input {\n' + \
                     ' ' * num_spaces * 2 + var_type + ' ' + var_name + ' = ' + expr + '\n' + \
                     ' ' * num_spaces + '}\n'
-        else:                   # if doesn't have a default expr
+        else:                   # if doesn't have a default expr, make input optional
             line += '\n' + \
                     ' ' * num_spaces + 'input {\n' + \
-                    ' ' * num_spaces * 2 + var_type + ' ' + var_name + ' = None\n' + \
+                    ' ' * num_spaces * 2 + var_type + '? ' + var_name + '\n' + \
                     ' ' * num_spaces + '}\n'
         doc.source_lines[body.pos.line - 1] = line
 
@@ -179,8 +179,8 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
             num_spaces = len(line) - len(line.lstrip(' '))
             if expr != "None":  # if default expr needs to be pulled
                 line = ' ' * num_spaces + var_type + ' ' + var_name + ' = ' + expr + '\n' + line
-            else:               # if doesn't have a default expr
-                line = ' ' * num_spaces + var_type + ' ' + var_name + ' = None\n' + line
+            else:               # if doesn't have a default expr, make input optional
+                line = ' ' * num_spaces + var_type + '? ' + var_name + '\n' + line
             doc.source_lines[body.inputs[0].pos.line - 1] = line
 
 # helper - add docker to runtime or param meta

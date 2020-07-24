@@ -334,7 +334,7 @@ def var_gets(expr):
     while tree:     # while goes deeper
         item = tree[0]      # pop the first item
         tree = tree[1:]
-        if isinstance(item, WDL.WDL.Expr.Get):
+        if isinstance(item, WDL.Expr.Get):
             return True
         if isinstance(body, WDL.Expr.Apply):
             tree.append(expr.arguments)

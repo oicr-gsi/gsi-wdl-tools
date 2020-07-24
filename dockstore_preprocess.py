@@ -328,24 +328,16 @@ def pull_to_root():
 # helper - tests whether a var's default expr involves calling another variable
     # expr: the variable expression to evaluate
 def var_gets(expr):
-    print("received expression: " + str(expr) + " of type " + str(type(expr)))
     if isinstance(expr, WDL.Expr.Get):
-        print("    type Get")
         return True
     tree = [expr]
     while tree:     # while goes deeper
         item = tree[0]      # pop the first item
         tree = tree[1:]
         if isinstance(item, WDL.Expr.Get):
-            print("    type Get2")
             return True
         if isinstance(item, WDL.Expr.Apply):
-            print("    type Apply")
             tree.extend(expr.arguments)
-            print(len(tree))
-            # for expr in tree:
-            #     for arg in expr.arguments:
-            #         print("        " + str(arg) + str(type(arg)))
     return False    # couldn't find and Get in the tree
 
 # caller - pull all task variables to the workflow that calls them
@@ -360,7 +352,6 @@ def pull_to_root_all():
         call_name = item.name[:sep_index]       # call name may be different from task name
         input = item.value
         if var_gets(input.expr):                # if variable refers to another variable
-            print("skipped " + str(input.name) + " of type " + str(input.type) + " and expression " + str(input.expr))
             continue                            # skip pulling it
         extended_name = call_name + "_" + str(input.name)
         var_type = str(input.type)

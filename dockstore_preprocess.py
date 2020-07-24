@@ -336,7 +336,7 @@ def var_gets(expr):
         tree = tree[1:]
         if isinstance(item, WDL.Expr.Get):
             return True
-        if isinstance(body, WDL.Expr.Apply):
+        if isinstance(item, WDL.Expr.Apply):
             tree.append(expr.arguments)
     return False    # couldn't find and Get in the tree
 

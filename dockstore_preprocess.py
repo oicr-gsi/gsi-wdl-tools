@@ -333,6 +333,7 @@ def pull_to_root_all():
     if args.pull_json or not args.pull_all:     # only activate if pull_all is the only input
         return
 
+    call_list = find_calls()                    # get the list of all calls
     for item in doc.workflow.available_inputs or []:
         sep_index = item.name.find('.')
         if(sep_index < 0):                      # if variable is already workflow-level (var instead of task.var)
@@ -366,6 +367,7 @@ def pull_to_root_all():
     #                 var_to_call_inputs_single_line(call=call, task_var_name=input.name, workflow_var_name=extended_name)
 
 def test():
+    call_list = find_calls()                    # get the list of all calls
     for item in doc.workflow.available_inputs or []:
         sep_index = item.name.find('.')
         if(sep_index < 0):                      # if variable is already workflow-level (var instead of task.var)

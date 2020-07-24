@@ -351,7 +351,7 @@ def pull_to_root_all():
 
 def test():
     for input in doc.workflow.available_inputs:
-        print(str(input.name), str(input.value))
+        print(str(input.name), type(input.value))
 
 # caller - source .bashrc and load required modules for each task
 def source_modules():

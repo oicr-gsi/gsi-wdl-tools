@@ -148,12 +148,6 @@ def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_
     # expr: the value assigned to the variable
     # num_spaces: the indentation for adding a new inputs block
 def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 4):    # where body is a workflow or task
-    # Note: for variables with a blank default expression:
-        # Option 1: it requires a task-level input from json - value will be replaced
-        # Option 2: it takes input from another task's output - variable will never be used
-    # Can't just make those vars optional ('?') because type incompatibility
-    # Implement type-specific placeholders instead
-
     if (var_type == "String" or var_type == "File") and expr != "None":
         expr = '"' + expr + '"'
     if not body.inputs:     # no input section; add new section
@@ -355,6 +349,10 @@ def pull_to_root_all():
                 else:
                     var_to_call_inputs_single_line(call=call, task_var_name=input.name, workflow_var_name=extended_name)
 
+def test():
+    for input in doc.workflow.available_inputs:
+        print(input.type, input.name, input.expr)
+
 # caller - source .bashrc and load required modules for each task
 def source_modules():
     for task in doc.tasks or []:
@@ -365,9 +363,6 @@ def source_modules():
                 num_spaces = len(doc.source_lines[pos]) - len(doc.source_lines[pos].lstrip(' '))
                 prepend = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 20; "} \n\n'
                 doc.source_lines[pos] = prepend + doc.source_lines[pos]
-
-def test():
-    print(",".join(str(b.name) for b in doc.workflow.available_inputs))
 
 # caller - final outputs to stdout or a file with modified name
 def write_out():

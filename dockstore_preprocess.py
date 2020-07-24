@@ -80,7 +80,6 @@ def find_calls():
     while todo_bodies:                      # breadth-first traversal until todos are done
         body = todo_bodies[0]
         todo_bodies = todo_bodies[1:]
-
         if isinstance(body, WDL.Tree.Call):
             call_list.append(body)
         if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
@@ -326,6 +325,21 @@ def pull_to_root():
                 else:
                     var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_name)
 
+# helper - tests whether a var's default expr involves calling another variable
+    # expr: the variable expression to evaluate
+def var_gets(expr):
+    if isinstance(expr, WDL.Expr.Get):
+        return True
+    tree = [expr]
+    while tree:     # while goes deeper
+        item = tree[0]      # pop the first item
+        tree = tree[1:]
+        if isinstance(item, WDL.WDL.Expr.Get):
+            return True
+        if isinstance(body, WDL.Expr.Apply):
+            tree.append(expr.arguments)
+    return False    # couldn't find and Get in the tree
+
 # caller - pull all task variables to the workflow that calls them
 def pull_to_root_all():
     if args.pull_json or not args.pull_all:     # only activate if pull_all is the only input
@@ -333,17 +347,16 @@ def pull_to_root_all():
     call_list = find_calls()                    # get the list of all calls
     for item in doc.workflow.available_inputs or []:
         sep_index = item.name.find('.')
-        if(sep_index < 0):                      # if variable is already workflow-level (var instead of task.var)
+        if sep_index < 0:                       # if variable is already workflow-level (var instead of task.var)
             continue                            # skip to the next variable
         call_name = item.name[:sep_index]       # call name may be different from task name
         input = item.value
+        if var_gets(input.expr):                # if variable refers to another variable
+            print("skipped " + str(input.name) + " of type " + str(input.type) + " and expression " + str(input.expr))
+            continue                            # skip pulling it
         extended_name = call_name + "_" + str(input.name)
         var_type = str(input.type)
         expr = str(input.expr)
-
-        if isinstance(input.expr, WDL.Expr.Apply):
-            print(expr, " /// ", input.expr.arguments)
-
         var_to_workflow_or_task_inputs(body=doc.workflow, var_type = var_type, var_name=extended_name, expr = expr)
         call = [call for call in call_list if str(call_name) == str(call.name)][0]   # call names are unique, so only one call matches
         # know that input is not in the call inputs already (else wouldn't be part of available_inputs)
@@ -375,6 +388,7 @@ def write_out():
 tabs_to_spaces()                            # convert tabs to spaces
 pull_to_root()                              # pull json-specified task variables to the workflow that calls them
 pull_to_root_all()                          # pull all task variables to the workflow that calls them
+    # var_gets()                                # tests whether a var's default expr involves calling another variable
 if args.dockstore:
     source_modules()                        # add source; module if "modules" var exists, else don't
     docker_runtime()                        # applies the below functions in the appropriate places

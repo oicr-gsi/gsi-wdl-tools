@@ -153,12 +153,12 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
         if expr != "None":      # if default expr needs to be pulled
             line += '\n' + \
                     ' ' * num_spaces + 'input {\n' + \
-                    ' ' * num_spaces * 2 + var_type + ' ' + var_name + ' = "' + expr + '"' + '\n' + \
+                    ' ' * num_spaces * 2 + var_type + ' ' + var_name + ' = ' + expr + '\n' + \
                     ' ' * num_spaces + '}\n'
         else:                   # if doesn't have a default expr
             line += '\n' + \
                     ' ' * num_spaces + 'input {\n' + \
-                    ' ' * num_spaces * 2 + var_type + ' ' + var_name + ' = None' + '\n' + \
+                    ' ' * num_spaces * 2 + var_type + ' ' + var_name + ' = None\n' + \
                     ' ' * num_spaces + '}\n'
         doc.source_lines[body.pos.line - 1] = line
 
@@ -168,7 +168,7 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
             if var_name == input.name and expr != "None":      # only replace if match name exactly
                 line = doc.source_lines[input.pos.line - 1]
                 index1, index2 = find_indices(line = line, target = var_name)
-                line = line[:index1] + '"' + expr + '"' + line[index2:]
+                line = line[:index1] + expr + line[index2:]
                 doc.source_lines[input.pos.line - 1] = line
                 docker_in_inputs = True
 
@@ -176,7 +176,7 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
             line = doc.source_lines[body.inputs[0].pos.line - 1]
             num_spaces = len(line) - len(line.lstrip(' '))
             if expr != "None":  # if default expr needs to be pulled
-                line = ' ' * num_spaces + var_type + ' ' + var_name + ' = "' + expr + '"\n' + line
+                line = ' ' * num_spaces + var_type + ' ' + var_name + ' = ' + expr + '\n' + line
             else:               # if doesn't have a default expr
                 line = ' ' * num_spaces + var_type + ' ' + var_name + ' = None\n' + line
             doc.source_lines[body.inputs[0].pos.line - 1] = line
@@ -313,7 +313,8 @@ def pull_to_root():
             for input in task.inputs:
                 if input.name == var:           # if pulled variable exists
                     var_type = str(input.type).strip('"')
-                    expr = str(input.expr).strip('"')
+                    expr = str(input.expr)
+                    print(expr)
                     # add the var and default value to workflow inputs
                     var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr = expr)
                     break
@@ -336,7 +337,7 @@ def pull_to_root_all():
         for input in task.inputs:
             extended_name = task.name + '_' + input.name
             var_type = str(input.type).strip('"')
-            expr = str(input.expr).strip('"')
+            expr = str(input.expr)
             var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr=expr)
             for call in relevant_calls:
                 if input.name in call.inputs.keys():    # skip the call if var in inputs already

@@ -328,15 +328,19 @@ def pull_to_root():
 # helper - tests whether a var's default expr involves calling another variable
     # expr: the variable expression to evaluate
 def var_gets(expr):
+    print("received expression: " + str(expr) + " of type " + type(expr))
     if isinstance(expr, WDL.Expr.Get):
+        print("    type Get")
         return True
     tree = [expr]
     while tree:     # while goes deeper
         item = tree[0]      # pop the first item
         tree = tree[1:]
         if isinstance(item, WDL.Expr.Get):
+            print("    type Get2")
             return True
         if isinstance(item, WDL.Expr.Apply):
+            print("    type Apply")
             tree.append(expr.arguments)
     return False    # couldn't find and Get in the tree
 

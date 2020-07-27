@@ -400,7 +400,7 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 def test():
-    body = doc.Workflow
+    body = doc.workflow
     indicator = ("workflow " if isinstance(body, WDL.Tree.Workflow) else "task ") + str(body.name)
     for pos in range(len(doc.source_lines)):
         if indicator in doc.source_lines[pos]:

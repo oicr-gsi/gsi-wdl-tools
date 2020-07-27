@@ -6,10 +6,11 @@ import WDL
 import json
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("--input-wdl-path", metavar = 'w', required=True, help = "source wdl path")
-parser.add_argument("--docker-image", metavar = 'i', required=False, help = "image name and tag")
-parser.add_argument("--pull-json", metavar = 'p', required=False, help = "path to json containing which variables to pull")
-parser.add_argument("--dockstore", metavar='d', required = False, help="whether to activate functions for dockstore")
+parser.add_argument("-w", "--input-wdl-path", required = True, help = "source wdl path")
+parser.add_argument("-i", "--docker-image", required = False, help = "image name and tag")
+parser.add_argument("-j", "--pull-json", required = False, help = "path to json containing which variables to pull; don't specify --pull-all at the same time")
+parser.add_argument("-p", "--pull-all", required = False, type=bool, help = "whether to pull all variables; don't specify --pull-json at the same time")
+parser.add_argument("-d", "--dockstore", required = False, type=bool, help = "whether to activate functions for dockstore")
 
 args = parser.parse_args()
 
@@ -79,7 +80,6 @@ def find_calls():
     while todo_bodies:                      # breadth-first traversal until todos are done
         body = todo_bodies[0]
         todo_bodies = todo_bodies[1:]
-
         if isinstance(body, WDL.Tree.Call):
             call_list.append(body)
         if isinstance(body, WDL.Tree.Scatter) or isinstance(body, WDL.Tree.Conditional):
@@ -149,26 +149,35 @@ def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_
 def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 4):    # where body is a workflow or task
     if not body.inputs:     # no input section; add new section
         line = doc.source_lines[body.pos.line - 1]
-        line += '\n' + \
-                ' ' * num_spaces + 'input {\n' + \
-                ' ' * num_spaces * 2 + var_type + ' ' + var_name + (' = "' + expr + '"') * (expr != "None") + '\n' + \
-                ' ' * num_spaces + '}\n'
+        if expr != "None":      # if default expr needs to be pulled
+            line += '\n' + \
+                    ' ' * num_spaces + 'input {\n' + \
+                    ' ' * num_spaces * 2 + var_type + ' ' + var_name + ' = ' + expr + '\n' + \
+                    ' ' * num_spaces + '}\n'
+        else:                   # if doesn't have a default expr, make input optional
+            line += '\n' + \
+                    ' ' * num_spaces + 'input {\n' + \
+                    ' ' * num_spaces * 2 + var_type + ' ' + var_name + '\n' + \
+                    ' ' * num_spaces + '}\n'
         doc.source_lines[body.pos.line - 1] = line
 
     else:                   # input section exists but variable doesn't; add new variable
-        docker_in_inputs = False
-        for input in body.inputs:           # replace existing docker var if new expr is not empty
-            if var_name == input.name and expr != "None":      # only replace if match name exactly
+        var_in_inputs = False
+        for input in body.inputs:       # replace existing docker var if new expr is not empty
+            if var_name == input.name and expr != "None":     # only replace if match name and have a value
                 line = doc.source_lines[input.pos.line - 1]
                 index1, index2 = find_indices(line = line, target = var_name)
-                line = line[:index1] + '"' + expr + '"' + line[index2:]
+                line = line[:index1] + expr + line[index2:]
                 doc.source_lines[input.pos.line - 1] = line
-                docker_in_inputs = True
+                var_in_inputs = True
 
-        if not docker_in_inputs:            # add new docker var
+        if not var_in_inputs:           # add new docker var
             line = doc.source_lines[body.inputs[0].pos.line - 1]
             num_spaces = len(line) - len(line.lstrip(' '))
-            line = ' ' * num_spaces + var_type + ' ' + var_name + (' = "' + expr + '"') * (expr != "None") + '\n' + line
+            if expr != "None":  # if default expr needs to be pulled
+                line = ' ' * num_spaces + var_type + ' ' + var_name + ' = ' + expr + '\n' + line
+            else:               # if doesn't have a default expr, make input optional
+                line = ' ' * num_spaces + var_type + ' ' + var_name + '\n' + line
             doc.source_lines[body.inputs[0].pos.line - 1] = line
 
 # helper - add docker to runtime or param meta
@@ -282,10 +291,10 @@ def docker_runtime():
         docker_to_task_runtime(task, target = "docker")
         # docker_param_meta(task, target = "docker")        # add docker parameter meta to tasks
 
-# caller - pull all task variables to the workflow that calls them
+# caller - pull json-specified task variables to the workflow that calls them
 def pull_to_root():
     # exit if no json file provided
-    if not args.pull_json:
+    if args.pull_all or not args.pull_json:     # only activate if pull_json is the only input
         return
     call_list = find_calls()    # get the list of all calls
     # read from pull_json for "task": ["var1", "var2"]
@@ -297,13 +306,13 @@ def pull_to_root():
         if len(task) == 0:      # if no corresponding task found
             continue            # look at the next task_name in pull
         task = task[0]          # else set task as the found Task object
-        relevant_calls = [call for call in call_list if task_name in call.callee_id] # all calls referencing the task
+        relevant_calls = [call for call in call_list if task_name == call.callee.name] # all calls referencing the task
         for var in pull[task_name]:             # iterate through list of variables to pull for that task
             extended_name = task_name + '_' + var
             for input in task.inputs:
                 if input.name == var:           # if pulled variable exists
-                    var_type = str(input.type).strip('"')
-                    expr = str(input.expr).strip('"')
+                    var_type = str(input.type)
+                    expr = str(input.expr)
                     # add the var and default value to workflow inputs
                     var_to_workflow_or_task_inputs(body=doc.workflow, var_type=var_type, var_name=extended_name, expr = expr)
                     break
@@ -315,6 +324,46 @@ def pull_to_root():
                     var_to_call_inputs_multiline(call = call, task_var_name=var, workflow_var_name=extended_name)
                 else:
                     var_to_call_inputs_single_line(call = call, task_var_name=var, workflow_var_name=extended_name)
+
+# helper - tests whether a var's default expr involves calling another variable
+    # expr: the variable expression to evaluate
+def var_gets(expr):
+    if isinstance(expr, WDL.Expr.Get):
+        return True
+    tree = [expr]
+    while tree:     # while goes deeper
+        item = tree[0]      # pop the first item
+        tree = tree[1:]
+        if isinstance(item, WDL.Expr.Get):
+            return True
+        if isinstance(item, WDL.Expr.Apply):
+            tree.extend(expr.arguments)
+    return False    # couldn't find and Get in the tree
+
+# caller - pull all task variables to the workflow that calls them
+def pull_to_root_all():
+    if args.pull_json or not args.pull_all:     # only activate if pull_all is the only input
+        return
+    call_list = find_calls()                    # get the list of all calls
+    for item in doc.workflow.available_inputs or []:
+        sep_index = item.name.find('.')
+        if sep_index < 0:                       # if variable is already workflow-level (var instead of task.var)
+            continue                            # skip to the next variable
+        call_name = item.name[:sep_index]       # call name may be different from task name
+        input = item.value
+        if var_gets(input.expr):                # if variable refers to another variable
+            continue                            # skip pulling it
+        extended_name = call_name + "_" + str(input.name)
+        var_type = str(input.type)
+        expr = str(input.expr)
+        var_to_workflow_or_task_inputs(body=doc.workflow, var_type = var_type, var_name=extended_name, expr = expr)
+        call = [call for call in call_list if str(call_name) == str(call.name)][0]   # call names are unique, so only one call matches
+        # know that input is not in the call inputs already (else wouldn't be part of available_inputs)
+        line = doc.source_lines[call.pos.line - 1]
+        if '{' in line and '}' not in line:
+            var_to_call_inputs_multiline(call = call, task_var_name=str(input.name), workflow_var_name=extended_name)
+        else:
+            var_to_call_inputs_single_line(call = call, task_var_name=str(input.name), workflow_var_name=extended_name)
 
 # caller - source .bashrc and load required modules for each task
 def source_modules():
@@ -336,8 +385,10 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 tabs_to_spaces()                            # convert tabs to spaces
-pull_to_root()                              # pull all task variables to the workflow that calls them
-if args.dockstore:                      # replaces modifications to cromwell.config for container & module load
+pull_to_root()                              # pull json-specified task variables to the workflow that calls them
+pull_to_root_all()                          # pull all task variables to the workflow that calls them
+    # var_gets()                                # tests whether a var's default expr involves calling another variable
+if args.dockstore:
     source_modules()                        # add source; module if "modules" var exists, else don't
     docker_runtime()                        # applies the below functions in the appropriate places
             # find_indices(line, target)        # find start and end of variable's assignment

@@ -301,8 +301,7 @@ def var_parameter_meta(body, target, description):
             insert=description,
             section="parameter_meta")
     else:
-        indicator = "workflow " + str(body.name) if isinstance(body, WDL.Tree.Workflow) else
-                    "task " + str(body.name)
+        indicator = "workflow " + str(body.name) if isinstance(body, WDL.Tree.Workflow) else "task " + str(body.name)
         for pos in range(len(doc.source_lines)):
             if indicator in doc.source_lines[pos]:
                 print(doc.source_lines[pos])

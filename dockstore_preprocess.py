@@ -408,12 +408,14 @@ def test():
         # indicator should match one and only one line
         # and line should not be a comment
         if indicator in line and (line.find('#') < 0 or line.find(indicator) < line.find('#')):
-            print(line)
             break       # stop searching
         pos += 1        # if not found, increase index
-    print("indicator: " + indicator)
-    print(doc.source_lines[pos])
 
+    # then keep going down until found parameter_meta section
+        # knows that it is present (job of other lines to make sure of that)
+    # print the next few lines to make sure the right one is found
+    # if variable not in meta, find a random line and insert it using helper function
+    # if variable already in meta, find the exact line and replace it
 
 tabs_to_spaces()                            # convert tabs to spaces
 #pull_to_root()                              # pull json-specified task variables to the workflow that calls them

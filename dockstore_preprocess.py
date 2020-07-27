@@ -404,10 +404,12 @@ def test():
     body = doc.tasks[0]
     indicator = ("workflow " if isinstance(body, WDL.Tree.Workflow) else "task ") + str(body.name)
     pos = 0
-    while pos < len(doc.source_lines):
-        if indicator in doc.source_lines[pos]:      # indicator should only match one line
-            break
-        pos += 1
+    for line in doc.source_lines:
+        if indicator in line and \      # indicator should match one and only one line
+           (line.find('#') < 0 or line.find(indicator) < line.find('#')):   # and line is not a comment
+            print(line)
+            break       # stop searching
+        pos += 1        # if not found, increase index
     print("indicator: " + indicator)
     print(doc.source_lines[pos])
 

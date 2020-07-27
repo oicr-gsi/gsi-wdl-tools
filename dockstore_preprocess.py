@@ -13,9 +13,8 @@ parser.add_argument("-p", "--pull-all", required = False, type=bool, help = "whe
 parser.add_argument("-d", "--dockstore", required = False, type=bool, help = "whether to activate functions for dockstore")
 
 args = parser.parse_args()
-
-# loads the file as a WDL.Tree.Document object
-doc = WDL.load(args.input_wdl_path)
+doc = WDL.load(args.input_wdl_path)     # loads the file as a WDL.Tree.Document object
+has_param_meta = []                     # names of tasks or workflow that have a parameter_meta section
 
 # caller - converts all tabs to spaces for run compatibility
     # num_spaces: number of spaces to each tab
@@ -286,6 +285,23 @@ def docker_runtime():
         var_to_workflow_or_task_inputs(body = task, var_type="String", var_name="docker", expr = args.docker_image)
         docker_to_task_runtime(task, target = "docker")
         # docker_param_meta(task, target = "docker")        # not used: miniWDL doesn't provide parameter_meta line pos
+
+# helper - finding and updating parameter_metas
+    # body: the task or workflow object
+    # target: the target variable
+    # description: the variable's meta description
+def var_parameter_meta(body, target, description):
+    if not body.parameter_meta and str(body.name) not in has_param_meta:
+        has_param_meta.append(str(body.name))   # prevents adding again
+        docker_to_task_or_param(
+            body=body,
+            mode="section",
+            index=body.pos.line if not body.outputs else body.outputs[0].pos.line - 2,  # adds in front of outputs section
+            target=target,
+            insert=description,
+            section="parameter_meta")
+    else:
+        
 
 # caller - pull json-specified task variables to the workflow that calls them
 def pull_to_root():

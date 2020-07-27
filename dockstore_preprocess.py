@@ -301,9 +301,10 @@ def var_parameter_meta(body, target, description):
             insert=description,
             section="parameter_meta")
     else:
-        indicator = "workflow " + str(body.name) if isinstance(body, WDL.Tree.Workflow) else "task " + str(body.name)
+        indicator = ("workflow " if isinstance(body, WDL.Tree.Workflow) else "task ") + str(body.name)
         for pos in range(len(doc.source_lines)):
             if indicator in doc.source_lines[pos]:
+                print("indicator: " + indicator)
                 print(doc.source_lines[pos])
 
 # caller - pull json-specified task variables to the workflow that calls them
@@ -402,10 +403,14 @@ def write_out():
 def test():
     body = doc.tasks[0]
     indicator = ("workflow " if isinstance(body, WDL.Tree.Workflow) else "task ") + str(body.name)
-    for pos in range(len(doc.source_lines)):
-        if indicator in doc.source_lines[pos]:
-            print("indicator: " + indicator)
-            print(doc.source_lines[pos])
+    pos = 0
+    while pos < len(doc.source_lines):
+        if indicator in doc.source_lines[pos]:      # indicator should only match one line
+            break
+        pos += 1
+    print("indicator: " + indicator)
+    print(doc.source_lines[pos])
+
 
 tabs_to_spaces()                            # convert tabs to spaces
 #pull_to_root()                              # pull json-specified task variables to the workflow that calls them

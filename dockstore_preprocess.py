@@ -220,7 +220,6 @@ def docker_to_task_runtime(task, target = "docker"):
             target = target,
             insert = '"~{docker}"',
             section = "runtime")
-
     else:
         if target in task.runtime.keys():
             docker_to_task_or_param(
@@ -229,7 +228,6 @@ def docker_to_task_runtime(task, target = "docker"):
                 index = task.runtime[target].pos.line - 1,
                 target = target,
                 insert = '"~{docker}"')
-
         else:
             docker_to_task_or_param(
                 body = task,
@@ -251,7 +249,6 @@ def docker_param_meta(body, target = "docker"):
             target = "docker",
             insert = '"Docker container to run the workflow in"',
             section = "parameter_meta")
-
     else:
         if target in body.parameter_meta.keys():
             docker_to_task_or_param(
@@ -260,7 +257,6 @@ def docker_param_meta(body, target = "docker"):
                 index = body.parameter_meta[target].pos.line - 1,
                 target = target,
                 insert = '"Docker container to run the workflow in"')
-
         else:
             docker_to_task_or_param(
                 body = body,
@@ -276,7 +272,7 @@ def docker_runtime():
         return
     # add image to workflow inputs
     var_to_workflow_or_task_inputs(body = doc.workflow, var_type="String", var_name="docker", expr = args.docker_image)
-    # docker_param_meta(doc.workflow, target = "docker")    # add docker parameter meta to workflow
+    # docker_param_meta(doc.workflow, target = "docker")        # not used: miniWDL doesn't provide parameter_meta line pos
     # add image to all task calls
     call_list = find_calls()
     for call in call_list:
@@ -289,7 +285,7 @@ def docker_runtime():
     for task in doc.tasks:
         var_to_workflow_or_task_inputs(body = task, var_type="String", var_name="docker", expr = args.docker_image)
         docker_to_task_runtime(task, target = "docker")
-        # docker_param_meta(task, target = "docker")        # add docker parameter meta to tasks
+        # docker_param_meta(task, target = "docker")        # not used: miniWDL doesn't provide parameter_meta line pos
 
 # caller - pull json-specified task variables to the workflow that calls them
 def pull_to_root():
@@ -398,5 +394,5 @@ if args.dockstore:
         # var_to_workflow_or_task_inputs()      # add or convert docker for workflow or task inputs
         # docker_to_task_runtime()              # add docker to task runtime or replace existing val
             # docker_to_task_or_param()         # given a mode, inserts new value after the target
-        # docker_param_meta()                   # not used: can't find .pos of param string
+        # docker_param_meta()                   # not used: miniWDL doesn't provide parameter_meta line pos
 write_out()                                 # write out to a new wdl file

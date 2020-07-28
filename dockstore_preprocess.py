@@ -274,14 +274,11 @@ def var_parameter_meta(body, target, description):
             pos += 1  # increase line index until found
         while doc.source_lines[pos].find("parameter_meta") < 0:  # find parameter_meta within that body section
             pos += 1
-        print("@@@ " + doc.source_lines[pos])
         if target in body.parameter_meta.keys():  # if replace existing description
-            print("replacing existing description for " + target)
             index1, index2 = find_indices(line=doc.source_lines[pos], target=target)
             while index1 < 0 or index2 < 0:  # increment pos until at the line exactly containing target
                 pos += 1  # knows that it's in the section somewhere because in keys
                 index1, index2 = find_indices(line=doc.source_lines[pos], target=target)
-            print("exact variable in line: /// " + doc.source_lines[pos])
             var_to_runtime_or_param(
                 body=body,
                 mode="replace",
@@ -290,8 +287,6 @@ def var_parameter_meta(body, target, description):
                 insert=description,
                 section="parameter_meta")
         else:  # if add new description in front of the first description in meta
-            print("adding new description for " + target)
-            print("insert in front of line: /// " + doc.source_lines[pos])  # line containing the line to insert in front of
             var_to_runtime_or_param(
                 body=body,
                 mode="add line with section",
@@ -391,18 +386,9 @@ def pull_to_root_all():
         var_to_workflow_or_task_inputs(body=doc.workflow, var_type = var_type, var_name=extended_name, expr = expr)
         call = [call for call in call_list if str(call_name) == str(call.name)][0]   # call names are unique, so only one call matches
 
-        # var_parameter_meta(body=doc.workflow, target="task2_var1",
-        #                    description='"new description for task2_var1" ')  # add new line
-        # var_parameter_meta(body=doc.tasks[1], target="var1",
-        #                    description='"new meta section + var1 description" ')  # add new section
-        # var_parameter_meta(body=doc.tasks[1], target="var2", description='"add new var2 after var1" ')  # add new line
-        # var_parameter_meta(body=doc.tasks[1], target="var1",
-        #                    description='"replacement var1 description" ')  # replace description
-
-        # get the original taskName throught the call object's call.callee_name or something like that
-        # get the task object (maybe can get task object directly from the call)
-        # get the old parameter_meta description from the task object
-        # pass the new variable name (extended_name) and old parameter_meta to another function, which adds it to workflow parameter_meta
+        body = call.callee      # the task or workflow that the call refers to
+        old_description = body.parameter_meta[str(input.name)]
+        var_parameter_meta(body=body, target=extended_name, description=old_description)  # add new line
 
         # know that input is not in the call inputs already (else wouldn't be part of available_inputs)
         line = doc.source_lines[call.pos.line - 1]
@@ -437,7 +423,7 @@ def test():
 
 tabs_to_spaces()                            # convert tabs to spaces
 #pull_to_root()                              # pull json-specified task variables to the workflow that calls them
-#pull_to_root_all()                          # pull all task variables to the workflow that calls them
+pull_to_root_all()                          # pull all task variables to the workflow that calls them
     # var_gets()                                # tests whether a var's default expr involves calling another variable
     # var_parameter_meta()                      # finding and updating parameter_metas
 #if args.dockstore:
@@ -450,5 +436,5 @@ tabs_to_spaces()                            # convert tabs to spaces
         # var_to_workflow_or_task_inputs()      # add or convert docker for workflow or task inputs
         # docker_to_task_runtime()              # add docker to task runtime or replace existing val
             # var_to_runtime_or_param()         # add variable to runtime or param meta
-test()
+#test()
 write_out()                                 # write out to a new wdl file

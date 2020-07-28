@@ -207,6 +207,7 @@ def var_to_runtime_or_param(body, mode, index, insert, target, section):
         place = line.find(section)      # @@@ MAKE SURE LINE PASSED IN HAS SUCH A SUBSTRING
         if place < 0:
             return                      # invalid line
+        place += len(section)
         while line[place] in " {":      # move until at start of section's body
             place += 1
         num_spaces = len(line) - len(line.lstrip(' ')) + tab_size
@@ -418,7 +419,7 @@ def write_out():
 def test():
     var_parameter_meta(body = doc.workflow, target = "task2_var1", description = '"new description for task2_var1" ')  # add new line
     var_parameter_meta(body = doc.tasks[1], target = "var1", description = '"new meta section + var1 description" ')   # add new section
-    var_parameter_meta(body = doc.tasks[1], target = "var2", description = '"add new var2 after var1" ')              # replace description
+    var_parameter_meta(body = doc.tasks[1], target = "var2", description = '"add new var2 after var1" ')               # add new line
     var_parameter_meta(body = doc.tasks[1], target = "var1", description = '"replacement var1 description" ')          # replace description
 
 tabs_to_spaces()                            # convert tabs to spaces

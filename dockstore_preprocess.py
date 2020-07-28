@@ -429,9 +429,9 @@ def source_modules():
 def test():
     for imp in doc.imports:
         prefix = imp.namespace + "_"
-        import_workflow = imp.doc.workflow
-        for meta in import_workflow.parameter_meta:
-            print(str(meta))
+        meta = imp.doc.workflow.parameter_meta
+        for var in meta:
+            print(var, meta[var])
         print("\n")
 
 # caller lv. 1 - final outputs to stdout or a file with modified name

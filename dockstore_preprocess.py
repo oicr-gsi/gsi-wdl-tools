@@ -416,10 +416,12 @@ def test():
         if indicator in line and (line.find('#') < 0 or line.find(indicator) < line.find('#')):
             break       # stop searching
         pos += 1        # if not found, increase index
-    while "parameter_meta" not in doc.source_lines[pos]:
-        pos+= 1
     for i in range(5):
         print(doc.source_lines[pos + i])
+    # while "parameter_meta" not in doc.source_lines[pos]:
+    #     pos+= 1
+    # for i in range(5):
+    #     print(doc.source_lines[pos + i])
 
 
     # then keep going down until found parameter_meta section

@@ -417,19 +417,14 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-def test():
-    call_list = find_calls()
-    for call in call_list:
-        print("callee_id: [" + " ^ ".join(call.callee_id) + "] /// name: " + call.name + " /// callee: " + call.callee.name)
-
 tabs_to_spaces()                            # convert tabs to spaces
-#pull_to_root()                              # pull json-specified task variables to the workflow that calls them
+pull_to_root()                              # pull json-specified task variables to the workflow that calls them
 pull_to_root_all()                          # pull all task variables to the workflow that calls them
     # var_gets()                                # tests whether a var's default expr involves calling another variable
     # var_parameter_meta()                      # finding and updating parameter_metas
-#if args.dockstore:
-#    source_modules()                        # add source; module if "modules" var exists, else don't
-#    docker_runtime()                        # applies the below functions in the appropriate places
+if args.dockstore:
+    source_modules()                        # add source; module if "modules" var exists, else don't
+    docker_runtime()                        # applies the below functions in the appropriate places
             # find_indices(line, target)        # find start and end of variable's assignment
             # find_calls()                      # find all nested calls in a workflow
             # var_to_call_inputs_multiline()    # add or convert docker for multi-line call
@@ -437,5 +432,4 @@ pull_to_root_all()                          # pull all task variables to the wor
         # var_to_workflow_or_task_inputs()      # add or convert docker for workflow or task inputs
         # docker_to_task_runtime()              # add docker to task runtime or replace existing val
             # var_to_runtime_or_param()         # add variable to runtime or param meta
-#test()
 write_out()                                 # write out to a new wdl file

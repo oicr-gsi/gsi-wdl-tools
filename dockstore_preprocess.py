@@ -259,7 +259,7 @@ def var_parameter_meta(body, target, description):
                 break  # stop searching
             pos += 1  # if not found, increase index
         while doc.source_lines[pos].find("parameter_meta") < 0:  # find parameter_meta within that body section
-            pos += 1  # tested
+            pos += 1
         if target in body.parameter_meta.keys():  # if replace existing description
             print("replacing existing description for " + target)
             index1, index2 = find_indices(line=doc.source_lines[pos], target=target)
@@ -407,8 +407,8 @@ def write_out():
 def test():
     var_parameter_meta(body = doc.workflow, target = "task2_var1", description = '"new description for task2_var1"')  # add new line
     var_parameter_meta(body = doc.tasks[1], target = "var1", description = '"new meta section + var1 description"')   # add new section
+    var_parameter_meta(body = doc.tasks[1], target = "var2", description = '"add new var2 after var1"')              # replace description
     var_parameter_meta(body = doc.tasks[1], target = "var1", description = '"replacement var1 description"')          # replace description
-    var_parameter_meta(body = doc.tasks[1], target = "var2", description = '"add new var2 before var1"')              # replace description
 
 tabs_to_spaces()                            # convert tabs to spaces
 #pull_to_root()                              # pull json-specified task variables to the workflow that calls them

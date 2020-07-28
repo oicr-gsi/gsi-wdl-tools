@@ -428,11 +428,9 @@ def source_modules():
 
 def test():
     for imp in doc.imports:
-        print(imp.aliases)
-        print(type(imp.doc))
-        print(imp.namespace)
-        print(type(imp.pos))
-        print(type(imp.uri))
+        prefix = imp.namespace + "_"
+        import_workflow = imp.doc.workflow
+        print(import_workflow.parameter_meta)
         print("\n")
 
 # caller lv. 1 - final outputs to stdout or a file with modified name

@@ -15,10 +15,11 @@ parser.add_argument("-d", "--dockstore", required = False, type=bool, help = "wh
 args = parser.parse_args()
 doc = WDL.load(args.input_wdl_path)     # loads the file as a WDL.Tree.Document object
 has_param_meta = []                     # names of tasks or workflow that have a parameter_meta section
+tab_size = 4
 
 # caller - converts all tabs to spaces for run compatibility
     # num_spaces: number of spaces to each tab
-def tabs_to_spaces(num_spaces = 8):
+def tabs_to_spaces(num_spaces = tab_size):
     for index in range(len(doc.source_lines)):
         line = doc.source_lines[index].lstrip('\t')
         num_tabs = len(doc.source_lines[index]) - len(line)
@@ -186,7 +187,7 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
     # insert: what to replace the value with
     # target: the runtime variable name
     # section: whether it's a runtime or parameter_meta block
-def var_to_runtime_or_param(body, mode, index, insert, target = "docker", section = "runtime"):
+def var_to_runtime_or_param(body, mode, index, insert, target, section):
     if mode == "section":
         line = doc.source_lines[index]
         num_spaces = len(line) - len(line.lstrip(' '))
@@ -203,8 +204,13 @@ def var_to_runtime_or_param(body, mode, index, insert, target = "docker", sectio
 
     if mode == "add line":
         line = doc.source_lines[index]
-        num_spaces = len(line) - len(line.lstrip(' '))
-        line = ' ' * num_spaces + target + ': ' + insert + '\n' + line
+        place = line.find(section)      # @@@ MAKE SURE LINE PASSED IN HAS SUCH A SUBSTRING
+        if place < 0:
+            return                      # invalid line
+        while line[place] in " {":      # move until at start of section's body
+            place += 1
+        num_spaces = len(line) - len(line.lstrip(' ')) + tab_size
+        line = line[:place] + '\n' + ' ' * num_spaces + target + ': ' + insert + line[place:]
         doc.source_lines[index] = line
 
 # helper - add docker to task runtime or replace existing var
@@ -249,7 +255,7 @@ def var_parameter_meta(body, target, description):
             target=target,
             insert=description,
             section="parameter_meta")
-        body.parameter_meta[target] = description   # add to keys()
+        body.parameter_meta[target] = description   # add to keys(); prevent adding again
     else:
         indicator = ("workflow " if isinstance(body, WDL.Tree.Workflow) else "task ") + str(body.name)
         pos = 0
@@ -262,8 +268,6 @@ def var_parameter_meta(body, target, description):
         while doc.source_lines[pos].find("parameter_meta") < 0:  # find parameter_meta within that body section
             pos += 1
         print("@@@ " + doc.source_lines[pos])
-
-
         if target in body.parameter_meta.keys():  # if replace existing description
             print("replacing existing description for " + target)
             index1, index2 = find_indices(line=doc.source_lines[pos], target=target)
@@ -276,17 +280,19 @@ def var_parameter_meta(body, target, description):
                 mode="replace",
                 index=pos,
                 target=target,
-                insert=description)
+                insert=description,
+                section="parameter_meta")
         else:  # if add new description in front of the first description in meta
             print("adding new description for " + target)
-            print("insert in front of line: /// " + doc.source_lines[pos + 1])
+            print("insert in front of line: /// " + doc.source_lines[pos])  # line containing the line to insert in front of
             var_to_runtime_or_param(
                 body=body,
                 mode="add line",
-                index=pos + 1,
+                index=pos,
                 target=target,
-                insert=description)
-            body.parameter_meta[target] = description   # add to keys()
+                insert=description,
+                section="parameter_meta")
+            body.parameter_meta[target] = description   # add to keys(); prevent adding again
 
 # caller - add docker to every task and workflow explicitly
 def docker_runtime():

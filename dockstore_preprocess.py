@@ -431,7 +431,7 @@ def test():
         prefix = imp.namespace + "_"
         import_workflow = imp.doc.workflow
         for meta in import_workflow.parameter_meta:
-            print(meta)
+            print(str(meta))
         print("\n")
 
 # caller lv. 1 - final outputs to stdout or a file with modified name

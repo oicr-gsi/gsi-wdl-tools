@@ -45,7 +45,7 @@ def find_indices(line, target):
         valid_back = index1 == len(line)
         if index1 < len(line):      # if there are characters behind target
             valid_back = line[index1] in ":= "      # only selected characters allowed
-        if valid_front and valid_back:      # exit loop when exact match found
+        if valid_front and valid_back:              # exit loop when exact match found
             break
     while line[index1] in " =:":    # move forward until at start of value assignment
         index1 += 1
@@ -130,7 +130,7 @@ def var_to_call_inputs_multiline(call, task_var_name = "docker", workflow_var_na
             line_pos += 1
             line = doc.source_lines[line_pos]
             index1, index2 = find_indices(line = line, target = task_var_name)
-            if index1 > -1 and index2 > -1:    # the right line is found
+            if index1 > -1 and index2 > -1:         # the right line is found
                 line = line[:index1] + workflow_var_name + line[index2:]
                 doc.source_lines[line_pos] = line
                 break
@@ -163,7 +163,7 @@ def var_to_call_inputs_single_line(call, task_var_name = "docker", workflow_var_
     # expr: the value assigned to the variable
     # num_spaces: the indentation for adding a new inputs block
 def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 4):    # where body is a workflow or task
-    if not body.inputs:     # no input section; add new section
+    if not body.inputs: # no input section; add new section
         line = doc.source_lines[body.pos.line - 1]
         if expr != "None":      # if default expr needs to be pulled
             line += '\n' + \
@@ -177,7 +177,7 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
                     ' ' * num_spaces + '}\n'
         doc.source_lines[body.pos.line - 1] = line
 
-    else:                   # input section exists but variable doesn't; add new variable
+    else:               # input section exists but variable doesn't; add new variable
         var_in_inputs = False
         for input in body.inputs:       # replace existing docker var if new expr is not empty
             if var_name == input.name and expr != "None":     # only replace if match name and have a value
@@ -190,9 +190,9 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
         if not var_in_inputs:           # add new docker var
             line = doc.source_lines[body.inputs[0].pos.line - 1]
             num_spaces = len(line) - len(line.lstrip(' '))
-            if expr != "None":  # if default expr needs to be pulled
+            if expr != "None":          # if default expr needs to be pulled
                 line = ' ' * num_spaces + var_type + ' ' + var_name + ' = ' + expr + '\n' + line
-            else:               # if doesn't have a default expr, make input optional
+            else:                       # if doesn't have a default expr, make input optional
                 line = ' ' * num_spaces + var_type + ' ' + var_name + '\n' + line
             doc.source_lines[body.inputs[0].pos.line - 1] = line
 
@@ -288,14 +288,14 @@ def var_parameter_meta(body, target, description):
             # indicator should match one and only one line
             # and line should not be a comment
             if indicator in line and (line.find('#') < 0 or line.find(indicator) < line.find('#')):
-                break  # stop searching
-            pos += 1  # increase line index until found
+                break   # stop searching
+            pos += 1    # increase line index until found
         while doc.source_lines[pos].find("parameter_meta") < 0:  # find parameter_meta within that body section
             pos += 1
-        if target in body.parameter_meta.keys():  # if replace existing description
+        if target in body.parameter_meta.keys():    # if replace existing description
             index1, index2 = find_indices(line=doc.source_lines[pos], target=target)
-            while index1 < 0 or index2 < 0:  # increment pos until at the line exactly containing target
-                pos += 1  # knows that it's in the section somewhere because in keys
+            while index1 < 0 or index2 < 0:         # increment pos until at the line exactly containing target
+                pos += 1                            # knows that it's in the section somewhere because in keys
                 index1, index2 = find_indices(line=doc.source_lines[pos], target=target)
             var_to_runtime_or_param(
                 body=body,
@@ -304,7 +304,7 @@ def var_parameter_meta(body, target, description):
                 target=target,
                 insert=description,
                 section="parameter_meta")
-        else:  # if add new description in front of the first description in meta
+        else:           # if add new description in front of the first description in meta
             var_to_runtime_or_param(
                 body=body,
                 mode="add line with section",
@@ -383,7 +383,7 @@ def var_gets(expr):
             return True
         if isinstance(item, WDL.Expr.Apply):
             tree.extend(expr.arguments)
-    return False    # couldn't find and Get in the tree
+    return False    # couldn't find any Get in the tree
 
 # caller - pull all task variables to the workflow that calls them
 def pull_to_root_all():
@@ -403,12 +403,11 @@ def pull_to_root_all():
         expr = str(input.expr)
         var_to_workflow_or_task_inputs(body=doc.workflow, var_type = var_type, var_name=extended_name, expr = expr)
         call = [call for call in call_list if str(call_name) == str(call.name)][0]   # call names are unique, so only one call matches
-
+        # pull parameter_metas
         body = call.callee      # the task or workflow that the call refers to
         if str(input.name) in body.parameter_meta.keys():   # if the original variable had a meta description
             old_description = '"' + body.parameter_meta[str(input.name)] + '"'
             var_parameter_meta(body=doc.workflow, target=extended_name, description=old_description)  # pull description to root
-
         # know that input is not in the call inputs already (else wouldn't be part of available_inputs)
         line = doc.source_lines[call.pos.line - 1]
         if '{' in line and '}' not in line:
@@ -438,8 +437,8 @@ def write_out():
 tabs_to_spaces()                            # convert tabs to spaces
 pull_to_root()                              # pull json-specified task variables to the workflow that calls them
 pull_to_root_all()                          # pull all task variables to the workflow that calls them
-    # var_gets()                                # tests whether a var's default expr involves calling another variable
-    # var_parameter_meta()                      # finding and updating parameter_metas
+        # var_gets()                            # tests whether a var's default expr involves calling another variable
+        # var_parameter_meta()                  # finding and updating parameter_metas
 if args.dockstore:
     source_modules()                        # add source; module if "modules" var exists, else don't
     docker_runtime()                        # applies the below functions in the appropriate places

@@ -374,6 +374,12 @@ def pull_to_root_all():
         expr = str(input.expr)
         var_to_workflow_or_task_inputs(body=doc.workflow, var_type = var_type, var_name=extended_name, expr = expr)
         call = [call for call in call_list if str(call_name) == str(call.name)][0]   # call names are unique, so only one call matches
+
+        # get the original taskName throught the call object's call.callee_name or something like that
+        # get the task object (maybe can get task object directly from the call)
+        # get the old parameter_meta description from the task object
+        # pass the new variable name (extended_name) and old parameter_meta to another function, which adds it to workflow parameter_meta
+
         # know that input is not in the call inputs already (else wouldn't be part of available_inputs)
         line = doc.source_lines[call.pos.line - 1]
         if '{' in line and '}' not in line:
@@ -410,9 +416,14 @@ def test():
         if indicator in line and (line.find('#') < 0 or line.find(indicator) < line.find('#')):
             break       # stop searching
         pos += 1        # if not found, increase index
+    while "parameter_meta" not in doc.source_lines[pos]:
+        pos+= 1
+    for i in range(5):
+        print(doc.source_lines[pos + i])
+
 
     # then keep going down until found parameter_meta section
-        # knows that it is present (job of other lines to make sure of that)
+        # knows that it is present (job of previous section to make sure of that)
     # print the next few lines to make sure the right one is found
     # if variable not in meta, find a random line and insert it using helper function
     # if variable already in meta, find the exact line and replace it

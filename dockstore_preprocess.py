@@ -249,6 +249,7 @@ def var_parameter_meta(body, target, description):
             target=target,
             insert=description,
             section="parameter_meta")
+        body.parameter_meta[target] = description   # add to keys()
     else:
         indicator = ("workflow " if isinstance(body, WDL.Tree.Workflow) else "task ") + str(body.name)
         pos = 0
@@ -261,6 +262,8 @@ def var_parameter_meta(body, target, description):
         while doc.source_lines[pos].find("parameter_meta") < 0:  # find parameter_meta within that body section
             pos += 1
         print("@@@ " + doc.source_lines[pos])
+
+
         if target in body.parameter_meta.keys():  # if replace existing description
             print("replacing existing description for " + target)
             index1, index2 = find_indices(line=doc.source_lines[pos], target=target)
@@ -283,6 +286,7 @@ def var_parameter_meta(body, target, description):
                 index=pos + 1,
                 target=target,
                 insert=description)
+            body.parameter_meta[target] = description   # add to keys()
 
 # caller - add docker to every task and workflow explicitly
 def docker_runtime():

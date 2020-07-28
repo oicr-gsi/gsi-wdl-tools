@@ -378,7 +378,7 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 def test():
-    target = "modules"
+    target = "moduless"
     body = doc.tasks[0]
     indicator = ("workflow " if isinstance(body, WDL.Tree.Workflow) else "task ") + str(body.name)
     pos = 0

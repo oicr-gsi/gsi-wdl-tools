@@ -305,7 +305,7 @@ def docker_runtime():
         return
     # add image to workflow inputs
     var_to_workflow_or_task_inputs(body = doc.workflow, var_type="String", var_name="docker", expr = args.docker_image)
-    # var_param_meta(doc.workflow, target = "docker", description = '""')        # not used: miniWDL doesn't provide parameter_meta line pos
+    var_parameter_meta(body = doc.workflow, target = "docker", description = '"Docker container to run the workflow in"')
     # add image to all task calls
     call_list = find_calls()
     for call in call_list:
@@ -318,7 +318,7 @@ def docker_runtime():
     for task in doc.tasks:
         var_to_workflow_or_task_inputs(body = task, var_type="String", var_name="docker", expr = args.docker_image)
         docker_to_task_runtime(task, target = "docker")
-        # var_param_meta(task, target = "docker", description = '""')        # not used: miniWDL doesn't provide parameter_meta line pos
+        var_parameter_meta(body = task, target = "docker", description = '"Docker container to run the workflow in"')
 
 # caller - pull json-specified task variables to the workflow that calls them
 def pull_to_root():

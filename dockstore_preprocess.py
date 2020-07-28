@@ -61,7 +61,7 @@ def find_indices(line, target):
         index2 = line[index1:].find("}") + index1 + 1
         return index1, index2
     index2 = len(line)              # if expr is not a string, char, or set, work backwards from end of line
-    for c in "} ,\n":                 # assignment ends at special characters
+    for c in "} ,":                 # assignment ends at special characters
         index_temp = line[index1:].find(c) + index1
         index2 = index_temp if index_temp > -1 + index1 and index_temp < index2 else index2
     return index1, index2
@@ -405,10 +405,10 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 def test():
-    var_parameter_meta(body = doc.workflow, target = "task2_var1", description = '"new description for task2_var1"')  # add new line
-    var_parameter_meta(body = doc.tasks[1], target = "var1", description = '"new meta section + var1 description"')   # add new section
-    var_parameter_meta(body = doc.tasks[1], target = "var2", description = '"add new var2 after var1"')              # replace description
-    var_parameter_meta(body = doc.tasks[1], target = "var1", description = '"replacement var1 description"')          # replace description
+    var_parameter_meta(body = doc.workflow, target = "task2_var1", description = '"new description for task2_var1" ')  # add new line
+    var_parameter_meta(body = doc.tasks[1], target = "var1", description = '"new meta section + var1 description" ')   # add new section
+    var_parameter_meta(body = doc.tasks[1], target = "var2", description = '"add new var2 after var1" ')              # replace description
+    var_parameter_meta(body = doc.tasks[1], target = "var1", description = '"replacement var1 description" ')          # replace description
 
 tabs_to_spaces()                            # convert tabs to spaces
 #pull_to_root()                              # pull json-specified task variables to the workflow that calls them

@@ -239,14 +239,16 @@ def docker_to_task_runtime(task, target = "docker"):
                 mode = "replace",
                 index = task.runtime[target].pos.line - 1,
                 target = target,
-                insert = '"~{docker}"')
+                insert = '"~{docker}"',
+                section = "runtime")
         else:
             var_to_runtime_or_param(
                 body = task,
                 mode = "add line",
                 index = task.runtime[list(task.runtime.keys())[0]].pos.line - 1,
                 target = target,
-                insert = '"~{docker}"')
+                insert = '"~{docker}"',
+                section = "runtime")
 
 # helper - finding and updating parameter_metas
     # body: the task or workflow object

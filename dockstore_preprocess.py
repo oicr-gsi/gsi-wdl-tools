@@ -433,7 +433,7 @@ def write_out():
 def test():
     call_list = find_calls()
     for call in call_list:
-        print("callee_id: [" + " ^ ".join(call.callee_id) + "] /// name: " + call.name + " /// callee: " + call.callee)
+        print("callee_id: [" + " ^ ".join(call.callee_id) + "] /// name: " + call.name + " /// callee: " + call.callee.name)
 
 tabs_to_spaces()                            # convert tabs to spaces
 #pull_to_root()                              # pull json-specified task variables to the workflow that calls them

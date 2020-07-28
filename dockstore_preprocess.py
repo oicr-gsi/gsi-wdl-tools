@@ -34,10 +34,9 @@ def find_indices(line, target):
     valid_front, valid_back = False, False
     while True:
         next_index = line[index1:].find(target)
-        if next_index < 0:          # exit if target not in string
+        if next_index < 0:          # exit if target not in string at all
             return -1, -1
-        index1 += next_index        # jump to the next match found
-
+        index1 += next_index        # jump to the next match found (one match per loop)
         valid_front = index1 == 0
         if index1 > 0:              # if there are characters in front of target
             valid_front = line[index1 - 1] in ", "  # only selected characters allowed
@@ -45,22 +44,23 @@ def find_indices(line, target):
         valid_back = index1 == len(line)
         if index1 < len(line):      # if there are characters behind target
             valid_back = line[index1] in ":= "      # only selected characters allowed
-        if valid_front and valid_back:
+        if valid_front and valid_back:      # exit loop when exact match found
             break
     while line[index1] in " =:":    # move forward until at start of value assignment
         index1 += 1
-    if '"' in line[index1:]:        # if var assignment is a string, ignore symbols
+    if '"' in line[index1:]:        # if var assignment is a string, jump to end of string
         index2 = line[index1:].find('"') + index1 + 1
         index2 = line[index2:].find('"') + index2 + 1
         return index1, index2
-    if "'" in line[index1:]:        # if var assignment is a string or char, ignore symbols
+    if "'" in line[index1:]:        # if var assignment is a string or char, jump to end of string or char
         index2 = line[index1:].find("'") + index1 + 1
         index2 = line[index2:].find("'") + index2 + 1
         return index1, index2
-    if "{" in line[index1:]:        # if var assignment contains a set, ignore brackets
+    if "{" in line[index1:]:        # if var assignment contains a set, jump to the end of the first closing bracket
+                                    # @@@@@@@@ IMPROVEMENT: DON'T RETURN UNTIL EQUAL NUMBER OF '{' AS '}'
         index2 = line[index1:].find("}") + index1 + 1
         return index1, index2
-    index2 = len(line)
+    index2 = len(line)              # if expr is not a string, char, or set, work backwards from end of line
     for c in "} ,":                 # assignment ends at special characters
         index_temp = line[index1:].find(c) + index1
         index2 = index_temp if index_temp > -1 + index1 and index_temp < index2 else index2
@@ -179,14 +179,14 @@ def var_to_workflow_or_task_inputs(body, var_type, var_name, expr, num_spaces = 
                 line = ' ' * num_spaces + var_type + ' ' + var_name + '\n' + line
             doc.source_lines[body.inputs[0].pos.line - 1] = line
 
-# helper - add docker to runtime or param meta
+# helper - add variable to runtime or param meta
     # body: the WDL.Tree.Workflow or WDL.Tree.Task object
     # mode: the type of insert (section, replace, or add line)
     # index: the index of the source line to change
     # insert: what to replace the value with
     # target: the runtime variable name
     # section: whether it's a runtime or parameter_meta block
-def docker_to_task_or_param(body, mode, index, insert, target = "docker", section = "runtime"):
+def var_to_runtime_or_param(body, mode, index, insert, target = "docker", section = "runtime"):
     if mode == "section":
         line = doc.source_lines[index]
         num_spaces = len(line) - len(line.lstrip(' '))
@@ -212,7 +212,7 @@ def docker_to_task_or_param(body, mode, index, insert, target = "docker", sectio
     # target: the runtime variable name
 def docker_to_task_runtime(task, target = "docker"):
     if not task.runtime:
-        docker_to_task_or_param(
+        var_to_runtime_or_param(
             body = task,
             mode = "section",
             index = task.pos.line if not task.outputs else task.outputs[0].pos.line - 2,
@@ -221,48 +221,40 @@ def docker_to_task_runtime(task, target = "docker"):
             section = "runtime")
     else:
         if target in task.runtime.keys():
-            docker_to_task_or_param(
+            var_to_runtime_or_param(
                 body = task,
                 mode = "replace",
                 index = task.runtime[target].pos.line - 1,
                 target = target,
                 insert = '"~{docker}"')
         else:
-            docker_to_task_or_param(
+            var_to_runtime_or_param(
                 body = task,
                 mode = "add line",
                 index = task.runtime[list(task.runtime.keys())[0]].pos.line - 1,
                 target = target,
                 insert = '"~{docker}"')
 
-# helper - add docker parameter meta to workflow or task
-# not used: can't find .pos of type str
-    # body: the WDL.Tree.Workflow or WDL.Tree.Task object
-    # target: the parameter_meta variable name
-def docker_param_meta(body, target = "docker"):
-    if not body.parameter_meta:
-        docker_to_task_or_param(
-            body = body,
-            mode = "section",
-            index = body.pos.line if not body.outputs else body.outputs[0].pos.line - 2,
-            target = "docker",
-            insert = '"Docker container to run the workflow in"',
-            section = "parameter_meta")
+# helper - finding and updating parameter_metas
+    # body: the task or workflow object
+    # target: the target variable
+    # description: the variable's meta description
+def var_parameter_meta(body, target, description):
+    if not body.parameter_meta and str(body.name) not in has_param_meta:    # need to add the entire section
+        has_param_meta.append(str(body.name))                               # prevents adding again
+        var_to_runtime_or_param(
+            body=body,
+            mode="section",
+            index=body.pos.line if not body.outputs else body.outputs[0].pos.line - 2,
+            target=target,
+            insert=description,
+            section="parameter_meta")
     else:
-        if target in body.parameter_meta.keys():
-            docker_to_task_or_param(
-                body = body,
-                mode = "replace",
-                index = body.parameter_meta[target].pos.line - 1,
-                target = target,
-                insert = '"Docker container to run the workflow in"')
-        else:
-            docker_to_task_or_param(
-                body = body,
-                mode = "add line",
-                index = body.parameter_meta[list(body.parameter_meta.keys())[0]].pos.line - 1,
-                target = target,
-                insert = '"Docker container to run the workflow in"')
+        indicator = ("workflow " if isinstance(body, WDL.Tree.Workflow) else "task ") + str(body.name)
+        for pos in range(len(doc.source_lines)):
+            if indicator in doc.source_lines[pos]:
+                print("indicator: " + indicator)
+                print(doc.source_lines[pos])
 
 # caller - add docker to every task and workflow explicitly
 def docker_runtime():
@@ -271,7 +263,7 @@ def docker_runtime():
         return
     # add image to workflow inputs
     var_to_workflow_or_task_inputs(body = doc.workflow, var_type="String", var_name="docker", expr = args.docker_image)
-    # docker_param_meta(doc.workflow, target = "docker")        # not used: miniWDL doesn't provide parameter_meta line pos
+    # var_param_meta(doc.workflow, target = "docker", description = '""')        # not used: miniWDL doesn't provide parameter_meta line pos
     # add image to all task calls
     call_list = find_calls()
     for call in call_list:
@@ -284,28 +276,7 @@ def docker_runtime():
     for task in doc.tasks:
         var_to_workflow_or_task_inputs(body = task, var_type="String", var_name="docker", expr = args.docker_image)
         docker_to_task_runtime(task, target = "docker")
-        # docker_param_meta(task, target = "docker")        # not used: miniWDL doesn't provide parameter_meta line pos
-
-# helper - finding and updating parameter_metas
-    # body: the task or workflow object
-    # target: the target variable
-    # description: the variable's meta description
-def var_parameter_meta(body, target, description):
-    if not body.parameter_meta and str(body.name) not in has_param_meta:
-        has_param_meta.append(str(body.name))   # prevents adding again
-        docker_to_task_or_param(
-            body=body,
-            mode="section",
-            index=body.pos.line if not body.outputs else body.outputs[0].pos.line - 2,  # adds in front of outputs section
-            target=target,
-            insert=description,
-            section="parameter_meta")
-    else:
-        indicator = ("workflow " if isinstance(body, WDL.Tree.Workflow) else "task ") + str(body.name)
-        for pos in range(len(doc.source_lines)):
-            if indicator in doc.source_lines[pos]:
-                print("indicator: " + indicator)
-                print(doc.source_lines[pos])
+        # var_param_meta(task, target = "docker", description = '""')        # not used: miniWDL doesn't provide parameter_meta line pos
 
 # caller - pull json-specified task variables to the workflow that calls them
 def pull_to_root():
@@ -407,6 +378,7 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 def test():
+    target = "modules"
     body = doc.tasks[0]
     indicator = ("workflow " if isinstance(body, WDL.Tree.Workflow) else "task ") + str(body.name)
     pos = 0
@@ -416,22 +388,36 @@ def test():
         if indicator in line and (line.find('#') < 0 or line.find(indicator) < line.find('#')):
             break       # stop searching
         pos += 1        # if not found, increase index
-    while doc.source_lines[pos].find("parameter_meta") < 0:
-        pos+= 1
-    for i in range(5):
-        print(doc.source_lines[pos + i])
-
-
-    # then keep going down until found parameter_meta section
-        # knows that it is present (job of previous section to make sure of that)
-    # print the next few lines to make sure the right one is found
-    # if variable not in meta, find a random line and insert it using helper function
-    # if variable already in meta, find the exact line and replace it
+    while doc.source_lines[pos].find("parameter_meta") < 0:     # find parameter_meta within that body section
+        pos += 1        # tested
+    if target in body.parameter_meta.keys():    # if replace existing description
+        print("replacing existing description for " + target)
+        index1, index2 = find_indices(line = doc.source_lines[pos], target = target)
+        while index1 < 0 or index2 < 0:         # increment pos until at the line exactly containing target
+            pos += 1                            # knows that it's in the section somewhere because in keys
+            index1, index2 = find_indices(line=doc.source_lines[pos], target=target)
+        print("exact variable in line: /// " + doc.source_lines[pos])
+        # var_to_runtime_or_param(
+        #     body=body,
+        #     mode="replace",
+        #     index=pos,
+        #     target=target,
+        #     insert='"Docker container to run the workflow in"')
+    else:                                       # if add new description in front of the first description in meta
+        print("adding new description for " + target)
+        print("insert in front of line: /// " + doc.source_lines[pos + 1])
+        # var_to_runtime_or_param(
+        #     body=body,
+        #     mode="add line",
+        #     index=pos + 1,
+        #     target=target,
+        #     insert='"Docker container to run the workflow in"')
 
 tabs_to_spaces()                            # convert tabs to spaces
 #pull_to_root()                              # pull json-specified task variables to the workflow that calls them
 #pull_to_root_all()                          # pull all task variables to the workflow that calls them
     # var_gets()                                # tests whether a var's default expr involves calling another variable
+    # var_parameter_meta()                      # finding and updating parameter_metas
 #if args.dockstore:
 #    source_modules()                        # add source; module if "modules" var exists, else don't
 #    docker_runtime()                        # applies the below functions in the appropriate places
@@ -441,7 +427,6 @@ tabs_to_spaces()                            # convert tabs to spaces
             # var_to_call_inputs_single_line()  # add or convert docker for single-line call
         # var_to_workflow_or_task_inputs()      # add or convert docker for workflow or task inputs
         # docker_to_task_runtime()              # add docker to task runtime or replace existing val
-            # docker_to_task_or_param()         # given a mode, inserts new value after the target
-        # docker_param_meta()                   # not used: miniWDL doesn't provide parameter_meta line pos
+            # var_to_runtime_or_param()         # add variable to runtime or param meta
 test()
 write_out()                                 # write out to a new wdl file

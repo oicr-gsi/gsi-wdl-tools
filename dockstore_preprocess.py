@@ -387,8 +387,9 @@ def pull_to_root_all():
         call = [call for call in call_list if str(call_name) == str(call.name)][0]   # call names are unique, so only one call matches
 
         body = call.callee      # the task or workflow that the call refers to
-        old_description = body.parameter_meta[str(input.name)]
-        var_parameter_meta(body=body, target=extended_name, description=old_description)  # add new line
+        if str(input.name) in body.parameter_meta.keys():   # if the original variable had a meta description
+            old_description = body.parameter_meta[str(input.name)]
+            var_parameter_meta(body=doc.workflow, target=extended_name, description=old_description)  # pull description to root
 
         # know that input is not in the call inputs already (else wouldn't be part of available_inputs)
         line = doc.source_lines[call.pos.line - 1]

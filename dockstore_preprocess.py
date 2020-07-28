@@ -251,10 +251,37 @@ def var_parameter_meta(body, target, description):
             section="parameter_meta")
     else:
         indicator = ("workflow " if isinstance(body, WDL.Tree.Workflow) else "task ") + str(body.name)
-        for pos in range(len(doc.source_lines)):
-            if indicator in doc.source_lines[pos]:
-                print("indicator: " + indicator)
-                print(doc.source_lines[pos])
+        pos = 0
+        for line in doc.source_lines:
+            # indicator should match one and only one line
+            # and line should not be a comment
+            if indicator in line and (line.find('#') < 0 or line.find(indicator) < line.find('#')):
+                break  # stop searching
+            pos += 1  # if not found, increase index
+        while doc.source_lines[pos].find("parameter_meta") < 0:  # find parameter_meta within that body section
+            pos += 1  # tested
+        if target in body.parameter_meta.keys():  # if replace existing description
+            print("replacing existing description for " + target)
+            index1, index2 = find_indices(line=doc.source_lines[pos], target=target)
+            while index1 < 0 or index2 < 0:  # increment pos until at the line exactly containing target
+                pos += 1  # knows that it's in the section somewhere because in keys
+                index1, index2 = find_indices(line=doc.source_lines[pos], target=target)
+            print("exact variable in line: /// " + doc.source_lines[pos])
+            var_to_runtime_or_param(
+                body=body,
+                mode="replace",
+                index=pos,
+                target=target,
+                insert='"Docker container to run the workflow in"')
+        else:  # if add new description in front of the first description in meta
+            print("adding new description for " + target)
+            print("insert in front of line: /// " + doc.source_lines[pos + 1])
+            var_to_runtime_or_param(
+                body=body,
+                mode="add line",
+                index=pos + 1,
+                target=target,
+                insert='"Docker container to run the workflow in"')
 
 # caller - add docker to every task and workflow explicitly
 def docker_runtime():
@@ -378,40 +405,9 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 def test():
-    target = "moduless"
-    body = doc.tasks[0]
-    indicator = ("workflow " if isinstance(body, WDL.Tree.Workflow) else "task ") + str(body.name)
-    pos = 0
-    for line in doc.source_lines:
-        # indicator should match one and only one line
-        # and line should not be a comment
-        if indicator in line and (line.find('#') < 0 or line.find(indicator) < line.find('#')):
-            break       # stop searching
-        pos += 1        # if not found, increase index
-    while doc.source_lines[pos].find("parameter_meta") < 0:     # find parameter_meta within that body section
-        pos += 1        # tested
-    if target in body.parameter_meta.keys():    # if replace existing description
-        print("replacing existing description for " + target)
-        index1, index2 = find_indices(line = doc.source_lines[pos], target = target)
-        while index1 < 0 or index2 < 0:         # increment pos until at the line exactly containing target
-            pos += 1                            # knows that it's in the section somewhere because in keys
-            index1, index2 = find_indices(line=doc.source_lines[pos], target=target)
-        print("exact variable in line: /// " + doc.source_lines[pos])
-        # var_to_runtime_or_param(
-        #     body=body,
-        #     mode="replace",
-        #     index=pos,
-        #     target=target,
-        #     insert='"Docker container to run the workflow in"')
-    else:                                       # if add new description in front of the first description in meta
-        print("adding new description for " + target)
-        print("insert in front of line: /// " + doc.source_lines[pos + 1])
-        # var_to_runtime_or_param(
-        #     body=body,
-        #     mode="add line",
-        #     index=pos + 1,
-        #     target=target,
-        #     insert='"Docker container to run the workflow in"')
+    var_parameter_meta(body = doc.workflow, target = "task2_var1", description = "new description for task2_var1")  # add new line
+    var_parameter_meta(body = doc.tasks[1], target = "var1", description = "new meta section + var1 description")   # add new section
+    var_parameter_meta(body = doc.tasks[1], target = "var1", description = "replacement var1 description")          # replace description
 
 tabs_to_spaces()                            # convert tabs to spaces
 #pull_to_root()                              # pull json-specified task variables to the workflow that calls them

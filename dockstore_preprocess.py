@@ -257,9 +257,10 @@ def var_parameter_meta(body, target, description):
             # and line should not be a comment
             if indicator in line and (line.find('#') < 0 or line.find(indicator) < line.find('#')):
                 break  # stop searching
-            pos += 1  # if not found, increase index
+            pos += 1  # increase line index until found
         while doc.source_lines[pos].find("parameter_meta") < 0:  # find parameter_meta within that body section
             pos += 1
+        print("@@@ " + doc.source_lines[pos])
         if target in body.parameter_meta.keys():  # if replace existing description
             print("replacing existing description for " + target)
             index1, index2 = find_indices(line=doc.source_lines[pos], target=target)
@@ -356,7 +357,7 @@ def var_gets(expr):
 
 # caller - pull all task variables to the workflow that calls them
 def pull_to_root_all():
-    if args.pull_json or not args.pull_all:     # only activate if pull_all is the only input
+    if args.pull_json or not args.pull_all:     # only activate if --pull-all is the only input
         return
     call_list = find_calls()                    # get the list of all calls
     for item in doc.workflow.available_inputs or []:

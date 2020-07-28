@@ -58,20 +58,26 @@ def find_indices(line, target):
         index2 = line[index2:].find("'") + index2 + 1
         return index1, index2
     if line[index1] == '{':         # if var assignment is a set
-        diff = line[index1:].count('}') - line[index1:].count('{')  # ex. map: { item1: {} } }
-        index2 = line.rfind('}')    # start at the last } in line
-        for i in range(diff):       # for each extra closing bracket, move back by 1 bracket
-            index2 = line[:index2].rfind('}')
-        index2 += 1                 # so that index1:index2 captures the entire expr
+        counter_open = 1            # number of open and closed brackets
+        counter_close = 0
+        index2 = index1 + 1
+        while counter_open != counter_close:
+            counter_open += line[index2] == '{'
+            counter_close += line[index2] == '}'
+            index2 += 1
+        index2 += 1                 # move 1 forward so index1:index2 captures the entire expr
         return index1, index2
     if line[index1] == '[':         # if var assignment is an array
-        diff = line[index1:].count(']') - line[index1:].count('[')  # ex. map: [ item1: [] ] ]
-        index2 = line.rfind(']')    # start at the last ] in line
-        for i in range(diff):       # for each extra closing bracket, move back by 1 bracket
-            index2 = line[:index2].rfind(']')
-        index2 += 1                 # so that index1:index2 captures the entire expr
+        counter_open = 1            # number of open and closed brackets
+        counter_close = 0
+        index2 = index1 + 1
+        while counter_open != counter_close:
+            counter_open += line[index2] == '['
+            counter_close += line[index2] == ']'
+            index2 += 1
+        index2 += 1                 # move 1 forward so index1:index2 captures the entire expr
         return index1, index2
-    index2 = len(line)              # if expr is not a string, char, set, or array, work backwards from end of line
+    index2 = len(line)              # if expr is not a string, char, set, nor array, work backwards from end of line
     for c in "} ,":                 # assignment ends at special characters
         index_temp = line[index1:].find(c) + index1
         index2 = index_temp if index_temp > -1 + index1 and index_temp < index2 else index2

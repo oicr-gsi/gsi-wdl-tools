@@ -6,11 +6,12 @@ import WDL
 import json
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("-w", "--input-wdl-path", required = True, help = "source wdl path")
-parser.add_argument("-i", "--docker-image", required = False, help = "image name and tag")
+parser.add_argument("-i", "--input-wdl-path", required = True, help = "source wdl path")
+parser.add_argument("-d", "--docker-image", required = False, help = "image name and tag")
 parser.add_argument("-j", "--pull-json", required = False, help = "path to json containing which variables to pull; don't specify --pull-all at the same time")
 parser.add_argument("-p", "--pull-all", required = False, type=bool, help = "whether to pull all variables; don't specify --pull-json at the same time")
-parser.add_argument("-d", "--dockstore", required = False, type=bool, help = "whether to activate functions for dockstore")
+parser.add_argument("-s", "--dockstore", required = False, type=bool, help = "whether to activate functions for dockstore")
+parser.add_argument("-w", "--wrapper", required = False, type=bool, help = "whether input document is a wrapper workflow; only pull parameter_metas")
 
 args = parser.parse_args()
 doc = WDL.load(args.input_wdl_path)     # loads the file as a WDL.Tree.Document object
@@ -426,13 +427,13 @@ def source_modules():
                 prepend = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 20; "} \n\n'
                 doc.source_lines[pos] = prepend + doc.source_lines[pos]
 
-def test():
-    for imp in doc.imports:
-        prefix = imp.namespace + "_"
-        meta = imp.doc.workflow.parameter_meta
-        for var in meta:
-            print(var, meta[var])
-        print("\n")
+# caller - pull parameter_meta from imported documents
+def import_param_metas():
+    for imp in doc.imports:     # for each imported document
+        meta = imp.doc.workflow.parameter_meta  # old parameter_meta section
+        for var in meta:        # for each old variable
+            extended_name = imp.namespace + "." + var   # ex. bwaMem.adapterTrimmingLog_timeout
+            var_parameter_meta(body=doc.workflow, target=extended_name, description=('"' + meta[var] + '"'))
 
 # caller lv. 1 - final outputs to stdout or a file with modified name
 def write_out():
@@ -442,20 +443,22 @@ def write_out():
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 
-tabs_to_spaces()                            # 1 convert tabs to spaces
-# pull_to_root()                              # 4 pull json-specified task variables to the workflow that calls them
-pull_to_root_all()                          # 4 pull all task variables to the workflow that calls them
-        # var_gets()                            # 1 tests whether a var's default expr involves calling another variable
-        # var_parameter_meta()                  # 3 finding and updating parameter_metas
-if args.dockstore:
-    source_modules()                        # 1 add source; module if "modules" var exists, else don't
-    docker_runtime()                        # 4 applies the below functions in the appropriate places
-            # find_indices()                    # 1 find start and end of variable's assignment
-            # find_calls()                      # 1 find all nested calls in a workflow
-            # var_to_call_inputs_multiline()    # 2 add or convert docker for multi-line call
-            # var_to_call_inputs_single_line()  # 2 add or convert docker for single-line call
-        # var_to_workflow_or_task_inputs()      # 2 add or convert docker for workflow or task inputs
-        # docker_to_task_runtime()              # 3 add docker to task runtime or replace existing val
-            # var_to_runtime_or_param()         # 2 add variable to runtime or param meta
-test()
-write_out()                                 # 1 write out to a new wdl file
+tabs_to_spaces()                                # 1 convert tabs to spaces
+if not args.wrapper:    # if wdl is not a wrapper workflow
+    # pull_to_root()                              # 4 pull json-specified task variables to the workflow that calls them
+    pull_to_root_all()                          # 4 pull all task variables to the workflow that calls them
+            # var_gets()                            # 1 tests whether a var's default expr involves calling another variable
+            # var_parameter_meta()                  # 3 finding and updating parameter_metas
+    if args.dockstore:  # if wdl needs to be compatible with dockstore
+        source_modules()                        # 1 add source; module if "modules" var exists, else don't
+        docker_runtime()                        # 4 applies the below functions in the appropriate places
+                # find_indices()                    # 1 find start and end of variable's assignment
+                # find_calls()                      # 1 find all nested calls in a workflow
+                # var_to_call_inputs_multiline()    # 2 add or convert docker for multi-line call
+                # var_to_call_inputs_single_line()  # 2 add or convert docker for single-line call
+            # var_to_workflow_or_task_inputs()      # 2 add or convert docker for workflow or task inputs
+            # docker_to_task_runtime()              # 3 add docker to task runtime or replace existing val
+                # var_to_runtime_or_param()         # 2 add variable to runtime or param meta
+else:                   # if wdl is a wrapper workflow
+    import_param_metas()                        # @@@@@@
+write_out()                                     # 1 write out to a new wdl file

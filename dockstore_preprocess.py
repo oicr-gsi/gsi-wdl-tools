@@ -61,7 +61,7 @@ def find_indices(line, target):
         index2 = line[index1:].find("}") + index1 + 1
         return index1, index2
     index2 = len(line)              # if expr is not a string, char, or set, work backwards from end of line
-    for c in "} ,":                 # assignment ends at special characters
+    for c in "} ,\n":                 # assignment ends at special characters
         index_temp = line[index1:].find(c) + index1
         index2 = index_temp if index_temp > -1 + index1 and index_temp < index2 else index2
     return index1, index2

@@ -426,6 +426,10 @@ def source_modules():
                 prepend = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 20; "} \n\n'
                 doc.source_lines[pos] = prepend + doc.source_lines[pos]
 
+def test():
+    for imp in doc.imports:
+        print(type(aliases))
+
 # caller lv. 1 - final outputs to stdout or a file with modified name
 def write_out():
     name_index = args.input_wdl_path.rfind('/')
@@ -449,4 +453,5 @@ if args.dockstore:
         # var_to_workflow_or_task_inputs()      # 2 add or convert docker for workflow or task inputs
         # docker_to_task_runtime()              # 3 add docker to task runtime or replace existing val
             # var_to_runtime_or_param()         # 2 add variable to runtime or param meta
+test()
 write_out()                                 # 1 write out to a new wdl file

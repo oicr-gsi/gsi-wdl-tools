@@ -202,12 +202,19 @@ def var_to_runtime_or_param(body, mode, index, insert, target, section):
         line = line[:index1] + insert + line[index2:]
         doc.source_lines[index] = line
 
-    if mode == "add line":
+    if mode == "add line":                  # insert in front of a section item
         line = doc.source_lines[index]
-        place = line.find(section) + len(section)      # @@@ MAKE SURE LINE PASSED IN HAS SUCH A SUBSTRING
-        if place < len(section):        # exit if section not found in line
+        num_spaces = len(line) - len(line.lstrip(' '))
+        line = ' ' * num_spaces + target + ': ' + insert + '\n' + line
+        doc.source_lines[index] = line
+
+    if mode == "add line with section":     # insert after the '{' in section heading
+        line = doc.source_lines[index]
+        place = line.find(section) + len(section)
+        if place < len(section):
+            print("[Error] \"add line with section\": " + section + " not found in " + body.name)
             return
-        while place < len(line) and line[place] in " {":      # move until at start of section's body
+        while place < len(line) and line[place] in " {":
             place += 1
         num_spaces = len(line) - len(line.lstrip(' ')) + tab_size
         line = line[:place] + '\n' + ' ' * num_spaces + target + ': ' + insert + line[place:]
@@ -287,7 +294,7 @@ def var_parameter_meta(body, target, description):
             print("insert in front of line: /// " + doc.source_lines[pos])  # line containing the line to insert in front of
             var_to_runtime_or_param(
                 body=body,
-                mode="add line",
+                mode="add line with section",
                 index=pos,
                 target=target,
                 insert=description,

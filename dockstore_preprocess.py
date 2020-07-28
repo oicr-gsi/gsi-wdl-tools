@@ -391,6 +391,14 @@ def pull_to_root_all():
         var_to_workflow_or_task_inputs(body=doc.workflow, var_type = var_type, var_name=extended_name, expr = expr)
         call = [call for call in call_list if str(call_name) == str(call.name)][0]   # call names are unique, so only one call matches
 
+        # var_parameter_meta(body=doc.workflow, target="task2_var1",
+        #                    description='"new description for task2_var1" ')  # add new line
+        # var_parameter_meta(body=doc.tasks[1], target="var1",
+        #                    description='"new meta section + var1 description" ')  # add new section
+        # var_parameter_meta(body=doc.tasks[1], target="var2", description='"add new var2 after var1" ')  # add new line
+        # var_parameter_meta(body=doc.tasks[1], target="var1",
+        #                    description='"replacement var1 description" ')  # replace description
+
         # get the original taskName throught the call object's call.callee_name or something like that
         # get the task object (maybe can get task object directly from the call)
         # get the old parameter_meta description from the task object
@@ -423,10 +431,9 @@ def write_out():
         output_file.write("\n".join(doc.source_lines))
 
 def test():
-    var_parameter_meta(body = doc.workflow, target = "task2_var1", description = '"new description for task2_var1" ')  # add new line
-    var_parameter_meta(body = doc.tasks[1], target = "var1", description = '"new meta section + var1 description" ')   # add new section
-    var_parameter_meta(body = doc.tasks[1], target = "var2", description = '"add new var2 after var1" ')               # add new line
-    var_parameter_meta(body = doc.tasks[1], target = "var1", description = '"replacement var1 description" ')          # replace description
+    call_list = find_calls()
+    for call in call_list:
+        print("callee_id: " + call.callee_id + " /// name: " + call.name + " /// callee: " + call.callee)
 
 tabs_to_spaces()                            # convert tabs to spaces
 #pull_to_root()                              # pull json-specified task variables to the workflow that calls them

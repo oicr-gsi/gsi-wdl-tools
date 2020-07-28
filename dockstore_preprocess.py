@@ -428,7 +428,11 @@ def source_modules():
 
 def test():
     for imp in doc.imports:
-        print(" / ".join(imp.aliases))
+        print(type(imp.aliases))
+        print(type(imp.doc))
+        print(type(imp.namespace))
+        print(type(imp.pos))
+        print(type(imp.uri))
 
 # caller lv. 1 - final outputs to stdout or a file with modified name
 def write_out():

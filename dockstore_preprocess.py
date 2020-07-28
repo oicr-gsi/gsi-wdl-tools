@@ -320,7 +320,7 @@ def docker_runtime():
     if not args.docker_image:
         return
     # add image to workflow inputs
-    var_to_workflow_or_task_inputs(body = doc.workflow, var_type="String", var_name="docker", expr = args.docker_image)
+    var_to_workflow_or_task_inputs(body = doc.workflow, var_type="String", var_name="docker", expr = ('"' + args.docker_image + '"'))
     var_parameter_meta(body = doc.workflow, target = "docker", description = '"Docker container to run the workflow in"')
     # add image to all task calls
     call_list = find_calls()
@@ -332,7 +332,7 @@ def docker_runtime():
             var_to_call_inputs_single_line(call = call, task_var_name="docker", workflow_var_name="docker")
     # add image to all task inputs and runtime
     for task in doc.tasks:
-        var_to_workflow_or_task_inputs(body = task, var_type="String", var_name="docker", expr = args.docker_image)
+        var_to_workflow_or_task_inputs(body = task, var_type="String", var_name="docker", expr = ('"' + args.docker_image + '"'))
         docker_to_task_runtime(task, target = "docker")
         var_parameter_meta(body = task, target = "docker", description = '"Docker container to run the workflow in"')
 

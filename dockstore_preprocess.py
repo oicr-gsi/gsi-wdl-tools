@@ -204,11 +204,10 @@ def var_to_runtime_or_param(body, mode, index, insert, target, section):
 
     if mode == "add line":
         line = doc.source_lines[index]
-        place = line.find(section)      # @@@ MAKE SURE LINE PASSED IN HAS SUCH A SUBSTRING
-        if place < 0:
-            return                      # invalid line
-        place += len(section)
-        while line[place] in " {":      # move until at start of section's body
+        place = line.find(section) + len(section)      # @@@ MAKE SURE LINE PASSED IN HAS SUCH A SUBSTRING
+        if place < len(section):        # exit if section not found in line
+            return
+        while place < len(line) and line[place] in " {":      # move until at start of section's body
             place += 1
         num_spaces = len(line) - len(line.lstrip(' ')) + tab_size
         line = line[:place] + '\n' + ' ' * num_spaces + target + ': ' + insert + line[place:]

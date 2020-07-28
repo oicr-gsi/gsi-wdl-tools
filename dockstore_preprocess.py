@@ -431,6 +431,7 @@ def source_modules():
 def import_param_metas():
     for imp in doc.imports:     # for each imported document
         meta = imp.doc.workflow.parameter_meta  # old parameter_meta section
+        print(imp.namespace)
         for var in meta:        # for each old variable
             extended_name = imp.namespace + "." + var   # ex. bwaMem.adapterTrimmingLog_timeout
             var_parameter_meta(body=doc.workflow, target=extended_name, description=('"' + meta[var] + '"'))

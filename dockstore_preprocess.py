@@ -272,7 +272,7 @@ def var_parameter_meta(body, target, description):
                 mode="replace",
                 index=pos,
                 target=target,
-                insert='"Docker container to run the workflow in"')
+                insert=description)
         else:  # if add new description in front of the first description in meta
             print("adding new description for " + target)
             print("insert in front of line: /// " + doc.source_lines[pos + 1])
@@ -281,7 +281,7 @@ def var_parameter_meta(body, target, description):
                 mode="add line",
                 index=pos + 1,
                 target=target,
-                insert='"Docker container to run the workflow in"')
+                insert=description)
 
 # caller - add docker to every task and workflow explicitly
 def docker_runtime():

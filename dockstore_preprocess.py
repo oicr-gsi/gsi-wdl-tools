@@ -443,7 +443,7 @@ def write_out():
               "import_" if args.import_metas else \
               "pull_"
     if args.output_wdl_path:
-        output_path = args.output_path
+        output_path = args.output_wdl_path
         os.makedirs(os.path.dirname(filename), exist_ok=True)
     else:
         name_index = args.input_wdl_path.rfind('/') + 1

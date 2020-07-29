@@ -5,7 +5,6 @@ import re
 import WDL
 import json
 import os
-import errno
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("-i", "--input-wdl-path", required = True, help = "source wdl path")
@@ -445,12 +444,7 @@ def write_out():
               "pull_"
     if args.output_wdl_path:
         output_path = args.output_wdl_path
-        if not os.path.exists(os.path.dirname(filename)):
-            try:
-                os.makedirs(os.path.dirname(filename))
-            except OSError as exc:  # Guard against race condition
-                if exc.errno != errno.EEXIST:
-                    raise
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
     else:
         name_index = args.input_wdl_path.rfind('/') + 1
         output_path = args.input_wdl_path[:name_index] + prepend + args.input_wdl_path[name_index:]

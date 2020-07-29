@@ -4,11 +4,13 @@ import argparse
 import re
 import WDL
 import json
+import os
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("-i", "--input-wdl-path", required = True, help = "source wdl path")
 parser.add_argument("-d", "--docker-image", required = False, help = "image name and tag")
 parser.add_argument("-j", "--pull-json", required = False, help = "path to json containing which variables to pull; don't specify --pull-all at the same time")
+parser.add_argument("-o", "--output-path"), required = False, help = "output wdl path"
 parser.add_argument("-p", "--pull-all", required = False, type=bool, help = "whether to pull all variables; don't specify --pull-json at the same time")
 parser.add_argument("-s", "--dockstore", required = False, type=bool, help = "whether to activate functions for dockstore")
 parser.add_argument("-w", "--import-metas", required = False, type=bool, help = "whether to pull parameter_metas from imported subworkflows")
@@ -437,11 +439,15 @@ def import_param_metas():
 
 # caller lv. 1 - final outputs to stdout or a file with modified name
 def write_out():
-    name_index = args.input_wdl_path.rfind('/')
     prepend = "dockstore_" if args.dockstore else \
               "import_" if args.import_metas else \
               "pull_"
-    output_path = args.input_wdl_path[:name_index + 1] + prepend + args.input_wdl_path[name_index + 1:]
+    if args.output_path:
+        output_path = args.output_path
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+    else:
+        name_index = args.input_wdl_path.rfind('/') + 1
+        output_path = args.input_wdl_path[:name_index] + prepend + args.input_wdl_path[name_index:]
     with open(output_path, "w") as output_file:
         output_file.write("\n".join(doc.source_lines))
 

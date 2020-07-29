@@ -86,6 +86,13 @@ class WorkflowInfo:
         param_descriptions = doc.workflow.parameter_meta.copy()
         for task in doc.tasks:
             param_descriptions.update({task.name + "." + k: v for k, v in task.parameter_meta.items()})
+
+        # get parameter_metas from imported subworkflows
+        subworkflow_parameter_meta = {}
+        for imp in doc.imports:
+            import_parameter_meta = imp.doc.workflow.parameter_meta
+            param_descriptions.update({imp.namespace + "." + k: v for k, v in import_parameter_meta.items()})
+
         required_params = []
         optional_params = []
         task_params = []

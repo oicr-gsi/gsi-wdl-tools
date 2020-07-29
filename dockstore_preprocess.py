@@ -442,7 +442,7 @@ def write_out():
     prepend = "dockstore_" if args.dockstore else \
               "import_" if args.import_metas else \
               "pull_"
-    if args.output_path:
+    if args.output_wdl_path:
         output_path = args.output_path
         os.makedirs(os.path.dirname(filename), exist_ok=True)
     else:

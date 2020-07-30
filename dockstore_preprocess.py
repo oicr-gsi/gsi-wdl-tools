@@ -24,7 +24,7 @@ try:
     tab_size = 4 if not args.tab_size else int(args.tab_size)
 except ValueError:
    print("--tab-size is not a number")
-print("tab_size: " + tab_size)
+print("tab_size: " + str(tab_size))
 
 # lv. 1 --> only calls default methods; can be used anywhere
 # lv. 2 --> calls lv. 1 functions; placed below lv. 1

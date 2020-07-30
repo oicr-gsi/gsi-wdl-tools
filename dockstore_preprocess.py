@@ -11,6 +11,7 @@ parser.add_argument("-i", "--input-wdl-path", required = True, help = "source wd
 parser.add_argument("-d", "--docker-image", required = False, help = "image name and tag")
 parser.add_argument("-j", "--pull-json", required = False, help = "path to json containing which variables to pull; don't specify --pull-all at the same time")
 parser.add_argument("-o", "--output-wdl-path", required = False, help = "output wdl path")
+parser.add_argument("-t", "--tab-size", required = False, help = "number of spaces in a tab")
 parser.add_argument("-p", "--pull-all", required = False, type=bool, help = "whether to pull all variables; don't specify --pull-json at the same time")
 parser.add_argument("-s", "--dockstore", required = False, type=bool, help = "whether to activate functions for dockstore")
 parser.add_argument("-w", "--import-metas", required = False, type=bool, help = "whether to pull parameter_metas from imported subworkflows")
@@ -18,7 +19,11 @@ parser.add_argument("-w", "--import-metas", required = False, type=bool, help = 
 args = parser.parse_args()
 doc = WDL.load(args.input_wdl_path)     # loads the file as a WDL.Tree.Document object
 has_param_meta = []                     # names of tasks or workflow that have a parameter_meta section
-tab_size = 4
+
+try:
+    tab_size = 4 if not args.tab_size else int(args.tab_size)
+except ValueError:
+   print("--tab-size is not a number")
 
 # lv. 1 --> only calls default methods; can be used anywhere
 # lv. 2 --> calls lv. 1 functions; placed below lv. 1
@@ -421,9 +426,10 @@ def pull_to_root_all():
 # caller lv. 1 - source .bashrc and load required modules for each task
 def source_modules():
     for task in doc.tasks or []:
-        for input in task.inputs or []:
-            index = doc.source_lines[input.pos.line - 1].find("String modules")
-            if index > -1:  # if the task does use modules
+        vars = [].extend(task.inputs).extend(task.postinputs)
+        for var in vars:
+            index1, index2 = find_indices(line = doc.source_lines[var.pos.line - 1], target = "modules")
+            if index1 > -1 and index2 > -1:     # if variable modules is found
                 pos = task.command.pos.line
                 num_spaces = len(doc.source_lines[pos]) - len(doc.source_lines[pos].lstrip(' '))
                 prepend = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 20; "} \n\n'
@@ -432,7 +438,7 @@ def source_modules():
 # caller - pull parameter_meta from imported documents
 def import_param_metas():
     for imp in doc.imports:     # for each imported document
-        meta = imp.doc.workflow.parameter_meta  # old parameter_meta section
+        meta = imp.doc.workflow.parameter_meta          # old parameter_meta section
         for var in meta:        # for each old variable
             extended_name = imp.namespace + "." + var   # ex. importAlias.pulledTask_varName
             var_parameter_meta(body=doc.workflow, target=extended_name, description=('"' + meta[var] + '"'))

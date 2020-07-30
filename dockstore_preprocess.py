@@ -431,12 +431,12 @@ def source_modules():
         vars = task.inputs
         vars.extend(task.postinputs)
         for var in vars:
-            index1, index2 = find_indices(line = doc.source_lines[var.pos.line - 1], target = "modules")
-            if index1 > -1 and index2 > -1:     # if variable modules is found
+            if var.name == "modules":
                 pos = task.command.pos.line
                 num_spaces = len(doc.source_lines[pos]) - len(doc.source_lines[pos].lstrip(' '))
                 prepend = ' ' * num_spaces + 'source /home/ubuntu/.bashrc \n' + ' ' * num_spaces + '~{"module load " + modules + " || exit 20; "} \n\n'
                 doc.source_lines[pos] = prepend + doc.source_lines[pos]
+                break
 
 # caller - pull parameter_meta from imported documents
 def import_param_metas():

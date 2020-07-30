@@ -427,7 +427,8 @@ def pull_to_root_all():
 # caller lv. 1 - source .bashrc and load required modules for each task
 def source_modules():
     for task in doc.tasks or []:
-        vars = [].extend(task.inputs).extend(task.postinputs)
+        vars = task.inputs
+        vars.extend(task.postinputs)
         for var in vars:
             index1, index2 = find_indices(line = doc.source_lines[var.pos.line - 1], target = "modules")
             if index1 > -1 and index2 > -1:     # if variable modules is found

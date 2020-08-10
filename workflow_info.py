@@ -91,6 +91,10 @@ class WorkflowInfo:
         for imp in doc.imports:
             import_parameter_meta = imp.doc.workflow.parameter_meta
             param_descriptions.update({imp.namespace + "." + k: v for k, v in import_parameter_meta.items()})
+            # if imports contain task-level available_inputs, add the params for those
+            for task in imp.doc.tasks:
+                param_descriptions.update(
+                    {imp.namespace + "." + task.name + "." + k: v for k, v in task.parameter_meta.items()})
 
         required_params = []
         optional_params = []

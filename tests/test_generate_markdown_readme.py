@@ -1,4 +1,4 @@
-from workflow_info import *
+from gsi_wdl_tools.workflow_info import *
 
 
 def test_workflow_info(shared_datadir):

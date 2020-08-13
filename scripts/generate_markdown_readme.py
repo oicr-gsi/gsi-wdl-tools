@@ -2,7 +2,7 @@
 
 import argparse
 
-from workflow_info import *
+from gsi_wdl_tools.workflow_info import *
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--input-wdl-path", required=True)

@@ -21,10 +21,10 @@ def main():
     print(type(parsed))
     print(parsed)
 
-    doc = WDL.load(parsed[input_wdl_path])  # loads the file as a WDL.Tree.Document object
-    print(doc.workflow.name)
-
     print(vars(parsed))
+
+    #doc = WDL.load(parsed[input_wdl_path])  # loads the file as a WDL.Tree.Document object
+    #print(doc.workflow.name)
 
 if __name__ == "__main__":
     main()

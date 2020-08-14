@@ -2,7 +2,7 @@ import argparse
 import WDL
 import sys
 
-def parse(args):
+def parse_inputs(args):
     print(type(args))
     print(args)
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -17,7 +17,7 @@ def parse(args):
     return parser.parse_args(args)
 
 def main():
-    parser = parse_args(sys.argv[1:])
+    parser = parse_inputs(sys.argv[1:])
     print(type(parser))
     print(parser)
 

@@ -517,4 +517,5 @@ def main():
         import_param_metas()     # pulls parameter_metas from subworkflows
     write_out()  # 1 write out to a new wdl file
 
-main()
+if __name__ == "__main__":
+    main()

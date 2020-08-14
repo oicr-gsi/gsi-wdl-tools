@@ -37,7 +37,6 @@ def tabs_to_spaces(num_spaces = tab_size):
     # index1: the start of the keyword
     # index2: the end of the keyword
 def find_indices(line, target):
-    print(line)
     index1 = 0
     valid_front, valid_back = False, False
     while True:

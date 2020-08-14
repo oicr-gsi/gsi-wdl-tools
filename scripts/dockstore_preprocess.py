@@ -507,4 +507,4 @@ def main():
     write_out()  # 1 write out to a new wdl file
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    main()

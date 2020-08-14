@@ -471,7 +471,7 @@ def parse_inputs(args):
 def main():
     parsed = vars(parse_inputs(sys.argv[1:]))
 
-    global input_wdl_path =  parsed['input_wdl_path']
+    global input_wdl_path = parsed['input_wdl_path']
     global docker_image =    parsed['docker_image']
     global pull_json =       parsed['pull_json']
     global output_wdl_path = parsed['output_wdl_path']

@@ -26,6 +26,7 @@ tab_size = 4
 # caller lv. 1 - converts all tabs to spaces for run compatibility
     # num_spaces: number of spaces to each tab
 def tabs_to_spaces(num_spaces = tab_size):
+    print(type(doc))
     for index in range(len(doc.source_lines)):
         line = doc.source_lines[index].lstrip('\t')
         num_tabs = len(doc.source_lines[index]) - len(line)

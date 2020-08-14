@@ -11,5 +11,7 @@ import subprocess as sb
 from diagnose import *
 
 def test_diagnose(shared_datadir):
-    print("import successful")
+    print(type(shared_datadir))
+    print(shared_datadir)
+    #diagnose.main("--input-wdl-path")
     assert 0

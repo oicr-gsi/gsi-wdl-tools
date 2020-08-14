@@ -2,7 +2,7 @@ import argparse
 import WDL
 import sys
 
-def main(args):
+def parse(args):
     print(type(args))
     print(args)
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -14,12 +14,16 @@ def main(args):
     parser.add_argument("-p", "--pull-all", required = False, type=bool, help = "whether to pull all variables; don't specify --pull-json at the same time")
     parser.add_argument("-s", "--dockstore", required = False, type=bool, help = "whether to activate functions for dockstore")
     parser.add_argument("-w", "--import-metas", required = False, type=bool, help = "whether to pull parameter_metas from imported subworkflows")
-    caller(**vars(parser.parse_args(args)))
+    return parser.parse_args(args)
 
-def caller(input_wdl_path = None, docker_image = None, pull_json = None, output_wdl_path = None, tab_size = None, pull_all = None, dockstore = None, import_metas = None):
-    doc = WDL.load(input_wdl_path)  # loads the file as a WDL.Tree.Document object
-    print(doc.workflow.name)
+def main():
+    parser = parse_args(sys.argv[1:])
+    print(type(parser))
+    print(parser)
+
+    #doc = WDL.load(input_wdl_path)  # loads the file as a WDL.Tree.Document object
+    #print(doc.workflow.name)
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    main()
 

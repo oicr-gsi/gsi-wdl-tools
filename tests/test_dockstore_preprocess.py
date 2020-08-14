@@ -1,2 +1,3 @@
 import os
-os.system("PWD")
+os.system("pwd")
+os.system("echo $PWD")

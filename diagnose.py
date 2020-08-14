@@ -3,6 +3,8 @@ import WDL
 import sys
 
 def main(args):
+    print(type(args))
+    print(args)
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-i", "--input-wdl-path", required = True, help = "source wdl path")
     parser.add_argument("-d", "--docker-image", required = False, help = "image name and tag")

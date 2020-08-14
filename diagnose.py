@@ -17,14 +17,13 @@ def parse_inputs(args):
     return parser.parse_args(args)
 
 def main():
-    parsed = parse_inputs(sys.argv[1:])
-    print(type(parsed))
-    print(parsed)
+    parsed = vars(parse_inputs(sys.argv[1:]))
+    # print(type(parsed))
+    # print(parsed)
+    # print(vars(parsed))
 
-    print(vars(parsed))
-
-    #doc = WDL.load(parsed[input_wdl_path])  # loads the file as a WDL.Tree.Document object
-    #print(doc.workflow.name)
+    doc = WDL.load(parsed['input_wdl_path'])  # loads the file as a WDL.Tree.Document object
+    print(doc.workflow.name)
 
 if __name__ == "__main__":
     main()

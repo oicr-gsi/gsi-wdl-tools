@@ -10,8 +10,8 @@ def test_dockstore_preprocess(shared_datadir):
             '--tab-size', '4'
             '--pull-all', 'True',
             '--dockstore', 'True',
-            '--docker_image', 'g3chen/wgsPipeline:2.0',
-            '--import_metas', 'False',
+            '--docker-image', 'g3chen/wgsPipeline:2.0',
+            '--import-metas', 'False',
             '--output-wdl-path', str(shared_datadir / 'dockstore_workflow1.wdl')]
     parsed = vars(dp.parse_inputs(args))
 

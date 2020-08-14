@@ -11,5 +11,5 @@ import subprocess as sb
 from diagnose import *
 
 def test_diagnose(shared_datadir):
-    print(import successful)
+    print("import successful")
     assert 0

@@ -106,7 +106,7 @@ pipenv run python3 ./generate_markdown_readme.py --input-wdl-path [workflow.wdl]
 ```
 
 
-### dockstore_preprocess
+### dockstore_preprocess.py
 Preprocesses a WDL to be used as a subworkflow, either for a UGE-based or dockstore-based wrapper workflow. Main function is converting task-level parameters to workflow-level parameters (pulling).
 Tested on all workflows in the WGS Pipeline, but might not catch edge case WDL formatting.
 
@@ -140,4 +140,24 @@ python3 dockstore_preprocess.py --input-wdl-path [workflow.wdl]
 Or without using `pipenv run`:
 ```
 pipenv run python3 ./dockstore_preprocess.py --input-wdl-path [workflow.wdl]
+```
+
+
+### dockstore_preprocess_all.sh
+When given a directory containing WDL files and arguments, calls dockstore_preprocess.py on all files using those args. "--input-wdl-path" is omitted.
+
+#### Run Arguments
+Index|Argument|Description
+---|---|---
+1|dockstore_preprocess.py|Path to dockstore_preprocess.py
+2|WDL dir|Path to directory containing target WDL files
+3+|preprocess args|Arguments for dockstore_preprocess.py, minus --input-wdl-path
+
+#### Usage
+```
+dockstore_preprocess_all.sh [dockstore_preprocess.py] [WDL dir] [preprocess args]
+```
+For example:
+```
+dockstore_preprocess_all.sh dockstore_preprocess.py /.../wgsPipeline/imports/ --pull-all True --tab-size 4
 ```

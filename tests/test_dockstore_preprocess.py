@@ -4,7 +4,10 @@ import scripts.dockstore_preprocess as dp
 def test_dockstore_preprocess(shared_datadir):
     workflow_path = (shared_datadir / 'workflow1.wdl').as_posix()
     #pull_path = (shared_datadir / 'pull_workflow1.wdl').as_posix()
-    #dockstore_path = (shared_datadir / 'dockstore_workflow1.wdl').as_posix()
+    dockstore_path = (shared_datadir / 'dockstore_workflow1.wdl').as_posix()
+
+    print(str(workflow_path))
+    print(str(dockstore_path))
 
     args = ['--input-wdl-path', str(workflow_path),
             '--tab-size', '4'
@@ -12,7 +15,7 @@ def test_dockstore_preprocess(shared_datadir):
             '--dockstore', 'True',
             '--docker-image', 'g3chen/wgsPipeline:2.0',
             '--import-metas', 'False',
-            '--output-wdl-path', str(shared_datadir / 'dockstore_workflow1.wdl')]
+            '--output-wdl-path', str(dockstore_path)]
     parsed = vars(dp.parse_inputs(args))
 
     assert parsed['input_wdl_path'] == str(workflow_path)
@@ -21,7 +24,7 @@ def test_dockstore_preprocess(shared_datadir):
     assert parsed['dockstore'] == 'True'
     assert parsed['docker_image'] == 'g3chen/wgsPipeline:2.0'
     assert parsed['import_metas'] == 'False'
-    assert parsed['output_wdl_path'] == str(shared_datadir / 'dockstore_workflow1.wdl')
+    assert parsed['output_wdl_path'] == str(dockstore_path)
 
     # preprocess workflow1 and put in same dir
 

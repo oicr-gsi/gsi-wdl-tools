@@ -17,9 +17,9 @@ def parse_inputs(args):
     return parser.parse_args(args)
 
 def main():
-    parser = parse_inputs(sys.argv[1:])
-    print(type(parser))
-    print(parser)
+    parsed = parse_inputs(sys.argv[1:])
+    print(type(parsed))
+    print(parsed)
 
     #doc = WDL.load(input_wdl_path)  # loads the file as a WDL.Tree.Document object
     #print(doc.workflow.name)

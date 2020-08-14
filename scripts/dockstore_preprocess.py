@@ -471,21 +471,32 @@ def parse_inputs(args):
 def main():
     parsed = vars(parse_inputs(sys.argv[1:]))
 
-    global input_wdl_path = parsed['input_wdl_path']
-    global docker_image =    parsed['docker_image']
-    global pull_json =       parsed['pull_json']
-    global output_wdl_path = parsed['output_wdl_path']
-    global tab_size =        parsed['tab_size']
-    global pull_all =        parsed['pull_all']
-    global dockstore =       parsed['dockstore']
-    global import_metas =    parsed['import_metas']
-    global doc = WDL.load(input_wdl_path)  # loads the file as a WDL.Tree.Document object
+    global input_wdl_path
+    global docker_image
+    global pull_json
+    global output_wdl_path
+    global tab_size
+    global pull_all
+    global dockstore
+    global import_metas
+    global doc
+    global tab_size
+
+    input_wdl_path =  parsed['input_wdl_path']
+    docker_image =    parsed['docker_image']
+    pull_json =       parsed['pull_json']
+    output_wdl_path = parsed['output_wdl_path']
+    tab_size =        parsed['tab_size']
+    pull_all =        parsed['pull_all']
+    dockstore =       parsed['dockstore']
+    import_metas =    parsed['import_metas']
+    doc = WDL.load(input_wdl_path)  # loads the file as a WDL.Tree.Document object
 
     try:
-        global tab_size = 4 if not tab_size else int(tab_size)
+        tab_size = 4 if not tab_size else int(tab_size)
     except ValueError:
         print("Error: tab_size is not a number")
-        global tab_size = 4
+        tab_size = 4
 
     tabs_to_spaces()  # 1 convert tabs to spaces
     if not import_metas:  # if not importing parameter_metas

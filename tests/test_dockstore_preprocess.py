@@ -1,4 +1,5 @@
 import scripts.dockstore_preprocess as dp
+import argparse
 #import filecmp
 
 def test_dockstore_preprocess(shared_datadir):

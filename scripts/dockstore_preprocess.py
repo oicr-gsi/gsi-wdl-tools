@@ -461,9 +461,9 @@ def parse_inputs(args):
     parser.add_argument("-j", "--pull-json", required = False, help = "path to json containing which variables to pull; don't specify --pull-all at the same time")
     parser.add_argument("-o", "--output-wdl-path", required = False, help = "output wdl path")
     parser.add_argument("-t", "--tab-size", required = False, help = "number of spaces in a tab")
-    parser.add_argument("-p", "--pull-all", required = False, type=bool, help = "whether to pull all variables; don't specify --pull-json at the same time")
-    parser.add_argument("-s", "--dockstore", required = False, type=bool, help = "whether to activate functions for dockstore")
-    parser.add_argument("-w", "--import-metas", required = False, type=bool, help = "whether to pull parameter_metas from imported subworkflows")
+    parser.add_argument("-p", "--pull-all", required = False, action="store_true", help = "whether to pull all variables; don't specify --pull-json at the same time")
+    parser.add_argument("-s", "--dockstore", required = False, action="store_true", help = "whether to activate functions for dockstore")
+    parser.add_argument("-w", "--import-metas", required = False, action="store_true", help = "whether to pull parameter_metas from imported subworkflows")
     return parser.parse_args(args)
 
 def main():

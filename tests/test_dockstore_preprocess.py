@@ -3,6 +3,18 @@ import argparse
 import sys
 #import filecmp
 
+def parse_inputs(args):
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("-i", "--input-wdl-path", required = False, help = "source wdl path")
+    parser.add_argument("-d", "--docker-image", required = False, help = "image name and tag")
+    parser.add_argument("-j", "--pull-json", required = False, help = "path to json containing which variables to pull; don't specify --pull-all at the same time")
+    parser.add_argument("-o", "--output-wdl-path", required = False, help = "output wdl path")
+    parser.add_argument("-t", "--tab-size", required = False, help = "number of spaces in a tab")
+    parser.add_argument("-p", "--pull-all", required = False, type=bool, help = "whether to pull all variables; don't specify --pull-json at the same time")
+    parser.add_argument("-s", "--dockstore", required = False, type=bool, help = "whether to activate functions for dockstore")
+    parser.add_argument("-w", "--import-metas", required = False, type=bool, help = "whether to pull parameter_metas from imported subworkflows")
+    return parser.parse_args(args)
+
 def test_dockstore_preprocess(shared_datadir):
     workflow_path = (shared_datadir / 'workflow1.wdl').as_posix()
     #pull_path = (shared_datadir / 'pull_workflow1.wdl').as_posix()
@@ -11,21 +23,17 @@ def test_dockstore_preprocess(shared_datadir):
     #print(str(workflow_path))
     #print(str(dockstore_path))
 
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     args = ['--input-wdl-path', str(workflow_path),
             '--tab-size', '4'
-            '--pull-all', 'True',
-            '--dockstore', 'True',
+            '--pull-all', '"True"',
+            '--dockstore', '"True"',
             '--docker-image', '"g3chen/wgsPipeline:2.0"',
-            '--import-metas', 'False',
+            '--import-metas', '"False"',
             '--output-wdl-path', str(dockstore_path)]
-    print("-------system args----------")
-    print(sys.argv[1:])
-    print(type(sys.argv[1:]))
-    # print("-----------direct parsing---------")
-    # print(parser.parse_args(args))  # should be the same as v
-    # print("-----------passed to dockstore_preprocess--------------")
-    # print(dp.parse_inputs(args))    # should be the same as ^
+    print("-----------direct parsing---------")
+    print(parse_inputs(args))
+    print("-----------passed to dockstore_preprocess--------------")
+    print(dp.parse_inputs(args))    # should be the same as ^
     # print("-----------assignment-------------------")
     # parsed = vars(dp.parse_inputs(args))
     #

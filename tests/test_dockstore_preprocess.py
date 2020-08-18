@@ -38,8 +38,6 @@ def test_dockstore_preprocess(shared_datadir):
     assert parsed['import_metas'] == False
     assert parsed['output_wdl_path'] == str(pull_path)
 
-    print("HERE")
-
     dp.main(args_d)     # generate dockstore_WDL
     dp.main(args_p)     # generate pull_WDL
 

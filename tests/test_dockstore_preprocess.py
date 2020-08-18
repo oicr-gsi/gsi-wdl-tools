@@ -24,14 +24,14 @@ def test_dockstore_preprocess(shared_datadir):
     #print(str(workflow_path))
     #print(str(dockstore_path))
 
-    args = ['--help']
-    # args = ['--input-wdl-path', str(workflow_path),
-    #         '--tab-size', '4',
-    #         '--pull-all', 'true',
-    #         '--dockstore', 'true',
-    #         '--docker-image', '"g3chen/wgsPipeline:2.0"',
-    #         '--import-metas', 'false',
-    #         '--output-wdl-path', str(dockstore_path)]
+    # args = ['--help']
+    args = ['--pull-all', 'true',
+            '--dockstore', 'true',
+            '--input-wdl-path', str(workflow_path),
+            '--tab-size', '4',
+            '--docker-image', '"g3chen/wgsPipeline:2.0"',
+            '--import-metas', 'false',
+            '--output-wdl-path', str(dockstore_path)]
     print("-----------direct parsing---------")
     print(parse_inputs(args))
     print("-----------passed to dockstore_preprocess--------------")

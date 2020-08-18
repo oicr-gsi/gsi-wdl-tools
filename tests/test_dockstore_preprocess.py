@@ -35,6 +35,7 @@ def test_dockstore_preprocess(shared_datadir):
     # print(parse_inputs(args))
     # print("-----------passed to dockstore_preprocess--------------")
     # print(dp.parse_inputs(args))    # should be the same as ^
+    parsed = vars(dp.parse_inputs(args))
     print("-----------assignment-------------------")
     assert parsed.input_wdl_path == str(workflow_path)
     assert parsed.tab_size == '4'

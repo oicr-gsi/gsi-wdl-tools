@@ -1,7 +1,7 @@
 import scripts.dockstore_preprocess as dp
 import argparse
 import sys
-#import filecmp
+import filecmp
 
 def test_dockstore_preprocess(shared_datadir):
     workflow_path = (shared_datadir / 'workflow1.wdl').as_posix()

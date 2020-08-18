@@ -125,10 +125,10 @@ Argument|Required?|Description
 #### Usage
 Common combinations:
 ```
-dockstore_preprocess --docker-image "g3chen/wgspipeline:2.0" --input-wdl-path [workflow.wdl] --pull-all true --dockstore true --tab-size 4 --output-wdl-path [dockstore_workflow.wdl]
+dockstore_preprocess --docker-image "g3chen/wgspipeline:2.0" --input-wdl-path [workflow.wdl] --pull-all --dockstore --tab-size 4 --output-wdl-path [dockstore_workflow.wdl]
 ```
 ```
-dockstore_preprocess --input-wdl-path [workflow.wdl] --pull-all true
+dockstore_preprocess --input-wdl-path [workflow.wdl] --pull-all
 ```
 
 Or with `pipenv shell`:
@@ -159,5 +159,5 @@ dockstore_preprocess_all.sh [dockstore_preprocess.py] [WDL dir] [preprocess args
 ```
 For example:
 ```
-dockstore_preprocess_all.sh dockstore_preprocess.py /.../wgsPipeline/imports/ --pull-all True --tab-size 4
+dockstore_preprocess_all.sh dockstore_preprocess.py /.../wgsPipeline/imports/ --pull-all --tab-size 4
 ```

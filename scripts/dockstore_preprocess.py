@@ -466,8 +466,12 @@ def parse_inputs(args):
     parser.add_argument("-w", "--import-metas", required = False, action="store_true", help = "whether to pull parameter_metas from imported subworkflows")
     return parser.parse_args(args)
 
-def main():
-    parsed = vars(parse_inputs(sys.argv[1:]))
+def main(args = None):
+    parsed = []
+    if args:
+        parsed = vars(parse_inputs(args))
+    else:
+        parsed = vars(parse_inputs(sys.argv[1:]))
 
     global input_wdl_path
     global docker_image

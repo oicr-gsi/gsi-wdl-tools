@@ -39,12 +39,9 @@ def test_dockstore_preprocess(shared_datadir):
     print("-----------assignment-------------------")
     assert parsed['input_wdl_path'] == str(workflow_path)
     assert parsed['tab_size'] == '4'
-    print("here1")
     assert parsed['pull_all'] == True
-    print("here2")
     assert parsed['dockstore'] == True
-    print("here3")
-    assert parsed['docker_image'] == 'g3chen/wgsPipeline:2.0'
+    assert parsed['docker_image'] == '"g3chen/wgsPipeline:2.0"'
     assert parsed['import_metas'] == False
     assert parsed['output_wdl_path'] == str(dockstore_path)
 

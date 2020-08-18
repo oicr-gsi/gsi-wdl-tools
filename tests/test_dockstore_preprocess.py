@@ -28,7 +28,7 @@ def test_dockstore_preprocess(shared_datadir):
               '--tab-size', '4',
               '--pull-all',
               '--output-wdl-path', str(pull_path)]
-    parsed = vars(dp.parse_inputs(args_d))
+    parsed = vars(dp.parse_inputs(args_p))
     assert parsed['input_wdl_path'] == str(workflow_path)
     assert parsed['tab_size'] == '4'
     assert parsed['pull_all'] == True

@@ -5,7 +5,7 @@ import sys
 
 def parse_inputs(args):
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-i", "--input-wdl-path", required = True, help = "source wdl path")
+    parser.add_argument("-i", "--input-wdl-path", required = False, help = "source wdl path")
     parser.add_argument("-d", "--docker-image", required = False, help = "image name and tag")
     parser.add_argument("-j", "--pull-json", required = False, help = "path to json containing which variables to pull; don't specify --pull-all at the same time")
     parser.add_argument("-o", "--output-wdl-path", required = False, help = "output wdl path")

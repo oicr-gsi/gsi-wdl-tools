@@ -45,3 +45,4 @@ def test_dockstore_preprocess(shared_datadir):
     # compare content between fresh and old dockstore_.wdl
     #assert filecmp.cmp(@@@PULLED FILE, pull_path)
     #assert filecmp.cmp(@@@DOCKSTORE FILE, dockstore_path)
+    assert 0

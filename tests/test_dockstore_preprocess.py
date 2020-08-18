@@ -41,7 +41,5 @@ def test_dockstore_preprocess(shared_datadir):
     dp.main(args_d)     # generate dockstore_WDL
     dp.main(args_p)     # generate pull_WDL
 
-    # compare content between fresh and old dockstore_.wdl
-    #assert filecmp.cmp(@@@PULLED FILE, pull_path)
-    #assert filecmp.cmp(@@@DOCKSTORE FILE, dockstore_path)
-    assert 0
+    assert filecmp.cmp((shared_datadir / 'pull_workflow1.wdl').as_posix(), pull_path)
+    assert filecmp.cmp((shared_datadir / 'dockstore_workflow1.wdl').as_posix(), dockstore_path)

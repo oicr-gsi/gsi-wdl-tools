@@ -37,16 +37,16 @@ def test_dockstore_preprocess(shared_datadir):
     # print(dp.parse_inputs(args))    # should be the same as ^
     parsed = vars(dp.parse_inputs(args))
     print("-----------assignment-------------------")
-    assert parsed.input_wdl_path == str(workflow_path)
-    assert parsed.tab_size == '4'
+    assert parsed['input_wdl_path'] == str(workflow_path)
+    assert parsed['tab_size'] == '4'
     print("here1")
-    assert parsed.pull_all == 'True'
+    assert parsed['pull_all'] == True
     print("here2")
-    assert parsed.dockstore == 'True'
+    assert parsed['dockstore'] == True
     print("here3")
-    assert parsed.docker_image == 'g3chen/wgsPipeline:2.0'
-    assert parsed.import_metas == 'False'
-    assert parsed.output_wdl_path == str(dockstore_path)
+    assert parsed['docker_image'] == 'g3chen/wgsPipeline:2.0'
+    assert parsed['import_metas'] == False
+    assert parsed['output_wdl_path'] == str(dockstore_path)
 
     # preprocess workflow1 and put in same dir
 

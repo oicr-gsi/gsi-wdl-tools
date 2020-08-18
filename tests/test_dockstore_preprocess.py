@@ -24,11 +24,10 @@ def test_dockstore_preprocess(shared_datadir):
     #print(str(workflow_path))
     #print(str(dockstore_path))
 
-    # args = ['--help']
-    args = ['--tab-size', '4',
+    args = ['--input-wdl-path', str(workflow_path),
+            '--tab-size', '4',
             '--pull-all', 'true',
             '--dockstore', 'true',
-            '--input-wdl-path', str(workflow_path),
             '--docker-image', '"g3chen/wgsPipeline:2.0"',
             '--import-metas', 'false',
             '--output-wdl-path', str(dockstore_path)]

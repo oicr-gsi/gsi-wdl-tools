@@ -2,6 +2,7 @@ import scripts.subworkflow_preprocess as dp
 import argparse
 import sys
 import filecmp
+import difflib
 
 def test_subworkflow_preprocess(shared_datadir):
     workflow_path = (shared_datadir / 'workflow1.wdl').as_posix()
@@ -41,5 +42,28 @@ def test_subworkflow_preprocess(shared_datadir):
     dp.main(args_d)     # generate dockstore_WDL
     dp.main(args_p)     # generate pull_WDL
 
-    assert filecmp.cmp((shared_datadir / 'dockstore_workflow1.wdl').as_posix(), dockstore_path)
-    assert filecmp.cmp((shared_datadir / 'pull_workflow1.wdl').as_posix(), pull_path)
+    with open((shared_datadir / 'dockstore_workflow1.wdl').as_posix(), 'r') as original:
+        with open(dockstore_path, 'r') as gen:
+            diff = difflib.unified_diff(
+                original.readlines(),
+                gen.readlines(),
+                fromfile='dockstore_workflow1.wdl',
+                tofile='gen_dockstore_workflow1.wdl'
+            )
+            if(len(diff) > 0):
+                for line in diff:
+                    sys.stdout.write(line)
+                assert False
+
+    with open((shared_datadir / 'pull_workflow1.wdl').as_posix(), 'r') as original:
+        with open(pull_path, 'r') as gen:
+            diff = difflib.unified_diff(
+                original.readlines(),
+                gen.readlines(),
+                fromfile='pull_workflow1.wdl',
+                tofile='gen_pull_workflow1.wdl'
+            )
+            if(len(diff) > 0):
+                for line in diff:
+                    sys.stdout.write(line)
+                assert False

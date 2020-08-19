@@ -54,7 +54,7 @@ def test_subworkflow_preprocess(shared_datadir):
                 for line in diff:
                     sys.stdout.write(line)
         assert False
-        
+
     if not filecmp.cmp((shared_datadir / 'pull_workflow1.wdl').as_posix(), pull_path):
         with open((shared_datadir / 'pull_workflow1.wdl').as_posix(), 'r') as original:
             with open(pull_path, 'r') as gen:

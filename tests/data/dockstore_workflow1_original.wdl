@@ -3,7 +3,7 @@ version 1.0
 workflow workflow1 {
 
     input {
-        String docker = "g3chen/wgsPipeline@sha256 this has changed!!"
+        String docker = "g3chen/wgsPipeline:2.0"
         Int myTask_memory = 8
         File myFile
         String optionalString = "default"

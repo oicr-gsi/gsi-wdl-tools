@@ -1,9 +1,9 @@
-import scripts.dockstore_preprocess as dp
+import scripts.subworkflow_preprocess as dp
 import argparse
 import sys
 import filecmp
 
-def test_dockstore_preprocess(shared_datadir):
+def test_subworkflow_preprocess(shared_datadir):
     workflow_path = (shared_datadir / 'workflow1.wdl').as_posix()
     pull_path = (shared_datadir / 'gen_pull_workflow1.wdl').as_posix()
     dockstore_path = (shared_datadir / 'gen_dockstore_workflow1.wdl').as_posix()

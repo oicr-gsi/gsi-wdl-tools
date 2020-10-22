@@ -6,7 +6,7 @@ pushd "$(dirname $0)/.." > /dev/null
 
 # get the project venv
 PYTHON="$(pipenv --venv)/bin/python"
-export PYTHONPATH=$(pwd):$PYTHONPATH
+export PYTHONPATH=$(pwd)${PYTHONPATH:+:$PYTHONPATH}
 
 # go back to the calling directory
 popd > /dev/null

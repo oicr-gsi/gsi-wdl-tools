@@ -113,14 +113,14 @@ class WorkflowInfo:
             else:
                 optional = False
             if param.value.type.optional and default != "None":
-                raise ValidationError(f"Optional with default: {wdl_type} {name} = {default}")
+                raise ValidationError(f"Optional with default at line {param.value.pos.line}: {wdl_type} {name} = {default}")
             description = param_descriptions.get(name, '')
             if not description and len(name.split('.')) == 2:
                 # this is an aliased call parameter, map call name to task name and get the task's description
                 (call_name, param_name) = name.split('.')
                 description = param_descriptions.get(f"{call_to_task.get(call_name, 'missing')}.{param_name}", '')
             if not description:
-                raise ValidationError(f"parameter_meta description is missing for {name}")
+                raise ValidationError(f"parameter_meta description is missing for {name} (line {param.value.pos.line})")
             input_param = Input(name=name, wdl_type=wdl_type, optional=optional, default=default,
                                 description=description)
             if '.' not in input_param.name:

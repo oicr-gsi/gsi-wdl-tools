@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import sys
 
 from gsi_wdl_tools.workflow_info import *
 
@@ -8,7 +9,13 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument("--input-wdl-path", required=True)
 args = parser.parse_args()
 
-info = WorkflowInfo(args.input_wdl_path)
+try:
+    info = WorkflowInfo(args.input_wdl_path)
+except Exception as e:
+    if hasattr(e, "pos"):
+        print(f"WDL parsing error at line {e.pos.line}: {e}")
+        raise SystemExit(1)
+    raise (e)
 
 # header
 print(f"# {info.name}\n")

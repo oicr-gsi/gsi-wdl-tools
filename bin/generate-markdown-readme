@@ -4,13 +4,15 @@ set -eu
 # go to the root directory of the project
 pushd "$(dirname $0)/.." > /dev/null
 
-# get the project venv
-PYTHON="$(pipenv --venv)/bin/python"
-export PYTHONPATH=$(pwd)${PYTHONPATH:+:$PYTHONPATH}
+# get the project's pipfile
+PIPFILE="$(readlink -f Pipfile)"
+
+# export PROJECT_ROOT for the project's .env (as "pwd" in .env doesn't work)
+export PROJECT_ROOT="$(pwd)"
 
 # go back to the calling directory
 popd > /dev/null
 
-# call generate_markdown_readme.py
-"$PYTHON" "$(dirname $0)/../scripts/generate_markdown_readme.py" $@
+# call pipenv + script
+PIPENV_PIPFILE=$PIPFILE pipenv --bare run python "$(dirname $0)/../scripts/generate_markdown_readme.py" $@
 )

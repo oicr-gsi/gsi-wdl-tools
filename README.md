@@ -97,12 +97,12 @@ generate-markdown-readme --input-wdl-path [workflow.wdl]
 Or with `pipenv shell`:
 ```
 pipenv shell
-python3 generate_markdown_readme.py --input-wdl-path [workflow.wdl]
+python3 ./scripts/generate_markdown_readme.py --input-wdl-path [workflow.wdl]
 ```
 
 Or without using `pipenv run`:
 ```
-pipenv run python3 ./generate_markdown_readme.py --input-wdl-path [workflow.wdl]
+pipenv run python3 ./scripts/generate_markdown_readme.py --input-wdl-path [workflow.wdl]
 ```
 
 

@@ -1,7 +1,11 @@
+import logging
 import os
 from dataclasses import dataclass
 
 import WDL
+
+logging.basicConfig(format='%(levelname)s %(message)s')
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -26,12 +30,12 @@ class ValidationError(Exception):
 
 class WorkflowInfo:
 
-    def __init__(self, path):
+    def __init__(self, path, default_parameter_description=None):
         doc = WDL.load(path)
         self.name = doc.workflow.name
         self.description = doc.workflow.meta['description']
         self.filename = os.path.basename(doc.pos.uri)
-        (self.required_inputs, self.optional_inputs, self.task_inputs) = WorkflowInfo.get_inputs(doc)
+        (self.required_inputs, self.optional_inputs, self.task_inputs) = WorkflowInfo.get_inputs(doc, default_parameter_description)
         self.doc = doc
 
     @property
@@ -77,7 +81,7 @@ class WorkflowInfo:
                 yield from WorkflowInfo.calls(ch)
 
     @staticmethod
-    def get_inputs(doc):
+    def get_inputs(doc, default_parameter_description=None):
 
         # create a map of call names to task names
         # this is used for mapping an aliased call to its task
@@ -120,7 +124,11 @@ class WorkflowInfo:
                 (call_name, param_name) = name.split('.')
                 description = param_descriptions.get(f"{call_to_task.get(call_name, 'missing')}.{param_name}", '')
             if not description:
-                raise ValidationError(f"parameter_meta description is missing for {name} (line {param.value.pos.line})")
+                if default_parameter_description is not None:
+                    log.warn(f"Using default parameter meta description for missing parameter_meta {name} (line {param.value.pos.line})")
+                    description = default_parameter_description
+                else:
+                    raise ValidationError(f"parameter_meta description is missing for {name} (line {param.value.pos.line})")
             input_param = Input(name=name, wdl_type=wdl_type, optional=optional, default=default,
                                 description=description)
             if '.' not in input_param.name:

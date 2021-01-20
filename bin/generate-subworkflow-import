@@ -1,0 +1,18 @@
+#!/bin/bash
+set -eu
+(
+# go to the root directory of the project
+pushd "$(dirname $0)/.." > /dev/null
+
+# get the project's pipfile
+PIPFILE="$(readlink -f Pipfile)"
+
+# export PROJECT_ROOT for the project's .env (as "pwd" in .env doesn't work)
+export PROJECT_ROOT="$(pwd)"
+
+# go back to the calling directory
+popd > /dev/null
+
+# call pipenv + script
+PIPENV_PIPFILE=$PIPFILE pipenv --bare run python "$(dirname $0)/../scripts/subworkflow_preprocess.py" $@
+)

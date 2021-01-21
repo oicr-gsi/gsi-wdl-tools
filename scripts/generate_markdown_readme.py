@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys
 
 from gsi_wdl_tools.workflow_info import *
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--input-wdl-path", required=True)
+parser.add_argument("--default-parameter-description",
+                    help="Use this to provide a default description for parameters that have not be documented yet in the WDL file's parameter_meta section.",
+                    required=False)
+
 args = parser.parse_args()
 
 try:
-    info = WorkflowInfo(args.input_wdl_path)
+    info = WorkflowInfo(args.input_wdl_path, args.default_parameter_description)
 except Exception as e:
     if hasattr(e, "pos"):
         print(f"WDL parsing error at line {e.pos.line}: {e}")

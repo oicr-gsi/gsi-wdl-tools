@@ -47,6 +47,7 @@ This section lists command(s) run by WORKFLOW workflow
 
         print(command_file + " created, please MANUALLY edit it and re-run this script!!!", file=sys.stderr)
     else:
+        print(command_file + " found, printing out the content...", file=sys.stderr)
         with open(command_file, 'r') as c:
             for row in c:
                 print(row)

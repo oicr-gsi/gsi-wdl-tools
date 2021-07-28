@@ -50,7 +50,7 @@ This section lists command(s) run by WORKFLOW workflow
         print(command_file + " found, printing out the content...", file=sys.stderr)
         with open(command_file, 'r') as c:
             for row in c:
-                print(row)
+                print(row, end = " ")
 
 # header
 print(f"# {info.name}\n")

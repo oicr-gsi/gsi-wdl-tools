@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
+import re
+import sys
 
 from gsi_wdl_tools.workflow_info import *
 
@@ -19,6 +22,35 @@ except Exception as e:
         print(f"WDL parsing error at line {e.pos.line}: {e}")
         raise SystemExit(1)
     raise (e)
+
+def process_commands(wdl_file):
+    dir_name = os.path.dirname(args.input_wdl_path)
+    command_file = "./commands.txt" if dir_name == "" else dir_name + "/commands.txt"
+
+    if not os.path.isfile(command_file):
+        with open(args.input_wdl_path, 'r') as w:
+            wdl_lines = w.readlines()
+            multi_line = "".join(wdl_lines)
+            my_commands = re.findall(r'<<<.*?>>>', multi_line, re.DOTALL)
+
+        with open(command_file, 'a') as out_file:
+            out_file.write('''## Commands
+This section lists command(s) run by WORKFLOW workflow
+
+* Running WORKFLOW
+
+=== Description here ===.''')
+            out_file.write("\n\n")
+            for com in my_commands:
+                out_file.write(com)
+                out_file.write("\n")
+
+        print(command_file + " created, please MANUALLY edit it and re-run this script!!!", file=sys.stderr)
+    else:
+        print(command_file + " found, printing out the content...", file=sys.stderr)
+        with open(command_file, 'r') as c:
+            for row in c:
+                print(row, end = " ")
 
 # header
 print(f"# {info.name}\n")
@@ -80,31 +112,11 @@ for output in info.outputs:
     print(f"`{output.name}`|{output.wdl_type}|{output.description}")
 print('\n')
 
-print("""## Niassa + Cromwell
+# check if commands file exists, if not - print out all commands from wdl and instruct to process manually
+process_commands(args.input_wdl_path)
 
-This WDL workflow is wrapped in a Niassa workflow (https://github.com/oicr-gsi/pipedev/tree/master/pipedev-niassa-cromwell-workflow) so that it can used with the Niassa metadata tracking system (https://github.com/oicr-gsi/niassa).
-
-* Building
-```
-mvn clean install
-```
-
-* Testing
-```
-mvn clean verify \\
--Djava_opts="-Xmx1g -XX:+UseG1GC -XX:+UseStringDeduplication" \\
--DrunTestThreads=2 \\
--DskipITs=false \\
--DskipRunITs=false \\
--DworkingDirectory=/path/to/tmp/ \\
--DschedulingHost=niassa_oozie_host \\
--DwebserviceUrl=http://niassa-url:8080 \\
--DwebserviceUser=niassa_user \\
--DwebservicePassword=niassa_user_password \\
--Dcromwell-host=http://cromwell-url:8000
-```
-
-## Support
+# Print Support information
+print("""## Support
 
 For support, please file an issue on the [Github project](https://github.com/oicr-gsi) or send an email to gsi@oicr.on.ca .
 """)

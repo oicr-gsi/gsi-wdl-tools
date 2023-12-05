@@ -4,7 +4,7 @@ A collection of tools for working with WDL.
 
 ## Installation
 
-gsi-wdl-tools requires Python 3.7
+gsi-wdl-tools requires Python 3.10
 
 1. Install pipenv
 ```

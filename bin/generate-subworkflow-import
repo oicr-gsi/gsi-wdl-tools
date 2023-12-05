@@ -14,5 +14,5 @@ export PROJECT_ROOT="$(pwd)"
 popd > /dev/null
 
 # call pipenv + script
-PIPENV_PIPFILE=$PIPFILE pipenv --bare run python "$(dirname $0)/../scripts/subworkflow_preprocess.py" $@
+PIPENV_PIPFILE=$PIPFILE pipenv --quiet --bare run python "$(dirname $0)/../scripts/subworkflow_preprocess.py" $@
 )

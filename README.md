@@ -4,7 +4,7 @@ A collection of tools for working with WDL.
 
 ## Installation
 
-gsi-wdl-tools requires Python 3.7
+gsi-wdl-tools requires Python 3.10
 
 1. Install pipenv
 ```
@@ -14,7 +14,10 @@ pip install --user pipenv
 2. Install dependencies
 ```
 cd gsi-wdl-tools
-pipenv install
+PIPENV_VENV_IN_PROJECT=1 PIP_IGNORE_INSTALLED=1 pipenv install
+
+# you can see that the project's venv is in the repo
+pipenv --venv
 ```
 
 3. Run tests

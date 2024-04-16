@@ -13,6 +13,7 @@ class Output:
     name: str
     wdl_type: str
     description: str
+    vidarr_label: str
 
 
 @dataclass
@@ -67,9 +68,12 @@ class WorkflowInfo:
                     description = output_descriptions.get(output_file_name)
             else:
                 raise Exception('Unsupported input type')
+            vidarr_label = ""
+            if output.name in output_descriptions:
+                vidarr_label = output_descriptions[output.name].get('vidarr_label', "")
             if not description:
                 raise Exception(f"output description is missing for {name}")
-            outputs.append(Output(name=name, wdl_type=wdl_type, description=description))
+            outputs.append(Output(name=name, wdl_type=wdl_type, description=description, vidarr_label=vidarr_label))
         return outputs
 
     @staticmethod

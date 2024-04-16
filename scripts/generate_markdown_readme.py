@@ -106,10 +106,10 @@ print('\n')
 
 # outputs
 print("### Outputs\n")
-print("Output | Type | Description")
-print("---|---|---")
+print("Output | Type | Description | Label")
+print("---|---|---|---")
 for output in info.outputs:
-    print(f"`{output.name}`|{output.wdl_type}|{output.description}")
+    print(f"`{output.name}`|{output.wdl_type}|{output.description}|{output.vidarr_label}")
 print('\n')
 
 # check if commands file exists, if not - print out all commands from wdl and instruct to process manually

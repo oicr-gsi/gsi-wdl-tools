@@ -69,8 +69,25 @@ class WorkflowInfo:
             else:
                 raise Exception('Unsupported input type')
             vidarr_label = ""
-            if output.name in output_descriptions:
+            if wdl_type == "Pair[File,Map[String,String]]":
+                # Extracting existing entries from output.info.expr.right
+                existing_entries = output.info.expr.right.items
+
+                # Iterate through the items
+                for key, value in existing_entries:
+                    key_eval = key.eval(None, None)  # Provide env and stdlib as None
+                    value_eval = value.eval(None, None)
+                    
+                    # Check if the evaluated key matches "vidarr_label" string
+                    if key_eval.value.strip('"') == "vidarr_label":
+                        vidarr_label = value_eval.value.strip('"')
+                        break
+            elif output.name in output_descriptions:
                 vidarr_label = output_descriptions[output.name].get('vidarr_label', "")
+                # If vidarr_label exists, should convert file to file-with-labels
+                if vidarr_label:
+                    wdl_type = "Pair[File,Map[String,String]]"
+
             if not description:
                 raise Exception(f"output description is missing for {name}")
             outputs.append(Output(name=name, wdl_type=wdl_type, description=description, vidarr_label=vidarr_label))

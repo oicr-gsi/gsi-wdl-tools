@@ -13,7 +13,7 @@ class Output:
     name: str
     wdl_type: str
     description: str
-    vidarr_label: str
+    vidarr_label: list[str]
 
 
 @dataclass
@@ -68,21 +68,22 @@ class WorkflowInfo:
                     description = output_descriptions.get(output_file_name)
             else:
                 raise Exception('Unsupported input type')
-            vidarr_label = ""
-            if wdl_type == "Pair[File,Map[String,String]]":
-                # Extracting existing entries from output.info.expr.right
-                existing_entries = output.info.expr.right.items
+            
+            vidarr_label = []            
 
-                # Iterate through the items
-                for key, value in existing_entries:
-                    value_eval = value.eval(None, None)         
-                    vidarr_label = value_eval.value.strip('"')
-                    break
-            elif output.name in output_descriptions:
-                vidarr_label = output_descriptions[output.name].get('vidarr_label', "")
+            if output.name in output_descriptions:
+                vidarr_label.append(output_descriptions[output.name].get('vidarr_label', ""))
                 # If vidarr_label exists, should convert file to file-with-labels
-                if vidarr_label:
+                if wdl_type == "File":
                     wdl_type = "Pair[File,Map[String,String]]"
+                elif wdl_type == "Pair[File,Map[String,String]]":
+                    # Extracting existing entries from output.info.expr.right
+                    existing_entries = output.info.expr.right.items
+
+                    # Iterate through the items
+                    for key, value in existing_entries:
+                        value_eval = value.eval(None, None)         
+                        vidarr_label.append(value_eval.value.strip('"'))
 
             if not description:
                 raise Exception(f"output description is missing for {name}")

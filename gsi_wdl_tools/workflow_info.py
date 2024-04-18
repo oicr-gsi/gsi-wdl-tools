@@ -71,8 +71,9 @@ class WorkflowInfo:
             
             vidarr_label = []            
 
-            if output.name in output_descriptions:
-                vidarr_label.append(output_descriptions[output.name].get('vidarr_label', ""))
+            # Check if 'vidarr_label' exists in the output description
+            if 'vidarr_label' in output_descriptions[output.name]:
+                vidarr_label.append(('vidarr_label', output_descriptions[output.name]['vidarr_label']))
                 # If vidarr_label exists, should convert file to file-with-labels
                 if wdl_type == "File":
                     wdl_type = "Pair[File,Map[String,String]]"
@@ -82,8 +83,9 @@ class WorkflowInfo:
 
                     # Iterate through the items
                     for key, value in existing_entries:
-                        value_eval = value.eval(None, None)         
-                        vidarr_label.append(value_eval.value.strip('"'))
+                        key_eval = str(key.eval(None, None))
+                        value_eval = str(value.eval(None, None))          
+                        vidarr_label.append((key_eval, value_eval))
 
             if not description:
                 raise Exception(f"output description is missing for {name}")

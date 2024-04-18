@@ -75,13 +75,9 @@ class WorkflowInfo:
 
                 # Iterate through the items
                 for key, value in existing_entries:
-                    key_eval = key.eval(None, None)  # Provide env and stdlib as None
-                    value_eval = value.eval(None, None)
-                    
-                    # Check if the evaluated key matches "vidarr_label" string
-                    if key_eval.value.strip('"') == "vidarr_label":
-                        vidarr_label = value_eval.value.strip('"')
-                        break
+                    value_eval = value.eval(None, None)         
+                    vidarr_label = value_eval.value.strip('"')
+                    break
             elif output.name in output_descriptions:
                 vidarr_label = output_descriptions[output.name].get('vidarr_label', "")
                 # If vidarr_label exists, should convert file to file-with-labels

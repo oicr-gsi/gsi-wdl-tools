@@ -64,13 +64,12 @@ class WorkflowInfo:
                 if val is not None:
                     description = val
                 else:
-                    output_file_name = str(output.info.expr)
-                    description = output_descriptions.get(output_file_name)
+                    raise Exception(f"output description is missing for {name}")
             else:
-                raise Exception('Unsupported input type')
-            
-            vidarr_label = []            
-
+                raise Exception('Unsupported input type')             
+                
+            vidarr_label = [] 
+                       
             # Check if 'vidarr_label' exists in the output description
             if 'vidarr_label' in output_descriptions[output.name]:
                 vidarr_label.append(('vidarr_label', output_descriptions[output.name]['vidarr_label']))
@@ -86,9 +85,7 @@ class WorkflowInfo:
                         key_eval = str(key.eval(None, None))
                         value_eval = str(value.eval(None, None))          
                         vidarr_label.append((key_eval, value_eval))
-
-            if not description:
-                raise Exception(f"output description is missing for {name}")
+            
             outputs.append(Output(name=name, wdl_type=wdl_type, description=description, vidarr_label=vidarr_label))
         return outputs
 

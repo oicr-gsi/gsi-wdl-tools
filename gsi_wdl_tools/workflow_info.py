@@ -86,7 +86,7 @@ class WorkflowInfo:
                         value_eval = str(value.eval(None, None))          
                         vidarr_label.append((key_eval, value_eval))
             
-            outputs.append(Output(name=name, wdl_type=wdl_type, description=description, vidarr_label=vidarr_label))
+            outputs.append(Output(name=name, wdl_type=wdl_type, description=description, vidarr_label=vidarr_label if vidarr_label != [] else ""))
         return outputs
 
     @staticmethod

@@ -63,20 +63,21 @@ class WorkflowInfo:
                 val = output_descriptions.get(output.name)
                 if val is not None:
                     description = val
-                else:
-                    raise Exception(f"output description is missing for {name}")
+                else:   
+                    output_file_name = str(output.info.expr)
+                    description = output_descriptions.get(output_file_name)
             else:
-                raise Exception('Unsupported input type')             
+                raise Exception('Unsupported input type')
+            if not description:
+                raise Exception(f"output description is missing for {name}")        
                 
             vidarr_label = [] 
                        
             # Check if 'vidarr_label' exists in the output description
-            if 'vidarr_label' in output_descriptions[output.name]:
+            if output.name in output_descriptions and 'vidarr_label' in output_descriptions[output.name]:
                 vidarr_label.append(('vidarr_label', output_descriptions[output.name]['vidarr_label']))
-                # If vidarr_label exists, should convert file to file-with-labels
-                if wdl_type == "File":
-                    wdl_type = "Pair[File,Map[String,String]]"
-                elif wdl_type == "Pair[File,Map[String,String]]":
+
+                if wdl_type == "Pair[File,Map[String,String]]":
                     # Extracting existing entries from output.info.expr.right
                     existing_entries = output.info.expr.right.items
 

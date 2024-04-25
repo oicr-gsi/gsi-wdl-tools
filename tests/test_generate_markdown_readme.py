@@ -32,4 +32,5 @@ def test_workflow_info(shared_datadir):
         Output(
             name='outputFile',
             wdl_type='File',
-            description='Text output file')]
+            description='Text output file',
+            vidarr_label="")]

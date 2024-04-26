@@ -62,7 +62,10 @@ class WorkflowInfo:
             elif isinstance(output, WDL.Env.Binding):
                 val = output_descriptions.get(output.name)
                 if val is not None:
-                    description = val.get("description", "")
+                    if type(val) == dict:
+                        description = val.get("description", "")
+                    elif type(val) == str:
+                        description = val
                 else:
                     output_file_name = str(output.info.expr)
                     description = output_descriptions.get(output_file_name)

@@ -24,8 +24,8 @@ workflow empty {
     description: "Workflow for testing infrastructure"
     output_meta: {
       err: {
-      description: "Gzipped and sorted index ...",
-      vidarr_label: "counts"
+        description: "Gzipped and sorted index ...",
+        vidarr_label: "counts"
       }
       
     }

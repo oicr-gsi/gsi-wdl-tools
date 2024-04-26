@@ -63,7 +63,7 @@ class WorkflowInfo:
                 val = output_descriptions.get(output.name)
                 if val is not None:
                     description = val.get("description", "")
-                else:   
+                else:
                     output_file_name = str(output.info.expr)
                     description = output_descriptions.get(output_file_name)
             else:

@@ -1,9 +1,14 @@
+import pytest
+
 from gsi_wdl_tools.workflow_info import *
 
-
-def test_workflow_info(shared_datadir):
-    info = WorkflowInfo((shared_datadir / 'workflow1.wdl').as_posix())
-    assert info.filename == "workflow1.wdl"
+# WorkflowInfo should be the same for the following:
+# workflow 1: output description in task meta output_meta
+# workflow 2: output description in workflow meta output_meta
+@pytest.mark.parametrize("workflow_file", ["workflow1.wdl", "workflow2.wdl"])
+def test_workflow_info(shared_datadir, workflow_file):
+    info = WorkflowInfo((shared_datadir / workflow_file).as_posix())
+    assert info.filename == workflow_file
     assert info.description == "Workflow description."
     assert info.dependencies == [
         {'name': 'tool1/1.0', 'url': 'http://url'}, {'name': 'tool2/1.0', 'url': 'http://url'}]

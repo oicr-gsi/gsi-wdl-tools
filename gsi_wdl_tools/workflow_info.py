@@ -1,6 +1,7 @@
 import logging
 import os
 from dataclasses import dataclass
+from typing import Tuple
 
 import WDL
 
@@ -13,7 +14,7 @@ class Output:
     name: str
     wdl_type: str
     description: str
-    vidarr_label: list[str]
+    labels: [Tuple[str, str]]
 
 
 @dataclass
@@ -74,11 +75,12 @@ class WorkflowInfo:
             if not description:
                 raise Exception(f"output description is missing for {name}")        
                 
-            vidarr_label = [] 
+            labels = []
                        
             # Check if 'vidarr_label' exists in the output description
+            # TODO: support for other labels
             if output.name in output_descriptions and 'vidarr_label' in output_descriptions[output.name]:
-                vidarr_label.append(('vidarr_label', output_descriptions[output.name]['vidarr_label']))
+                labels.append(('vidarr_label', output_descriptions[output.name]['vidarr_label']))
 
                 if wdl_type == "Pair[File,Map[String,String]]":
                     # Extracting existing entries from output.info.expr.right
@@ -88,9 +90,9 @@ class WorkflowInfo:
                     for key, value in existing_entries:
                         key_eval = str(key.eval(None, None))
                         value_eval = str(value.eval(None, None))          
-                        vidarr_label.append((key_eval, value_eval))
+                        labels.append((key_eval, value_eval))
             
-            outputs.append(Output(name=name, wdl_type=wdl_type, description=description, vidarr_label=vidarr_label if vidarr_label != [] else ""))
+            outputs.append(Output(name=name, wdl_type=wdl_type, description=description, labels=labels))
         return outputs
 
     @staticmethod

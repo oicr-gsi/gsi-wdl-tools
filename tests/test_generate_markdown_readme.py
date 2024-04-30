@@ -38,7 +38,7 @@ def test_workflow_info(shared_datadir, workflow_file):
             name='outputFile',
             wdl_type='File',
             description='Text output file',
-            vidarr_label="")]
+            labels=[])]
 
 
 def test_empty_workflow(shared_datadir):
@@ -84,6 +84,6 @@ def test_empty_workflow(shared_datadir):
             name='err',
             wdl_type='File',
             description="Gzipped and sorted index ...",
-            vidarr_label=[('vidarr_label', 'counts')]
+            labels=[('vidarr_label', 'counts')]
         )
     ]

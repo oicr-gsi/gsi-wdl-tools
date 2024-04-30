@@ -106,10 +106,11 @@ print('\n')
 
 # outputs
 print("### Outputs\n")
-print("Output | Type | Description | Label")
+print("Output | Type | Description | Labels")
 print("---|---|---|---")
 for output in info.outputs:
-    print(f"`{output.name}`|{output.wdl_type}|{output.description}|{output.vidarr_label}")
+    label_string = os.linesep.join(f"{l[0]}: {l[1]}" for l in output.labels)
+    print(f"`{output.name}`|{output.wdl_type}|{output.description}|{label_string}")
 print('\n')
 
 # check if commands file exists, if not - print out all commands from wdl and instruct to process manually

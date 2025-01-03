@@ -25,6 +25,15 @@ pipenv --venv
 pipenv run python3 -m pytest
 ```
 
+## Maintenance
+
+1. Use pipenv to update all dependencies to their latest version:
+```
+pipenv update && pipenv run pytest
+```
+If tests pass, changes to Pipfile.lock should be committed and a PR be made.
+
+
 ## Tools
 
 ### generate-markdown-readme

@@ -33,7 +33,13 @@ class ValidationError(Exception):
 class WorkflowInfo:
 
     def __init__(self, path, default_parameter_description=None):
-        doc = WDL.load(path)
+        try:
+            doc = WDL.load(path)
+        except (WDL.Error.MultipleValidationErrors, WDL.Error.SyntaxError, WDL.Error.ValidationError) as e:
+            errors = e.exceptions if isinstance(e, WDL.Error.MultipleValidationErrors) else [e]
+            error_messages = [f"Error {i + 1} at line={error.pos.line} and column={error.pos.column}:\n{error}" for i, error in enumerate(errors)]
+            raise ValidationError(f"Unable to load {path} due to the following errors:\n{'\n'.join(error_messages)}") from e
+
         self.name = doc.workflow.name
         self.description = doc.workflow.meta['description']
         self.filename = os.path.basename(doc.pos.uri)
@@ -73,10 +79,10 @@ class WorkflowInfo:
             else:
                 raise Exception('Unsupported input type')
             if not description:
-                raise Exception(f"output description is missing for {name}")        
-                
+                raise Exception(f"output description is missing for {name}")
+
             labels = []
-                       
+
             # Check if 'vidarr_label' exists in the output description
             # TODO: support for other labels
             if output.name in output_descriptions and 'vidarr_label' in output_descriptions[output.name]:
@@ -89,9 +95,9 @@ class WorkflowInfo:
                     # Iterate through the items
                     for key, value in existing_entries:
                         key_eval = str(key.eval(None, None))
-                        value_eval = str(value.eval(None, None))          
+                        value_eval = str(value.eval(None, None))
                         labels.append((key_eval, value_eval))
-            
+
             outputs.append(Output(name=name, wdl_type=wdl_type, description=description, labels=labels))
         return outputs
 

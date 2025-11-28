@@ -20,13 +20,6 @@ has_param_meta = []     # names of tasks or workflow that have a parameter_meta 
 doc = None              # WDL document object
 tab_size = 4
 
-# WDL keeps its own boolean values, that cannot be dealt with when in comes to JSON serialization
-class WDLEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, WDL.Expr.Boolean):
-            return bool(o)
-        return super().default(o)
-
 # lv. 1 --> only calls default methods; can be used anywhere
 # lv. 2 --> calls lv. 1 functions; placed below lv. 1
 
@@ -417,7 +410,7 @@ def pull_to_root_all():
         body = call.callee      # the task or workflow that the call refers to
         if str(input.name) in body.parameter_meta.keys():   # if the original variable had a meta description
             if isinstance(body.parameter_meta[str(input.name)], dict):
-                old_description = json.dumps(body.parameter_meta[str(input.name)], cls=WDLEncoder)
+                old_description = '"' + body.parameter_meta[str(input.name)]["description"] + '"'
             else:
                 old_description = '"' + body.parameter_meta[str(input.name)] + '"'
             var_parameter_meta(body=doc.workflow, target=extended_name, description=old_description)  # pull description to root

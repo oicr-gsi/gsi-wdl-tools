@@ -1,0 +1,26 @@
+[tool.setuptools.packages.find]
+where = ["./"]
+exclude = ["test"]
+
+[tool.uv]
+package = true
+
+[project]
+name = "gsi-wdl-tools"
+version = "2026.04.22"
+description = "A collection of tools for working with WDL."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "miniwdl"
+]
+
+[project.scripts]
+generate-markdown-readme = "scripts.generate_markdown_readme:main"
+generate-subworkflow-import = "scripts.subworkflow_preprocess:main"
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-datadir"
+]

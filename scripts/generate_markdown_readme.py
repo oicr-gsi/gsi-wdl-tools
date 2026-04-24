@@ -123,3 +123,6 @@ For support, please file an issue on the [Github project](https://github.com/oic
 """)
 
 print(f"_Generated with generate-markdown-readme (https://github.com/oicr-gsi/gsi-wdl-tools/)_")
+
+def main():
+    pass

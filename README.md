@@ -4,34 +4,48 @@ A collection of tools for working with WDL.
 
 ## Installation
 
-gsi-wdl-tools requires Python 3.12
+Install into user's environment:
+```
+cd gsi-wdl-tools
+uv tool install .
+```
 
-1. Install pipenv
+List installed tools:
 ```
-pip install --user pipenv
+uv tool list
 ```
+
+To uninstall:
+```
+uv tool uninstall gsi-wdl-tools
+```
+
+
+## Development
+
+gsi-wdl-tools requires `uv`
+
+1. Install uv
+See https://github.com/astral-sh/uv/releases
 
 2. Install dependencies
 ```
 cd gsi-wdl-tools
-PIPENV_VENV_IN_PROJECT=1 PIP_IGNORE_INSTALLED=1 pipenv install
-
-# you can see that the project's venv is in the repo
-pipenv --venv
+uv sync --frozen
 ```
 
 3. Run tests
 ```
-pipenv run python3 -m pytest
+uv run pytest
 ```
 
 ## Maintenance
 
-1. Use pipenv to update all dependencies to their latest version:
+1. Use uv to update all dependencies to their latest version:
 ```
-pipenv update && pipenv run pytest
+uv sync --upgrade && uv run pytest
 ```
-If tests pass, changes to Pipfile.lock should be committed and a PR be made.
+If tests pass, changes to uv.lock should be committed and a PR be made.
 
 
 ## Tools
@@ -106,19 +120,12 @@ task myTask {
 generate-markdown-readme --input-wdl-path [workflow.wdl]
 ```
 
-Or with `pipenv shell`:
+Or with `uv run`:
 ```
-pipenv shell
-python3 ./scripts/generate_markdown_readme.py --input-wdl-path [workflow.wdl]
-```
-
-Or without using `pipenv run`:
-```
-pipenv run python3 ./scripts/generate_markdown_readme.py --input-wdl-path [workflow.wdl]
+uv run generate-markdown-readme --input-wdl-path [workflow.wdl]
 ```
 
-
-### dockstore_preprocess.py
+### generate-subworkflow-import
 Preprocesses a WDL to be used as a subworkflow, either for a UGE-based or dockstore-based wrapper workflow. Main function is converting task-level parameters to workflow-level parameters (pulling).
 Tested on all workflows in the WGS Pipeline, but might not catch edge case WDL formatting.
 
@@ -137,39 +144,13 @@ Argument|Required?|Description
 #### Usage
 Common combinations:
 ```
-dockstore_preprocess --docker-image "g3chen/wgspipeline:2.0" --input-wdl-path [workflow.wdl] --pull-all --dockstore --tab-size 4 --output-wdl-path [dockstore_workflow.wdl]
+generate-subworkflow-import --docker-image "g3chen/wgspipeline:2.0" --input-wdl-path [workflow.wdl] --pull-all --dockstore --tab-size 4 --output-wdl-path [dockstore_workflow.wdl]
 ```
 ```
-dockstore_preprocess --input-wdl-path [workflow.wdl] --pull-all
-```
-
-Or with `pipenv shell`:
-```
-pipenv shell
-python3 dockstore_preprocess.py --input-wdl-path [workflow.wdl]
+generate-subworkflow-import --input-wdl-path [workflow.wdl] --pull-all
 ```
 
-Or without using `pipenv run`:
+Or with `uv run`:
 ```
-pipenv run python3 ./dockstore_preprocess.py --input-wdl-path [workflow.wdl]
-```
-
-
-### dockstore_preprocess_all.sh
-When given a directory containing WDL files and arguments, calls dockstore_preprocess.py on all files using those args. "--input-wdl-path" is omitted.
-
-#### Run Arguments
-Index|Argument|Description
----|---|---
-1|dockstore_preprocess.py|Path to dockstore_preprocess.py
-2|WDL dir|Path to directory containing target WDL files
-3+|preprocess args|Arguments for dockstore_preprocess.py, minus --input-wdl-path
-
-#### Usage
-```
-dockstore_preprocess_all.sh [dockstore_preprocess.py] [WDL dir] [preprocess args]
-```
-For example:
-```
-dockstore_preprocess_all.sh dockstore_preprocess.py /.../wgsPipeline/imports/ --pull-all --tab-size 4
+uv run generate-subworkflow-import --input-wdl-path [workflow.wdl]
 ```

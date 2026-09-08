@@ -27,37 +27,73 @@ def process_commands(wdl_file):
     dir_name = os.path.dirname(args.input_wdl_path)
     command_file = "./commands.txt" if dir_name == "" else dir_name + "/commands.txt"
 
-    if not os.path.isfile(command_file):
-        with open(args.input_wdl_path, 'r') as w:
-            wdl_lines = w.readlines()
-            multi_line = "".join(wdl_lines)
-            my_commands = re.findall(r'<<<.*?>>>', multi_line, re.DOTALL)
+    with open(args.input_wdl_path, 'r') as w:
+        wdl_content = w.read()
+        my_commands = re.findall(r'<<<.*?>>>', wdl_content, re.DOTALL)
 
-        with open(command_file, 'a') as out_file:
-            out_file.write('''## Commands
-This section lists command(s) run by WORKFLOW workflow
+    commands_section = (
+        f"## Commands\n"
+        f"This section lists command(s) run by {info.name} workflow\n"
+        f"\n"
+        f"* Running {info.name}\n"
+        f"\n"
+    )
+    for com in my_commands:
+        com = com.replace('\r', '')
+        # Replace <<< with ``` at start of captured string
+        com_converted = re.sub(r'<<<', "```", com)
+        # Replace >>> (possibly with leading whitespace on its line) with ``` at start of line
+        com_converted = re.sub(r'\n[ \t]*>>>', "\n```", com_converted)
+        com_converted = re.sub(r'^>>>', "```", com_converted)
+        commands_section += com_converted + "\n"
 
-* Running WORKFLOW
+    # Always write/overwrite commands.txt
+    with open(command_file, 'w') as out_file:
+        out_file.write(commands_section)
+    print(f"{command_file} written.", file=sys.stderr)
 
-=== Description here ===.''')
-            out_file.write("\n\n")
-            for com in my_commands:
-                out_file.write(com)
-                out_file.write("\n")
+    # Print to stdout (feeds README.md when stdout is redirected)
+    print(commands_section)
 
-        print(command_file + " created, please MANUALLY edit it and re-run this script!!!", file=sys.stderr)
+    return dir_name, commands_section
+
+
+def update_readme_with_commands(dir_name, commands_section):
+    readme_file = "./README.md" if dir_name == "" else dir_name + "/README.md"
+    sys.stdout.flush()
+
+    if not os.path.isfile(readme_file):
+        return
+
+    with open(readme_file, 'r') as f:
+        readme_content = f.read()
+
+    if '## Commands' in readme_content:
+        replacement = commands_section.rstrip()
+        readme_content = re.sub(
+            r'## Commands.*?(?=\n## |\Z)',
+            lambda m: replacement,
+            readme_content,
+            flags=re.DOTALL
+        )
+    elif '## Support' in readme_content:
+        readme_content = readme_content.replace('## Support', commands_section + '## Support', 1)
     else:
-        print(command_file + " found, printing out the content...", file=sys.stderr)
-        with open(command_file, 'r') as c:
-            for row in c:
-                print(row, end = " ")
+        readme_content += '\n' + commands_section
+
+    with open(readme_file, 'w') as f:
+        f.write(readme_content)
+    print(f"{readme_file} updated with commands section.", file=sys.stderr)
 
 # header
 print(f"# {info.name}\n")
-print(f"{info.description}\n")
 
 # overview
+# The workflow's meta.description IS the overview text, so the heading has to be printed
+# before it. Printing the description first left "## Overview" as an empty section with its
+# content stranded above it.
 print("## Overview\n")
+print(f"{info.description}\n")
 # generate docs/summary.png
 # print("![Summary dot plot](./docs/summary.png)\n")
 
@@ -113,8 +149,8 @@ for output in info.outputs:
     print(f"`{output.name}`|{output.wdl_type}|{output.description}|{label_string}")
 print('\n')
 
-# check if commands file exists, if not - print out all commands from wdl and instruct to process manually
-process_commands(args.input_wdl_path)
+# Extract commands from WDL, write commands.txt, and print commands section
+dir_name, commands_section = process_commands(args.input_wdl_path)
 
 # Print Support information
 print("""## Support
@@ -124,5 +160,11 @@ For support, please file an issue on the [Github project](https://github.com/oic
 
 print(f"_Generated with generate-markdown-readme (https://github.com/oicr-gsi/gsi-wdl-tools/)_")
 
+# Insert/update commands section in README.md directly
+update_readme_with_commands(dir_name, commands_section)
+
+
+# The module body above is the program; this exists only as the console-script entry point,
+# which runs after the import has already done the work.
 def main():
     pass

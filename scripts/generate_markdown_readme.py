@@ -6,12 +6,19 @@ import re
 import sys
 
 from gsi_wdl_tools.workflow_info import *
+from gsi_wdl_tools.wdl_flowchart import find_flowchart
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--input-wdl-path", required=True)
 parser.add_argument("--default-parameter-description",
                     help="Use this to provide a default description for parameters that have not be documented yet in the WDL file's parameter_meta section.",
                     required=False)
+parser.add_argument("--flowchart-dir",
+                    help="Look for the flowchart here instead of in a docs/ beside the WDL or beside the WDL itself.",
+                    required=False)
+parser.add_argument("--no-flowchart",
+                    help="Leave out the Workflow Flowchart section even if a flowchart exists.",
+                    action="store_true")
 
 args = parser.parse_args()
 
@@ -27,39 +34,145 @@ def process_commands(wdl_file):
     dir_name = os.path.dirname(args.input_wdl_path)
     command_file = "./commands.txt" if dir_name == "" else dir_name + "/commands.txt"
 
-    if not os.path.isfile(command_file):
-        with open(args.input_wdl_path, 'r') as w:
-            wdl_lines = w.readlines()
-            multi_line = "".join(wdl_lines)
-            my_commands = re.findall(r'<<<.*?>>>', multi_line, re.DOTALL)
+    with open(args.input_wdl_path, 'r') as w:
+        wdl_content = w.read()
+        my_commands = re.findall(r'<<<.*?>>>', wdl_content, re.DOTALL)
 
-        with open(command_file, 'a') as out_file:
-            out_file.write('''## Commands
-This section lists command(s) run by WORKFLOW workflow
+    commands_section = (
+        f"## Commands\n"
+        f"This section lists command(s) run by {info.name} workflow\n"
+        f"\n"
+        f"* Running {info.name}\n"
+        f"\n"
+    )
+    for com in my_commands:
+        com = com.replace('\r', '')
+        # Replace <<< with ``` at start of captured string
+        com_converted = re.sub(r'<<<', "```", com)
+        # Replace >>> (possibly with leading whitespace on its line) with ``` at start of line
+        com_converted = re.sub(r'\n[ \t]*>>>', "\n```", com_converted)
+        com_converted = re.sub(r'^>>>', "```", com_converted)
+        commands_section += com_converted + "\n"
 
-* Running WORKFLOW
+    # Always write/overwrite commands.txt
+    with open(command_file, 'w') as out_file:
+        out_file.write(commands_section)
+    print(f"{command_file} written.", file=sys.stderr)
 
-=== Description here ===.''')
-            out_file.write("\n\n")
-            for com in my_commands:
-                out_file.write(com)
-                out_file.write("\n")
+    # Print to stdout (feeds README.md when stdout is redirected)
+    print(commands_section)
 
-        print(command_file + " created, please MANUALLY edit it and re-run this script!!!", file=sys.stderr)
+    return dir_name, commands_section
+
+
+def flowchart_section(wdl_path, workflow_name, flowchart_dir=None):
+    """The Workflow Flowchart section, or None when no flowchart has been generated.
+
+    Nothing is drawn here: generate-wdl-flowchart writes the chart, and this picks up
+    whatever it left in a docs/ beside the WDL or beside the WDL itself. The link is
+    relative to the README, which sits in the same directory as the WDL.
+    """
+    chart = find_flowchart(wdl_path, workflow_name, outdir=flowchart_dir)
+    if chart is None:
+        return None
+
+    readme_dir = os.path.dirname(os.path.abspath(wdl_path))
+    link = os.path.relpath(chart, readme_dir).replace(os.sep, "/")
+    return (
+        f"## Workflow Flowchart\n"
+        f"\n"
+        f"![{workflow_name} workflow flowchart](./{link})\n"
+    )
+
+
+def update_readme_with_flowchart(dir_name, section):
+    """Insert or refresh the Workflow Flowchart section of an existing README.md.
+
+    Keeps the section directly under Overview, so the picture is the first thing a reader
+    meets after the description. Called with section None, an existing section is left
+    alone rather than removed - a chart that is temporarily absent should not silently
+    delete the reference to it.
+    """
+    if section is None:
+        return
+    readme_file = "./README.md" if dir_name == "" else dir_name + "/README.md"
+    sys.stdout.flush()
+
+    if not os.path.isfile(readme_file):
+        return
+
+    with open(readme_file, 'r') as f:
+        readme_content = f.read()
+
+    # trailing newline: the section is spliced in ahead of the next "## " heading
+    replacement = section.rstrip() + "\n"
+    if '## Workflow Flowchart' in readme_content:
+        readme_content = re.sub(
+            r'## Workflow Flowchart.*?(?=\n## |\Z)',
+            lambda m: replacement,
+            readme_content,
+            flags=re.DOTALL
+        )
+    elif '## Overview' in readme_content:
+        readme_content = re.sub(
+            r'## Overview.*?(?=\n## |\Z)',
+            lambda m: m.group(0).rstrip() + "\n\n" + replacement,
+            readme_content,
+            count=1,
+            flags=re.DOTALL
+        )
     else:
-        print(command_file + " found, printing out the content...", file=sys.stderr)
-        with open(command_file, 'r') as c:
-            for row in c:
-                print(row, end = " ")
+        readme_content += '\n' + replacement
+
+    with open(readme_file, 'w') as f:
+        f.write(readme_content)
+    print(f"{readme_file} updated with flowchart section.", file=sys.stderr)
+
+
+def update_readme_with_commands(dir_name, commands_section):
+    readme_file = "./README.md" if dir_name == "" else dir_name + "/README.md"
+    sys.stdout.flush()
+
+    if not os.path.isfile(readme_file):
+        return
+
+    with open(readme_file, 'r') as f:
+        readme_content = f.read()
+
+    if '## Commands' in readme_content:
+        # trailing newline: the section is spliced in ahead of the next "## " heading
+        replacement = commands_section.rstrip() + "\n"
+        readme_content = re.sub(
+            r'## Commands.*?(?=\n## |\Z)',
+            lambda m: replacement,
+            readme_content,
+            flags=re.DOTALL
+        )
+    elif '## Support' in readme_content:
+        readme_content = readme_content.replace(
+            '## Support', commands_section.rstrip() + "\n\n## Support", 1)
+    else:
+        readme_content += '\n' + commands_section
+
+    with open(readme_file, 'w') as f:
+        f.write(readme_content)
+    print(f"{readme_file} updated with commands section.", file=sys.stderr)
 
 # header
 print(f"# {info.name}\n")
-print(f"{info.description}\n")
 
 # overview
+# The workflow's meta.description IS the overview text, so the heading has to be printed
+# before it. Printing the description first left "## Overview" as an empty section with its
+# content stranded above it.
 print("## Overview\n")
-# generate docs/summary.png
-# print("![Summary dot plot](./docs/summary.png)\n")
+print(f"{info.description}\n")
+
+# flowchart, drawn beforehand by generate-wdl-flowchart
+flowchart = None if args.no_flowchart else flowchart_section(
+    args.input_wdl_path, info.name, args.flowchart_dir)
+if flowchart:
+    print(f"{flowchart}")
 
 # dependencies
 print("## Dependencies\n")
@@ -113,8 +226,8 @@ for output in info.outputs:
     print(f"`{output.name}`|{output.wdl_type}|{output.description}|{label_string}")
 print('\n')
 
-# check if commands file exists, if not - print out all commands from wdl and instruct to process manually
-process_commands(args.input_wdl_path)
+# Extract commands from WDL, write commands.txt, and print commands section
+dir_name, commands_section = process_commands(args.input_wdl_path)
 
 # Print Support information
 print("""## Support
@@ -124,5 +237,12 @@ For support, please file an issue on the [Github project](https://github.com/oic
 
 print(f"_Generated with generate-markdown-readme (https://github.com/oicr-gsi/gsi-wdl-tools/)_")
 
+# Insert/update sections in README.md directly
+update_readme_with_flowchart(dir_name, flowchart)
+update_readme_with_commands(dir_name, commands_section)
+
+
+# The module body above is the program; this exists only as the console-script entry point,
+# which runs after the import has already done the work.
 def main():
     pass

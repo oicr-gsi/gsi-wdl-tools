@@ -18,6 +18,7 @@ dependencies = [
 [project.scripts]
 generate-markdown-readme = "scripts.generate_markdown_readme:main"
 generate-subworkflow-import = "scripts.subworkflow_preprocess:main"
+generate-wdl-flowchart = "scripts.wdl_flowchart:main"
 
 [dependency-groups]
 dev = [

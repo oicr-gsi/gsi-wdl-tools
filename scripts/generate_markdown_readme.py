@@ -6,12 +6,19 @@ import re
 import sys
 
 from gsi_wdl_tools.workflow_info import *
+from gsi_wdl_tools.wdl_flowchart import find_flowchart
 
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--input-wdl-path", required=True)
 parser.add_argument("--default-parameter-description",
                     help="Use this to provide a default description for parameters that have not be documented yet in the WDL file's parameter_meta section.",
                     required=False)
+parser.add_argument("--flowchart-dir",
+                    help="Look for the flowchart here instead of in a docs/ beside the WDL or beside the WDL itself.",
+                    required=False)
+parser.add_argument("--no-flowchart",
+                    help="Leave out the Workflow Flowchart section even if a flowchart exists.",
+                    action="store_true")
 
 args = parser.parse_args()
 
@@ -58,6 +65,70 @@ def process_commands(wdl_file):
     return dir_name, commands_section
 
 
+def flowchart_section(wdl_path, workflow_name, flowchart_dir=None):
+    """The Workflow Flowchart section, or None when no flowchart has been generated.
+
+    Nothing is drawn here: generate-wdl-flowchart writes the chart, and this picks up
+    whatever it left in a docs/ beside the WDL or beside the WDL itself. The link is
+    relative to the README, which sits in the same directory as the WDL.
+    """
+    chart = find_flowchart(wdl_path, workflow_name, outdir=flowchart_dir)
+    if chart is None:
+        return None
+
+    readme_dir = os.path.dirname(os.path.abspath(wdl_path))
+    link = os.path.relpath(chart, readme_dir).replace(os.sep, "/")
+    return (
+        f"## Workflow Flowchart\n"
+        f"\n"
+        f"![{workflow_name} workflow flowchart](./{link})\n"
+    )
+
+
+def update_readme_with_flowchart(dir_name, section):
+    """Insert or refresh the Workflow Flowchart section of an existing README.md.
+
+    Keeps the section directly under Overview, so the picture is the first thing a reader
+    meets after the description. Called with section None, an existing section is left
+    alone rather than removed - a chart that is temporarily absent should not silently
+    delete the reference to it.
+    """
+    if section is None:
+        return
+    readme_file = "./README.md" if dir_name == "" else dir_name + "/README.md"
+    sys.stdout.flush()
+
+    if not os.path.isfile(readme_file):
+        return
+
+    with open(readme_file, 'r') as f:
+        readme_content = f.read()
+
+    # trailing newline: the section is spliced in ahead of the next "## " heading
+    replacement = section.rstrip() + "\n"
+    if '## Workflow Flowchart' in readme_content:
+        readme_content = re.sub(
+            r'## Workflow Flowchart.*?(?=\n## |\Z)',
+            lambda m: replacement,
+            readme_content,
+            flags=re.DOTALL
+        )
+    elif '## Overview' in readme_content:
+        readme_content = re.sub(
+            r'## Overview.*?(?=\n## |\Z)',
+            lambda m: m.group(0).rstrip() + "\n\n" + replacement,
+            readme_content,
+            count=1,
+            flags=re.DOTALL
+        )
+    else:
+        readme_content += '\n' + replacement
+
+    with open(readme_file, 'w') as f:
+        f.write(readme_content)
+    print(f"{readme_file} updated with flowchart section.", file=sys.stderr)
+
+
 def update_readme_with_commands(dir_name, commands_section):
     readme_file = "./README.md" if dir_name == "" else dir_name + "/README.md"
     sys.stdout.flush()
@@ -69,7 +140,8 @@ def update_readme_with_commands(dir_name, commands_section):
         readme_content = f.read()
 
     if '## Commands' in readme_content:
-        replacement = commands_section.rstrip()
+        # trailing newline: the section is spliced in ahead of the next "## " heading
+        replacement = commands_section.rstrip() + "\n"
         readme_content = re.sub(
             r'## Commands.*?(?=\n## |\Z)',
             lambda m: replacement,
@@ -77,7 +149,8 @@ def update_readme_with_commands(dir_name, commands_section):
             flags=re.DOTALL
         )
     elif '## Support' in readme_content:
-        readme_content = readme_content.replace('## Support', commands_section + '## Support', 1)
+        readme_content = readme_content.replace(
+            '## Support', commands_section.rstrip() + "\n\n## Support", 1)
     else:
         readme_content += '\n' + commands_section
 
@@ -94,8 +167,12 @@ print(f"# {info.name}\n")
 # content stranded above it.
 print("## Overview\n")
 print(f"{info.description}\n")
-# generate docs/summary.png
-# print("![Summary dot plot](./docs/summary.png)\n")
+
+# flowchart, drawn beforehand by generate-wdl-flowchart
+flowchart = None if args.no_flowchart else flowchart_section(
+    args.input_wdl_path, info.name, args.flowchart_dir)
+if flowchart:
+    print(f"{flowchart}")
 
 # dependencies
 print("## Dependencies\n")
@@ -160,7 +237,8 @@ For support, please file an issue on the [Github project](https://github.com/oic
 
 print(f"_Generated with generate-markdown-readme (https://github.com/oicr-gsi/gsi-wdl-tools/)_")
 
-# Insert/update commands section in README.md directly
+# Insert/update sections in README.md directly
+update_readme_with_flowchart(dir_name, flowchart)
 update_readme_with_commands(dir_name, commands_section)
 
 

@@ -45,12 +45,14 @@ Only graphviz (`dot`) is needed to render, and nothing at all to produce the `.d
 ## Feeding generate-markdown-readme
 
 `generate-markdown-readme` looks for a chart of the workflow it is documenting, and when it
-finds one it writes a `Workflow Flowchart` section directly under `Overview`:
+finds one it puts the image at the top of the `Overview` section, ahead of the description:
 
 ```markdown
-## Workflow Flowchart
+## Overview
 
 ![myWorkflow workflow flowchart](./docs/myWorkflow.flow.svg)
+
+What the workflow does.
 ```
 
 It looks in the same places this tool writes to - a `docs/` beside the WDL first, then the
@@ -67,8 +69,9 @@ With no chart on disk the section is left out entirely and the README is what it
 points the search somewhere else.
 
 An existing `README.md` is also updated in place, the same way its `Commands` section is:
-the flowchart section is inserted under `Overview` if it is missing and refreshed if it is
-already there, so regenerating never stacks up copies.
+the image is moved to the top of `Overview` if it is somewhere else and refreshed if it is
+already there, so regenerating never stacks up copies. A `## Workflow Flowchart` heading
+from an earlier version of this tool is removed on sight.
 
 ## How the WDL is read
 
@@ -264,4 +267,4 @@ decoy `call` / `if` / `scatter` text inside both command-block styles, a scatter
 `if`, a multi-line scatter expression, a multi-line call input block, a dependency threaded
 through an intermediate declaration, and a call into an imported file. The suite also checks
 that `--check` accepts a fresh `.dot` and rejects a tampered one, and that a chart on disk
-turns into a Workflow Flowchart section in a generated README.
+turns into an image at the top of a generated README's Overview.

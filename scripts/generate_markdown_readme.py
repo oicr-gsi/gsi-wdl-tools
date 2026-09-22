@@ -65,8 +65,8 @@ def process_commands(wdl_file):
     return dir_name, commands_section
 
 
-def flowchart_section(wdl_path, workflow_name, flowchart_dir=None):
-    """The Workflow Flowchart section, or None when no flowchart has been generated.
+def flowchart_image(wdl_path, workflow_name, flowchart_dir=None):
+    """Markdown image for this workflow's flowchart, or None when there is none.
 
     Nothing is drawn here: generate-wdl-flowchart writes the chart, and this picks up
     whatever it left in a docs/ beside the WDL or beside the WDL itself. The link is
@@ -78,23 +78,25 @@ def flowchart_section(wdl_path, workflow_name, flowchart_dir=None):
 
     readme_dir = os.path.dirname(os.path.abspath(wdl_path))
     link = os.path.relpath(chart, readme_dir).replace(os.sep, "/")
-    return (
-        f"## Workflow Flowchart\n"
-        f"\n"
-        f"![{workflow_name} workflow flowchart](./{link})\n"
-    )
+    return f"![{workflow_name} workflow flowchart](./{link})"
 
 
-def update_readme_with_flowchart(dir_name, section):
-    """Insert or refresh the Workflow Flowchart section of an existing README.md.
+# An image line this script wrote, wherever it currently sits. Used to take the old one out
+# before putting the new one in, so regenerating never stacks up copies.
+FLOWCHART_IMAGE = re.compile(r'^!\[[^\]]*workflow flowchart\]\([^)]*\)[ \t]*\n?',
+                             re.MULTILINE)
+# The heading earlier versions of this script emitted. Removed on sight: the image now
+# opens Overview instead of having a section of its own.
+FLOWCHART_HEADING = re.compile(r'\n*^## Workflow Flowchart[ \t]*\n+', re.MULTILINE)
 
-    Keeps the section directly under Overview, so the picture is the first thing a reader
-    meets after the description. Called with section None, an existing section is left
-    alone rather than removed - a chart that is temporarily absent should not silently
-    delete the reference to it.
+
+def update_readme_with_flowchart(dir_name, image):
+    """Put the flowchart at the top of an existing README.md's Overview section.
+
+    Called with image None, an existing image is left alone rather than removed - a chart
+    that is temporarily absent should not silently delete the reference to it. A stale
+    "## Workflow Flowchart" heading from an earlier version is dropped either way.
     """
-    if section is None:
-        return
     readme_file = "./README.md" if dir_name == "" else dir_name + "/README.md"
     sys.stdout.flush()
 
@@ -102,31 +104,22 @@ def update_readme_with_flowchart(dir_name, section):
         return
 
     with open(readme_file, 'r') as f:
-        readme_content = f.read()
+        original = f.read()
 
-    # trailing newline: the section is spliced in ahead of the next "## " heading
-    replacement = section.rstrip() + "\n"
-    if '## Workflow Flowchart' in readme_content:
-        readme_content = re.sub(
-            r'## Workflow Flowchart.*?(?=\n## |\Z)',
-            lambda m: replacement,
-            readme_content,
-            flags=re.DOTALL
-        )
-    elif '## Overview' in readme_content:
-        readme_content = re.sub(
-            r'## Overview.*?(?=\n## |\Z)',
-            lambda m: m.group(0).rstrip() + "\n\n" + replacement,
-            readme_content,
-            count=1,
-            flags=re.DOTALL
-        )
-    else:
-        readme_content += '\n' + replacement
+    content = FLOWCHART_HEADING.sub("\n", original)
+    if image is not None:
+        content = FLOWCHART_IMAGE.sub("", content)
+        match = re.search(r'^## Overview[ \t]*\n+', content, re.MULTILINE)
+        if match:
+            content = content[:match.end()] + image + "\n\n" + content[match.end():]
+        else:
+            content = content.rstrip() + "\n\n" + image + "\n"
 
+    if content == original:
+        return
     with open(readme_file, 'w') as f:
-        f.write(readme_content)
-    print(f"{readme_file} updated with flowchart section.", file=sys.stderr)
+        f.write(content)
+    print(f"{readme_file} updated with flowchart.", file=sys.stderr)
 
 
 def update_readme_with_commands(dir_name, commands_section):
@@ -166,13 +159,14 @@ print(f"# {info.name}\n")
 # before it. Printing the description first left "## Overview" as an empty section with its
 # content stranded above it.
 print("## Overview\n")
-print(f"{info.description}\n")
 
-# flowchart, drawn beforehand by generate-wdl-flowchart
-flowchart = None if args.no_flowchart else flowchart_section(
+# flowchart, drawn beforehand by generate-wdl-flowchart; it opens the section so a reader
+# meets the picture before the prose
+flowchart = None if args.no_flowchart else flowchart_image(
     args.input_wdl_path, info.name, args.flowchart_dir)
 if flowchart:
-    print(f"{flowchart}")
+    print(f"{flowchart}\n")
+print(f"{info.description}\n")
 
 # dependencies
 print("## Dependencies\n")

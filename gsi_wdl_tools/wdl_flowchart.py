@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a structural flowchart for a WDL workflow, from the WDL text.
+"""Generate a structural flowchart for a WDL workflow.
 
     generate-wdl-flowchart <workflow.wdl>... [--svg] [--png] [--check] [-o DIR]
     generate-wdl-flowchart --all <dir> [--svg]
@@ -22,97 +22,12 @@ import re
 import subprocess
 import sys
 
+import WDL
+
 __version__ = "1.0.0"
 
-# ---------------------------------------------------------------------------- lexing
-
-IMPORT = re.compile(r'^\s*import\s+"([^"]+)"(?:\s+as\s+(\w+))?')
-TOKEN = re.compile(
-    r'^\s*(?:'
-    r'(?P<workflow>workflow\s+(?P<wfname>\w+)\s*\{)'
-    r'|(?P<task>task\s+(?P<taskname>\w+)\s*\{)'
-    r'|(?P<scatter>scatter\s*\((?P<scexpr>.*?)\)\s*\{)'
-    r'|(?P<ifblock>if\s*\((?P<ifexpr>.*)\)\s*\{)'
-    r'|(?P<call>call\s+(?P<callee>[\w.]+)(?:\s+as\s+(?P<alias>\w+))?)'
-    r')'
-)
-# A declaration: a type, a name, '='. Types include user structs, so any capitalised word
-# qualifies; that is deliberately loose, and the cost is a stray entry, not a wrong edge.
-DECL = re.compile(r'^\s*(?:Array|Map|Pair|File|String|Int|Float|Boolean|Object|[A-Z]\w*)'
-                  r'[\w\[\]\?\+, ]*\s+(\w+)\s*=\s*(.*)$')
-BARE_DECL = re.compile(r'^\s*(?:Array|Map|Pair|File|String|Int|Float|Boolean|Object|[A-Z]\w*)'
-                       r'[\w\[\]\?\+, ]*\s+(\w+)\s*$')
-REF = re.compile(r'\b(\w+)\.\w+')
-
-
-def strip_comments(line):
-    """Drop a trailing # comment, respecting quotes."""
-    out, q = [], None
-    for ch in line:
-        if q:
-            out.append(ch)
-            if ch == q:
-                q = None
-        elif ch in '"\'':
-            q = ch
-            out.append(ch)
-        elif ch == '#':
-            break
-        else:
-            out.append(ch)
-    return ''.join(out)
-
-
-def lex(text):
-    """Comments removed, command bodies removed, continuation lines joined.
-
-    Command bodies must go FIRST: they hold arbitrary shell, so a line starting `call `
-    or an unbalanced bracket inside one would otherwise derail both the tokeniser and the
-    continuation joiner.
-    """
-    raw = text.split('\n')
-    kept, i = [], 0
-    while i < len(raw):
-        line = raw[i]
-        if re.match(r'^\s*command\s*<<<', line):
-            kept.append(re.sub(r'command\s*<<<.*', 'command <<< STRIPPED >>>', line))
-            i += 1
-            while i < len(raw) and '>>>' not in raw[i]:
-                i += 1
-            i += 1
-            continue
-        if re.match(r'^\s*command\s*\{', line):
-            depth = line.count('{') - line.count('}')
-            kept.append(re.sub(r'command\s*\{.*', 'command { STRIPPED }', line))
-            i += 1
-            while i < len(raw) and depth > 0:
-                depth += raw[i].count('{') - raw[i].count('}')
-                i += 1
-            continue
-        kept.append(strip_comments(line))
-        i += 1
-
-    # join continuations: a line whose brackets are unbalanced continues onto the next
-    joined, buf, bal = [], '', 0
-    for line in kept:
-        if not line.strip():
-            if not buf:
-                joined.append(line)
-            continue
-        piece = line if not buf else buf + ' ' + line.strip()
-        bal = (piece.count('(') - piece.count(')')
-               + piece.count('[') - piece.count(']'))
-        if bal > 0:
-            buf = piece
-        else:
-            joined.append(piece)
-            buf = ''
-    if buf:
-        joined.append(buf)
-    return joined
-
-
 # ---------------------------------------------------------------------------- model
+
 
 class Node:
     def __init__(self, alias, callee, imported):
@@ -139,91 +54,99 @@ class Workflow:
         # Names that look like dependencies but are not calls: scatter variables and import
         # aliases. Without these the "unresolved" count is all noise and tells you nothing.
         self.scatter_vars, self.unresolved = set(), set()
+        self.wdl_nodes = {}           # miniwdl workflow node id -> node, for resolve()
+
+
+class LoadError(Exception):
+    """A WDL that miniwdl could not load. Carries the reason, already formatted."""
+
+
+def load(path):
+    """Parse and typecheck a WDL, raising LoadError with a readable message.
+
+    Imports are resolved and typechecked by miniwdl even though their contents are never
+    drawn, so a workflow whose imports do not resolve cannot be charted.
+    """
+    try:
+        return WDL.load(path)
+    except (WDL.Error.SyntaxError, WDL.Error.ValidationError,
+            WDL.Error.MultipleValidationErrors, WDL.Error.ImportError) as exc:
+        errors = getattr(exc, 'exceptions', None) or [exc]
+        detail = '; '.join(
+            f"line {e.pos.line}: {e}" if hasattr(e, 'pos') else str(e) for e in errors)
+        raise LoadError(detail) from exc
+
+
+def _callee(call):
+    """(display name, is it a call into an imported file)."""
+    name = '.'.join(call.callee_id)
+    return name, len(call.callee_id) > 1
 
 
 def parse(path):
+    """Build the chart model from a WDL document.
+
+    Blocks mirror the workflow's `scatter`/`if` nesting and calls hang off the block that
+    encloses them. Dependencies are left as miniwdl node ids here and turned into call
+    aliases by resolve().
+    """
+    doc = load(path)
     wf = Workflow()
-    lines = lex(open(path).read())
+    if doc.workflow is None:
+        return wf
 
-    depth, stack, cur = 0, [], wf.root
-    in_task, section = None, None
-    pending, pending_depth = None, None
+    wf.name = doc.workflow.name
+    wf.imports = [i.namespace for i in doc.imports]
+    wf.inputs = [d.name for d in (doc.workflow.inputs or [])]
+    wf.outputs = [d.name for d in (doc.workflow.outputs or [])]
 
-    for line in lines:
-        if not line.strip():
-            continue
+    # Workflow-level declarations, kept as source text: expand_cases reads them to decide
+    # whether a scatter enumerates named cases.
+    def collect_decls(body):
+        for node in body:
+            if isinstance(node, WDL.Tree.Decl) and node.expr is not None:
+                wf.decls[node.name] = str(node.expr)
+            for inner in getattr(node, 'body', None) or []:
+                collect_decls([inner])
 
-        imp = IMPORT.match(line)
-        if imp:
-            alias = imp.group(2) or os.path.basename(imp.group(1))
-            wf.imports.append(alias)
+    collect_decls(doc.workflow.body)
 
-        m = TOKEN.match(line)
-        if m:
-            if m.group('workflow'):
-                wf.name = m.group('wfname')
-            elif m.group('task'):
-                in_task = m.group('taskname')
-            elif not in_task and m.group('scatter'):
-                sc = m.group('scexpr').strip()
-                v = re.match(r'(\w+)\s+in\s', sc)
-                if v:
-                    wf.scatter_vars.add(v.group(1))
-                b = Block('scatter', sc)
-                cur.children.append(b)
-                stack.append((depth, cur))
-                cur = b
-            elif not in_task and m.group('ifblock'):
-                b = Block('if', m.group('ifexpr').strip())
-                cur.children.append(b)
-                stack.append((depth, cur))
-                cur = b
-            elif not in_task and m.group('call'):
-                callee = m.group('callee')
-                alias = m.group('alias') or callee.split('.')[-1]
-                n = Node(alias, callee, '.' in callee)
-                cur.calls.append(n)
-                wf.nodes[alias] = n
-                pending, pending_depth = n, depth
+    def walk(body, block):
+        for node in body:
+            if isinstance(node, WDL.Tree.Call):
+                callee, imported = _callee(node)
+                n = Node(node.name, callee, imported)
+                n.deps = set(node.workflow_node_dependencies)
+                block.calls.append(n)
+                wf.nodes[node.name] = n
+            elif isinstance(node, WDL.Tree.Scatter):
+                wf.scatter_vars.add(node.variable)
+                child = Block('scatter', f'{node.variable} in {node.expr}')
+                block.children.append(child)
+                walk(node.body, child)
+            elif isinstance(node, WDL.Tree.Conditional):
+                child = Block('if', str(node.expr))
+                block.children.append(child)
+                walk(node.body, child)
 
-        if not in_task:
-            st = line.strip()
-            if st.startswith('input {'):
-                section = 'input'
-            elif st.startswith('output {'):
-                section = 'output'
-            elif section and st == '}':
-                section = None
-            elif section == 'input':
-                d = DECL.match(line) or BARE_DECL.match(line)
-                if d:
-                    wf.inputs.append(d.group(1))
-            elif section == 'output':
-                d = DECL.match(line)
-                if d:
-                    wf.outputs.append(d.group(1))
-            else:
-                d = DECL.match(line)
-                if d:
-                    wf.decls[d.group(1)] = d.group(2)
-
-        if pending is not None:
-            for ref in REF.findall(line):
-                pending.deps.add(ref)
-            for w in re.findall(r'\b(\w+)\b', line):
-                if w in wf.decls:
-                    pending.deps.add(w)
-
-        closes = line.count('}')
-        depth += line.count('{') - closes
-        if pending is not None and closes and depth <= pending_depth:
-            pending = None
-        if in_task and depth == 0:
-            in_task = None
-        while stack and depth <= stack[-1][0]:
-            _, cur = stack.pop()
-
+    walk(doc.workflow.body, wf.root)
+    wf.wdl_nodes = _index(doc.workflow.body)
     return wf
+
+
+def _index(body):
+    """Map every workflow node id to its node, so dependencies can be followed."""
+    out = {}
+
+    def walk(nodes):
+        for node in nodes:
+            out[node.workflow_node_id] = node
+            for gather in (getattr(node, 'gathers', None) or {}).values():
+                out[gather.workflow_node_id] = gather
+            walk(getattr(node, 'body', None) or [])
+
+    walk(body)
+    return out
 
 
 WRAP = re.compile(r'^\s*(?:select_all|select_first|flatten)\s*\((.*)\)\s*$')
@@ -372,30 +295,36 @@ def coalesce(block):
 
 
 def resolve(wf):
-    """Map dependency names onto call aliases, following declarations transitively.
+    """Turn miniwdl node ids into the call aliases the chart draws.
 
-    Without this a workflow that threads outputs through intermediate declarations
-    (`File x = select_first([a.bam])` then `input: b = x`) would show almost no edges.
+    A call rarely depends on another call directly: the output usually goes through one or
+    more declarations first (`File x = select_first([a.bam])`, then `input: b = x`). Those
+    are followed transitively, so the edge drawn is a -> b, the one a reader means. Gather
+    nodes, which miniwdl inserts where a value leaves a scatter, are transparent for the
+    same reason.
     """
-    def calls_in(expr, seen):
-        found = {r for r in REF.findall(expr) if r in wf.nodes}
-        for w in re.findall(r'\b(\w+)\b', expr):
-            if w in wf.decls and w not in seen:
-                found |= calls_in(wf.decls[w], seen | {w})
+    def calls_behind(node_id, seen):
+        if node_id in seen:
+            return set()
+        seen = seen | {node_id}
+        # a value leaving a scatter arrives as gather-<id>; the producer is what matters
+        while node_id.startswith('gather-'):
+            node_id = node_id[len('gather-'):]
+        if node_id.startswith('call-'):
+            alias = node_id[len('call-'):]
+            return {alias} if alias in wf.nodes else set()
+        node = wf.wdl_nodes.get(node_id)
+        if node is None:
+            return set()
+        found = set()
+        for dep in node.workflow_node_dependencies:
+            found |= calls_behind(dep, seen)
         return found
 
     for n in wf.nodes.values():
         real = set()
-        for d in n.deps:
-            if d in wf.nodes:
-                real.add(d)
-            elif d in wf.decls:
-                real |= calls_in(wf.decls[d], {d})
-            elif (d in wf.inputs or d in wf.scatter_vars or d in wf.imports
-                  or '.' in d):
-                pass
-            else:
-                wf.unresolved.add(d)
+        for dep in n.deps:
+            real |= calls_behind(dep, frozenset())
         n.deps = real - {n.alias}
 
 
@@ -685,7 +614,11 @@ def render(dot_path, wf_name, outdir, fmt, extra):
 
 
 def process(path, args):
-    wf = parse(path)
+    try:
+        wf = parse(path)
+    except LoadError as exc:
+        print(f"{path}: cannot parse: {exc}", file=sys.stderr)
+        return False
     if not wf.name:
         print(f"{path}: no workflow block, skipped", file=sys.stderr)
         return True

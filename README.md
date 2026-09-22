@@ -183,9 +183,9 @@ Or with `uv run`:
 uv run generate-wdl-flowchart [workflow.wdl] --svg
 ```
 
-Unlike the other tools here this one imports only the standard library, so it needs no
-virtualenv at all: `python3 scripts/wdl_flowchart.py [workflow.wdl]` works straight from a
-checkout. graphviz is needed only to render an `.svg` or `.png`.
+The workflow is parsed with miniwdl, the same library the other tools here use, so a chart
+is drawn exactly when the WDL is one the rest of the toolchain can read. graphviz is needed
+only to render an `.svg` or `.png`; the `.dot` is produced without it.
 
 See [docs/wdl_flowchart.md](docs/wdl_flowchart.md) for the hide list, the two kinds of
 scatter, and - importantly - what the picture does not mean.

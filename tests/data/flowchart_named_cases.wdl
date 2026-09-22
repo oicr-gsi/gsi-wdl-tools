@@ -1,4 +1,10 @@
 version 1.0
+
+struct InputGroup {
+    File bam
+    File bamIndex
+}
+
 workflow mutect2Consensus {
     input {
         InputGroup tumorInputGroup

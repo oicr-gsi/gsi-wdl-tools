@@ -26,8 +26,8 @@ workflow nesting {
                  bams)) {
         call pairwise {
             input:
-                left = pair.left,
-                right = pair.right
+                first = pair.left,
+                second = pair.right
         }
     }
 
@@ -62,8 +62,8 @@ task gather {
 }
 
 task pairwise {
-    input { File left
-            File right }
+    input { File first
+            File second }
     command <<< echo p >>>
     output { File out = "o" }
 }

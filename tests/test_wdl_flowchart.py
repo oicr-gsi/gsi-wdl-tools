@@ -57,8 +57,8 @@ def test_nesting_counts(shared_datadir):
 
 def test_nesting_clusters_are_labelled(nesting_dot):
     assert 'label="if (defined(label))"' in nesting_dot
-    # a scatter expression split over three source lines is joined into one label
-    assert 'label="scatter (pair in zip( bams, bams))"' in nesting_dot
+    # a scatter expression split over three source lines becomes one canonical label
+    assert 'label="scatter (pair in zip(bams,bams))"' in nesting_dot
 
 
 def test_scatter_cluster_sits_inside_the_if_cluster(nesting_dot):

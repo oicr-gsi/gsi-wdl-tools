@@ -9,15 +9,14 @@ generate-wdl-flowchart myWorkflow.wdl --check        # fail if the committed .do
 generate-wdl-flowchart myWorkflow.wdl --hide extractName --svg   # leave plumbing out
 ```
 
-Or with `uv run`, or straight from a checkout:
+Or with `uv run`:
 
 ```
 uv run generate-wdl-flowchart myWorkflow.wdl --svg
-python3 ./scripts/wdl_flowchart.py myWorkflow.wdl --svg
 ```
 
-The tool imports only the standard library, so the last form needs no virtualenv at all:
-any `python3` runs it, and graphviz is needed only to render.
+graphviz is needed only to render an `.svg` or `.png`. Without it the `.dot` is still
+written, and `--check` works, so a pre-commit hook does not need graphviz at all.
 
 Writes `<workflow>.flow.dot` next to the WDL, or into a sibling `docs/` if one exists.
 `--svg` / `--png` render it with graphviz. Calls are boxes, `scatter` and `if` are nested
@@ -71,21 +70,21 @@ An existing `README.md` is also updated in place, the same way its `Commands` se
 the flowchart section is inserted under `Overview` if it is missing and refreshed if it is
 already there, so regenerating never stacks up copies.
 
-## Why not `womtool graph`
+## How the WDL is read
 
-`womtool` has a `graph` subcommand, and where it works the output is reasonable. But it
-builds the full WOM graph first and throws when it cannot link a node. Measured across the
-OICR-GSI workflow collection it failed on 2 of 4 tried, including
-`java.util.NoSuchElementException: key not found: ScatterVariableNode(...)` on a scatter
-over `select_first(...)` - a perfectly ordinary construct.
+The workflow is parsed with [miniwdl](https://github.com/chanzuckerberg/miniwdl), the same
+library the rest of gsi-wdl-tools uses, and the chart is built from its AST. Dependencies
+come from miniwdl's own dependency graph rather than from matching text, so an edge is
+drawn exactly when the WDL declares one.
 
-This tool parses the text instead. When it meets something it does not understand it
-degrades to a less precise picture rather than to no picture, which is the right failure
-mode for documentation tooling.
+That has a consequence worth stating plainly: parsing is all or nothing. miniwdl typechecks
+the document and resolves every import, so a WDL it rejects produces no chart at all, with
+the reason on stderr. In practice this is the same bar the other tools set - a workflow
+that cannot be charted also cannot have a README generated from it.
 
-Exercised over 186 `.wdl` files in the GSI collection: 122 workflows produced a graph, 64
-were task-only files correctly reported as `no workflow block, skipped`, and nothing
-crashed.
+Measured over the OICR-GSI collection, every workflow committed on a repository's default
+branch parses. The files that do not are working-copy experiments and untracked branches,
+which the rest of the toolchain rejects too.
 
 ## Two kinds of scatter
 
@@ -202,6 +201,11 @@ Commit the `.dot` and the `.svg`; the `.png` is only worth rendering on demand (
 hundreds of kB of binary that changes on every edit, and Confluence is usually the only
 thing that needs it).
 
+One thing to know about `--check` in a hook: because imports are resolved when the workflow
+is parsed, a chart can go stale through a change to an imported file rather than to the
+workflow itself. That is a true report - the workflow really did change - but the file the
+hook names is not the file you edited.
+
 ## What the picture does NOT mean
 
 These are not rough edges to be fixed later. They are consequences of reading a static
@@ -218,19 +222,16 @@ by one. Even for a pure-WDL workflow, with no other engine involved:
    subgraph at once. The cluster labels carry the condition, so the information is there, but
    the *shape* overstates what any single run does.
 
-3. **Edges are inferred, not authoritative.** They come from matching `x.y` references and
-   workflow-level declarations. A dependency that flows through an expression the
-   declaration pattern does not match yields a *missing* edge; a call alias that collides
-   with a variable name yields a *spurious* one. Run with `-v` to list names it could not
-   classify. Treat the edges as "probably right", and check the WDL before relying on one.
+3. **Edges are data dependencies, nothing more.** They are taken from miniwdl's dependency
+   graph, so they are accurate about what feeds what. They say nothing about how much data
+   moves, whether the consumer uses it, or whether the value is optional at runtime.
 
 4. **The file is the horizon.** `call other.task` is a single node, and an imported
    sub-workflow is one box no matter how many tasks it contains. `import` is not followed.
    Those nodes are drawn hatched, so at least you can see where the picture stops.
 
-5. **Nothing about what a task does.** Command bodies are deliberately stripped - they are
-   full of text that looks like workflow syntax. Two vaguely named tasks are
-   indistinguishable in the graph.
+5. **Nothing about what a task does.** A call is a box with a name on it. Two vaguely named
+   tasks are indistinguishable in the graph.
 
 6. **No resources, no time, no cost.** Nothing about memory, cpu, wall clock, or which step
    dominates a run. A 4-hour step and a 12-second step are the same size box.

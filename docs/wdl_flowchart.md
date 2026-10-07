@@ -31,6 +31,14 @@ The cluster colour says which kind of block it is:
 A call box with a hatched purple border is a call into an imported WDL, whose internals are
 not shown.
 
+An edge that ends at a cluster's border rather than at a box is a dependency of the block
+itself: the call whose output the `scatter` iterates over, or the call an `if` condition
+reads. In `scatter (shardBed in split.beds)` the calls inside read only `shardBed`, so
+nothing in them names `split`; without this edge the scatter would look as if it started
+from the workflow inputs, and `split` as if its output went nowhere. Such an edge is drawn
+once per block, not once per call inside, and it counts as a dependency of every call in
+the block for the input and output edges described next.
+
 The `workflow inputs` and `workflow outputs` notes are joined by faint dashed edges. To
 keep them from becoming a hairball they are not drawn to every call that happens to read an
 input; an input edge means *this call can start with nothing else having run*. That covers

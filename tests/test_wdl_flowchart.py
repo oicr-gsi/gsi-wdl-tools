@@ -105,6 +105,47 @@ def test_show_all_overrides_the_hide_file(shared_datadir, tmp_path):
     assert '  perShard -> gather' in dot.splitlines()
 
 
+# --------------------------------------------------------------- block_deps.wdl
+#
+# A call that feeds a scatter collection or an if condition is a dependency of the block,
+# not of the calls inside it, so it has to be drawn into the cluster.
+
+@pytest.fixture
+def block_deps_dot(shared_datadir, tmp_path):
+    return generate(shared_datadir / 'flowchart_block_deps.wdl', tmp_path)
+
+
+def test_scatter_collection_producer_is_drawn_into_the_cluster(block_deps_dot):
+    # reached through `Array[File] pieces = split.pieces`, so the declaration is followed
+    assert any(line.startswith('  split -> work [lhead=cluster_')
+               for line in block_deps_dot.splitlines())
+
+
+def test_if_condition_producer_is_drawn_into_the_cluster(block_deps_dot):
+    assert any(line.startswith('  check -> extra [lhead=cluster_')
+               for line in block_deps_dot.splitlines())
+
+
+def test_block_producers_are_not_leaves(block_deps_dot):
+    lines = block_deps_dot.splitlines()
+    assert not any(line.startswith('  split -> OUTPUTS') for line in lines)
+    assert not any(line.startswith('  check -> OUTPUTS') for line in lines)
+
+
+def test_calls_inside_a_fed_block_do_not_start_from_inputs(block_deps_dot):
+    lines = block_deps_dot.splitlines()
+    assert not any(line.startswith('  INPUTS -> work ') for line in lines)
+    assert not any(line.startswith('  INPUTS -> extra ') for line in lines)
+    assert any(line.startswith('  INPUTS -> prep ') for line in lines)
+
+
+def test_hidden_block_producer_is_spliced(shared_datadir, tmp_path):
+    dot = generate(shared_datadir / 'flowchart_block_deps.wdl', tmp_path, hide=['split'])
+    lines = dot.splitlines()
+    assert any(line.startswith('  prep -> work [lhead=cluster_') for line in lines)
+    assert not any(line.startswith('  split ') for line in lines)
+
+
 # -------------------------------------------------------------- named_cases.wdl
 #
 # A scatter over a literal list of named items is drawn as one branch per item; a scatter

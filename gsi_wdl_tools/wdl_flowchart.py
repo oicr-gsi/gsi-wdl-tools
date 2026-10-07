@@ -24,7 +24,7 @@ import sys
 
 import WDL
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 
 # ---------------------------------------------------------------------------- model
 
@@ -35,12 +35,18 @@ class Node:
         self.display = alias          # differs from alias only for per-case clones
         self.deps = set()
         self.ifs = frozenset()        # `if` blocks enclosing this call; set by mark_conditional
+        self.block_deps = set()       # deps of the blocks enclosing it; set by mark_conditional
 
 
 class Block:
     def __init__(self, kind, label):
         self.kind, self.label = kind, label
         self.children, self.calls = [], []
+        # What the block's own expression reads: the scatter collection or the if
+        # condition. A call inside reads its scatter variable without that showing up in
+        # its own dependencies, so a call feeding the collection is only visible here.
+        self.deps = set()
+        self.cid = None               # cluster number, set by emit
 
 
 class Workflow:
@@ -122,16 +128,25 @@ def parse(path):
             elif isinstance(node, WDL.Tree.Scatter):
                 wf.scatter_vars.add(node.variable)
                 child = Block('scatter', f'{node.variable} in {node.expr}')
+                child.deps = set(node.workflow_node_dependencies)
                 block.children.append(child)
                 walk(node.body, child)
             elif isinstance(node, WDL.Tree.Conditional):
                 child = Block('if', str(node.expr))
+                child.deps = set(node.workflow_node_dependencies)
                 block.children.append(child)
                 walk(node.body, child)
 
     walk(doc.workflow.body, wf.root)
     wf.wdl_nodes = _index(doc.workflow.body)
     return wf
+
+
+def blocks(block):
+    """Every block under and including this one, depth first."""
+    yield block
+    for child in block.children:
+        yield from blocks(child)
 
 
 def _index(body):
@@ -224,6 +239,7 @@ def expand_cases(wf, cap):
 
     def clone(block, suffix, inside):
         nb = Block(block.kind, block.label)
+        nb.deps = {d + suffix if d in inside else d for d in block.deps}
         for c in block.calls:
             n = Node(c.alias + suffix, c.callee, c.imported)
             n.display = c.alias
@@ -252,7 +268,8 @@ def expand_cases(wf, cap):
                 new_children.append(nb)
             for a in inside:                        # originals are replaced by the clones
                 wf.nodes.pop(a, None)
-            for n in wf.nodes.values():             # consumers fan out to every branch
+            consumers = list(wf.nodes.values()) + [b for b in blocks(wf.root)]
+            for n in consumers:                     # consumers fan out to every branch
                 if n.deps & inside:
                     n.deps = ((n.deps - inside)
                               | {d + '__' + c for d in n.deps & inside for c in cases})
@@ -284,6 +301,7 @@ def coalesce(block):
             target = seen[key]
             target.calls.extend(child.calls)
             target.children.extend(child.children)
+            target.deps |= child.deps
         else:
             seen[key] = child
             merged.append(child)
@@ -326,6 +344,12 @@ def resolve(wf):
         for dep in n.deps:
             real |= calls_behind(dep, frozenset())
         n.deps = real - {n.alias}
+
+    for b in blocks(wf.root):
+        real = set()
+        for dep in b.deps:
+            real |= calls_behind(dep, frozenset())
+        b.deps = real
 
 
 def hide_calls(wf, names):
@@ -370,6 +394,12 @@ def hide_calls(wf, names):
     for alias, n in wf.nodes.items():
         if alias not in hidden:
             n.deps = through(alias, {alias}) - {alias}
+
+    for b in blocks(wf.root):
+        spliced = set()
+        for d in b.deps:
+            spliced |= through(d, {d}) if d in hidden else {d}
+        b.deps = spliced
 
     def prune(block):
         block.calls = [c for c in block.calls if c.alias not in hidden]
@@ -442,14 +472,15 @@ def mark_conditional(wf):
     Run after coalesce/expand_cases, which rebuild the block tree, so the annotation
     reflects the blocks actually being drawn.
     """
-    def walk(block, enclosing):
+    def walk(block, enclosing, outer_deps):
         for call in block.calls:
             call.ifs = enclosing
+            call.block_deps = outer_deps
         for child in block.children:
             inner = (enclosing | {id(child)}) if child.kind == 'if' else enclosing
-            walk(child, inner)
+            walk(child, inner, outer_deps | child.deps)
 
-    walk(wf.root, frozenset())
+    walk(wf.root, frozenset(), frozenset())
 
 
 def from_inputs(wf, n):
@@ -464,10 +495,15 @@ def from_inputs(wf, n):
 
     A dependency in the SAME `if` as the consumer does not count: when that condition is
     false neither call runs, so there is no path to draw.
+
+    What an enclosing scatter or if reads counts as well: a call inside
+    `scatter (x in split.out)` cannot start before split, even though nothing in the
+    call itself names it.
     """
-    if not n.deps:
+    effective = n.deps | n.block_deps
+    if not effective:
         return True
-    deps = [wf.nodes[d] for d in n.deps if d in wf.nodes]
+    deps = [wf.nodes[d] for d in effective if d in wf.nodes]
     return bool(deps) and all(d.ifs - n.ifs for d in deps)
 
 
@@ -509,6 +545,7 @@ def emit(wf, src):
             out.append(f'{indent}{n.alias} [label="{label}"{extra}]')
         for child in b.children:
             ctr[0] += 1
+            child.cid = ctr[0]
             if child.kind == 'scatter':
                 fill = 'fillcolor="#fdf3e7" color="#e0a35c" style="filled,rounded"'
                 lab = f'scatter ({esc(child.label)})'
@@ -530,14 +567,39 @@ def emit(wf, src):
     if wf.outputs:
         out += note_box('outputs', 'workflow outputs', wf.outputs)
 
+    # A block's own dependency is drawn once, into the cluster (lhead), rather than to every
+    # call inside it. graphviz needs a node to aim at, so the edge targets the first call
+    # drawn in the block and is clipped at the cluster border; minlen=2 leaves room for the
+    # arrow after clipping, which otherwise shrinks to a stub on the cluster's top edge.
+    def first_call(block):
+        if block.calls:
+            return block.calls[0].alias
+        for child in block.children:
+            found = first_call(child)
+            if found:
+                return found
+        return None
+
+    into_blocks = []
+    for b in blocks(wf.root):
+        anchor = first_call(b) if b.cid is not None else None
+        if anchor:
+            into_blocks += [(d, anchor, b.cid) for d in sorted(b.deps)]
+    drawn = {(d, anchor) for d, anchor, _ in into_blocks}
+
     out.append('')
     for n in sorted(wf.nodes.values(), key=lambda x: x.alias):
         for d in sorted(n.deps):
-            out.append(f'  {d} -> {n.alias}')
+            if (d, n.alias) not in drawn:
+                out.append(f'  {d} -> {n.alias}')
+    for d, anchor, cid in into_blocks:
+        out.append(f'  {d} -> {anchor} [lhead=cluster_{cid} minlen=2]')
 
+    feeds_a_block = set().union(*(b.deps for b in blocks(wf.root)))
     roots = sorted(n.alias for n in wf.nodes.values() if from_inputs(wf, n))
     leaves = sorted(n.alias for n in wf.nodes.values()
-                    if not any(n.alias in m.deps for m in wf.nodes.values()))
+                    if n.alias not in feeds_a_block
+                    and not any(n.alias in m.deps for m in wf.nodes.values()))
     for r in roots:
         if wf.inputs:
             out.append(f'  INPUTS -> {r} [style=dashed color="#bbbbbb"]')
@@ -652,7 +714,8 @@ def process(path, args):
     os.makedirs(outdir, exist_ok=True)
     with open(dot_path, 'w') as fh:
         fh.write(dot)
-    edges = sum(len(n.deps) for n in wf.nodes.values())
+    edges = (sum(len(n.deps) for n in wf.nodes.values())
+             + sum(len(b.deps) for b in blocks(wf.root) if b is not wf.root))
     extra = f", {len(wf.unresolved)} unresolved refs" if wf.unresolved else ""
     if n_hidden:
         extra = f", {n_hidden} hidden" + extra
